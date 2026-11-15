@@ -282,6 +282,43 @@ function camWindow(i){
 }
 const byCode=(a,b)=>a.localeCompare(b,'en',{numeric:true});
 const kids=code=>[...S.locs.keys()].filter(c=>(loc(c).parent||'')===code).sort(byCode);
+/* cây thư mục ảo: tên “A – B – C” tự gom thành thư mục A › B khi có từ 2 mục cùng tiền tố */
+const SEP=' – ';
+const segs=c=>String(loc(c).name||'').split(SEP);
+function grpDepth(c){
+  const par=loc(c).parent||'';if(!par)return 0;
+  const s=segs(c),sib=kids(par).filter(x=>x!==c);let k=0;
+  while(k<s.length-1&&sib.some(x=>{const t=segs(x);return t.length>k+1&&t.slice(0,k+1).join(SEP)===s.slice(0,k+1).join(SEP)}))k++;
+  return k;
+}
+const shortName=c=>segs(c).slice(grpDepth(c)).join(SEP);
+const inGrp=(c,g)=>kids(c).filter(x=>{const s=segs(x);return s.length>g.length&&g.every((v,i)=>s[i]===v)});
+function groupRows(c,g){
+  const ks=inGrp(c,g),out=[],seen=new Set();
+  for(const x of ks){
+    const s=segs(x);
+    if(s.length>g.length+1){
+      const key=s[g.length],mem=ks.filter(y=>{const t=segs(y);return t.length>g.length+1&&t[g.length]===key});
+      if(mem.length>=2){if(!seen.has(key)){seen.add(key);out.push(folderRow(c,g.concat(key),mem))}continue}
+    }
+    out.push(locRow(x,false,s.slice(g.length).join(SEP)));
+  }
+  return out.join('');
+}
+function folderRow(c,g,mem){
+  const n=mem.reduce((a,x)=>a+deepCount(x),0),r=roomOf(c);
+  return `<div class="row" data-act="grp" data-c="${esc(c)}" data-g="${esc(JSON.stringify(g))}"><div class="bdg" style="background:${(r&&FCOL[r.floor])||'#7a6d6f'}">📁</div><div class="t"><div class="n">${esc(g[g.length-1])}</div><div class="s">${mem.length} mục bên trong</div></div><div class="q">${n?n+' đồ':''}</div></div>`;
+}
+function crumbs(c,g){
+  const p=pathOf(c),G=x=>esc(JSON.stringify(x));let h='<a data-act="open" data-c="">Nhà 25</a>';
+  p.forEach((x,i)=>{
+    const s=segs(x),k=i?grpDepth(x):0,par=loc(x).parent||'';
+    for(let j=0;j<k;j++)h+=` › <a data-act="grp" data-c="${esc(par)}" data-g="${G(s.slice(0,j+1))}">${esc(s[j])}</a>`;
+    if(x!==c||g.length)h+=` › <a data-act="open" data-c="${esc(x)}">${esc(i?shortName(x):loc(x).name)}</a>`;
+  });
+  for(let j=0;j<g.length-1;j++)h+=` › <a data-act="grp" data-c="${esc(c)}" data-g="${G(g.slice(0,j+1))}">${esc(g[j])}</a>`;
+  return '<div class="crumb">'+h+'</div>';
+}
 const itemsAt=code=>[...S.items].filter(([,i])=>i.loc===code).sort((a,b)=>norm(a[1].name).localeCompare(norm(b[1].name)));
 function deepCount(code){let n=itemsAt(code).length;for(const k of kids(code))n+=deepCount(k);return n}
 function nextCode(parent,kind){
@@ -359,10 +396,10 @@ async function init(){
 }
 
 /* ---------- hiển thị ---------- */
-function locRow(code,withPath){
+function locRow(code,withPath,label){
   const l=loc(code),n=deepCount(code);
   if(l.locked)return `<div class="row" style="cursor:default;opacity:.6"><div class="bdg" style="background:#7a6d6f">🔒</div><div class="t"><div class="n">${esc(l.name)}</div><div class="s">Phòng riêng${l.owner?' · '+esc(l.owner):''} · bạn không có quyền xem</div></div></div>`;
-  return `<div class="row" data-act="open" data-c="${esc(code)}">${lbdg(code)}<div class="t"><div class="n">${esc(l.name)}</div><div class="s">${withPath&&l.parent?esc(pathName(l.parent))+' · ':''}<span class="code">${esc(short(code))}</span>${l.kind==='P'?' · '+esc(scopeText(code)):''}${l.kind==='T'&&l.note?' · '+esc(l.note):''}</div></div><div class="q">${n?n+' đồ':''}</div></div>`;
+  return `<div class="row" data-act="open" data-c="${esc(code)}">${lbdg(code)}<div class="t"><div class="n">${esc(label||l.name)}</div><div class="s">${withPath&&l.parent?esc(pathName(l.parent))+' · ':''}<span class="code">${esc(short(code))}</span>${l.kind==='P'?' · '+esc(scopeText(code)):''}${l.kind==='T'&&l.note?' · '+esc(l.note):''}</div></div><div class="q">${n?n+' đồ':''}</div></div>`;
 }
 function itemRow(id,i,withLoc){
   const bits=[];
@@ -415,12 +452,21 @@ function renderTim(){
 function renderLoc(){
   if(S.cur&&(!S.locs.has(S.cur)||loc(S.cur).locked))S.cur='';
   const c=S.cur,l=c?loc(c):null;let h='';
+  const g=l?(S.grp||[]):[];
+  if(g.length){
+    const mem=inGrp(c,g);if(!mem.length){S.grp=[];renderLoc();return}
+    const sub=[];const walk=x=>{sub.push(...itemsAt(x));for(const k of kids(x))walk(k)};mem.forEach(walk);
+    h+=crumbs(c,g)+`<h2>📁 ${esc(g[g.length-1])}</h2><div class="note">${mem.length} mục · bấm vào từng mục để xem tiếp</div>`;
+    h+='<h3>Bên trong</h3><div class="list">'+groupRows(c,g)+'</div>';
+    if(sub.length)h+=`<h3>Đồ vật trong nhóm này (${sub.length})</h3><div class="list">`+sub.map(([id,i])=>itemRow(id,i,c)).join('')+'</div>';
+    $('loc-out').innerHTML=h;window.scrollTo(0,0);return;
+  }
   if(!l){
     h+='<h2>Nhà 25</h2><div class="note">Phòng → Tủ/Kệ → Ngăn, và Hộp đặt ở bất kỳ đâu.</div>';
   }else{
     const p=pathOf(c);
-    h+='<div class="crumb"><a data-act="open" data-c="">Nhà 25</a>'+p.slice(0,-1).map(x=>` › <a data-act="open" data-c="${esc(x)}">${esc(loc(x).name)}</a>`).join('')+'</div>';
-    h+=`<h2>${esc(l.name)}</h2><div><span class="code">${esc(c)}</span> · <span class="note">${KINDS[l.kind]}${l.floor?' · '+esc(l.floor):''} · ${esc(scopeText(c))}${l.printed==='2'?' · đã dán tem':l.printed?' · tem chờ dán':''}</span></div>`;
+    h+=crumbs(c,[]);
+    h+=`<h2>${esc(p.length>1?shortName(c):l.name)}</h2><div><span class="code">${esc(c)}</span> · <span class="note">${KINDS[l.kind]}${l.floor?' · '+esc(l.floor):''} · ${esc(scopeText(c))}${l.printed==='2'?' · đã dán tem':l.printed?' · tem chờ dán':''}</span></div>`;
     h+=phBox('loc',c,l.imgId,!kid()&&(l.kind!=='P'||adm()));
     if(l.note)h+=`<div class="note">${esc(l.note)}</div>`;
     const cm=camOf(c);if(cm)h+=`<div class="note">📹 Camera: ${esc(cm)} <button class="chip" data-act="yoosee">Mở Yoosee</button></div>`;
@@ -433,7 +479,7 @@ function renderLoc(){
   h+='</div>';
   const ks=kids(c);
   if(!l){for(const f of [...FLOORS,'']){const g=ks.filter(x=>(FLOORS.includes(loc(x).floor)?loc(x).floor:'')===f);if(g.length)h+=`<h3>${f||'Chưa xếp tầng'}</h3><div class="list">`+g.map(x=>locRow(x)).join('')+'</div>'}}
-  else if(ks.length)h+='<h3>Bên trong</h3><div class="list">'+ks.map(x=>locRow(x)).join('')+'</div>';
+  else if(ks.length)h+='<h3>Bên trong</h3><div class="list">'+groupRows(c,[])+'</div>';
   if(l){
     const its=itemsAt(c);if(inFridge(c))its.sort((a,b)=>(expDays(a[1])??1e9)-(expDays(b[1])??1e9));
     const sub=[];if(l.kind!=='P'){const walk=x=>{for(const k of kids(x)){sub.push(...itemsAt(k));walk(k)}};walk(c)}
@@ -473,7 +519,7 @@ function render(){
   else $('codes').innerHTML=[...S.locs.keys()].sort().map(c=>`<option value="${esc(c)}">${esc(pathName(c))}</option>`).join('');
 }
 function go(tab){stopLive();if(tab!=='quet'&&tab!=='vi-tri')S.mv=null;S.tab=tab;render();window.scrollTo(0,0)}
-function openLoc(code){if(code&&loc(code)&&loc(code).locked){toast('Phòng riêng, bạn không có quyền xem.');return}S.cur=code;go('vi-tri')}
+function openLoc(code){if(code&&loc(code)&&loc(code).locked){toast('Phòng riêng, bạn không có quyền xem.');return}S.cur=code;S.grp=[];go('vi-tri')}
 
 /* ---------- biểu mẫu ---------- */
 function sheet(html){$('sheet').innerHTML=html;$('ovl').classList.add('on');const f=$('sheet').querySelector('input[type=text]');if(f&&!f.value)f.focus()}
@@ -570,7 +616,7 @@ function drawLabel(code,S_){
   y+=0.5*S_;g.fillRect(tx,y,tw,Math.max(1,Math.round(0.2*S_)));y+=0.9*S_;
   const l=loc(code);
   let name=l?l.name:'';
-  if(l&&(l.kind==='T'||l.kind==='N')&&loc(l.parent)){const t=loc(l.parent).name+' – '+l.name;if(t.length<=34)name=t}
+  if(l&&(l.kind==='T'||l.kind==='N')&&loc(l.parent)){for(const pn of [loc(l.parent).name,shortName(l.parent)]){const t=pn+SEP+l.name;if(t.length<=34){name=t;break}}}
   const wrap=px=>{g.font=`${px}px ${F}`;const out=[];let cur='';for(const w of name.split(/\s+/)){const t=cur?cur+' '+w:w;if(g.measureText(t).width<=tw||!cur)cur=t;else{out.push(cur);cur=w}}if(cur)out.push(cur);return out};
   let px=2.5*S_,nl=wrap(px);const room=H*S_-1.5*S_-y;
   while(nl.length*px*1.18>room&&px>1.8*S_){px-=0.1*S_;nl=wrap(px)}
@@ -652,6 +698,7 @@ document.addEventListener('click',async e=>{
   const a=el.dataset.act,d=el.dataset;
   if(a!=='loc-del'&&a!=='item-del')armed=null;
   if(a==='open'){e.stopPropagation();closeSheet();openLoc(d.c)}
+  else if(a==='grp'){S.cur=d.c;try{S.grp=JSON.parse(d.g)}catch(er){S.grp=[]}go('vi-tri')}
   else if(a==='close')closeSheet();
   else if(a==='mv-cancel'){S.mv=null;closeSheet()}
   else if(a==='loc-new')formLoc(null,d.k);
