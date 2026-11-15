@@ -501,6 +501,7 @@ function itemRow(id,i,withLoc){
   if(i.note)bits.push(esc(i.note));
   return `<div class="row" data-act="item-edit" data-id="${esc(id)}">${itile(id,i)}<div class="t"><div class="n">${esc(i.name)}</div><div class="s">${bits.join(' · ')}</div></div><div class="q">${i.qty?'× '+esc(i.qty)+(i.unit?' '+esc(i.unit):''):''}</div>${withLoc&&S.locs.has(i.loc)?`<button class="chip" data-act="open" data-c="${esc(i.loc)}">Đến</button>`:isLost(i)?'':`<button class="chip" data-act="mv" data-m="${i.holder?'tra':'lay'}" data-id="${esc(id)}">${i.holder?'Trả':'Lấy'}</button>`}</div>`;
 }
+const moreBtn=(k,n)=>n>5?`<div class="btns" style="margin-top:-6px"><button class="chip" data-act="more" data-k="${k}">${S['more_'+k]?'Thu gọn ▴':'Xem thêm ('+(n-5)+') ▾'}</button></div>`:'';
 function renderTim(){
   const q=norm(S.q.trim());let h='';
   if(!S.ready){$('tim-out').innerHTML='<div class="empty">Đang tải…</div>';return}
@@ -521,8 +522,8 @@ function renderTim(){
       if((cd===null||cd>=30)&&!kid())h+=`<div class="list"><div class="row" style="cursor:default"><span class="th" style="background:var(--soft)">📹</span><div class="t"><div class="n">Kiểm tra thẻ nhớ camera</div><div class="s">${cd===null?'Chưa kiểm tra lần nào':'Lần cuối '+cd+' ngày trước'} · mở Yoosee → Xem lại thử 1 khung giờ hôm qua ở từng camera</div></div><button class="chip" data-act="camchk">Đã kiểm tra</button></div></div>`;
       const cnt=new Map();for(const [,i] of base){const c=CATS.includes(i.cat)?i.cat:'Khác';cnt.set(c,(cnt.get(c)||0)+1)}
       h+='<h3>Theo nhóm</h3><div class="list">'+CATS.filter(c=>cnt.has(c)).map(c=>`<div class="row" data-act="cat" data-v="${esc(c)}"><span class="th" style="background:hsl(${catIdx(c)*47%360},45%,90%)">${CATI[catIdx(c)]}</span><div class="t"><div class="n">${esc(c)}</div></div><div class="q">${cnt.get(c)}</div></div>`).join('')+'</div>';
-      h+='<h3>Mới thêm gần đây</h3>'+list([...S.items].sort((x,y)=>(y[1].ts||0)-(x[1].ts||0)).slice(0,8));
-      if(S.logs.length)h+='<h3>Nhật ký</h3><div class="list">'+S.logs.slice(0,20).map(g=>`<div class="row" ${S.items.has(g.itemId)?`data-act="item-edit" data-id="${esc(g.itemId)}"`:S.locs.has(g.itemId)?`data-act="open" data-c="${esc(g.itemId)}"`:'style="cursor:default"'}>${av(S.users.find(u=>u.id===g.uid)||{name:g.user,id:g.uid||g.user},34)}<div class="t"><div class="n">${esc(g.itemName)}</div><div class="s">${logLine(g)}</div></div>${undoChip(g)}</div>`).join('')+'</div>';
+      const rc=[...S.items].sort((x,y)=>(y[1].ts||0)-(x[1].ts||0)).slice(0,30);h+='<h3>Mới thêm gần đây</h3>'+list(S.more_rec?rc:rc.slice(0,5))+moreBtn('rec',rc.length);
+      if(S.logs.length)h+='<h3>Nhật ký</h3><div class="list">'+(S.more_log?S.logs:S.logs.slice(0,5)).map(g=>`<div class="row" ${S.items.has(g.itemId)?`data-act="item-edit" data-id="${esc(g.itemId)}"`:S.locs.has(g.itemId)?`data-act="open" data-c="${esc(g.itemId)}"`:'style="cursor:default"'}>${av(S.users.find(u=>u.id===g.uid)||{name:g.user,id:g.uid||g.user},34)}<div class="t"><div class="n">${esc(g.itemName)}</div><div class="s">${logLine(g)}</div></div>${undoChip(g)}</div>`).join('')+'</div>'+moreBtn('log',S.logs.length);
     }
   }else{
     const words=q?q.split(/\s+/):[];
@@ -834,6 +835,7 @@ document.addEventListener('click',async e=>{
   if(a==='open'){e.stopPropagation();closeSheet();openLoc(d.c)}
   else if(a==='grp'){S.cur=d.c;try{S.grp=JSON.parse(d.g)}catch(er){S.grp=[]}go('vi-tri')}
   else if(a==='back')goBack();
+  else if(a==='more'){S['more_'+d.k]=!S['more_'+d.k];renderTim()}
   else if(a==='close')closeSheet();
   else if(a==='mv-cancel'){S.mv=null;closeSheet()}
   else if(a==='loc-new')formLoc(null,d.k);
