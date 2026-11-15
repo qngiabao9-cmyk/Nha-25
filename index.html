@@ -159,7 +159,7 @@ details{margin-top:14px;border-top:1px solid var(--line);padding-top:10px} summa
       <button class="chip" data-act="sel-all">Chọn hết</button>
       <button class="chip" data-act="sel-none">Bỏ chọn</button>
     </div>
-    <div class="two"><div><label for="cp">Số bản mỗi tem</label><select id="cp"><option value="1">1 bản</option><option value="2">2 bản giống nhau</option></select></div><div><label>&nbsp;</label><label class="row" style="margin:0;padding:8px 0;border:0;color:inherit;font-size:14px"><input type="checkbox" class="ck" id="fill" checked><span>Lấp ô trống cuối bằng bản phụ</span></label></div></div>
+    <div class="two"><div><label for="cp">Nhân bản cho tất cả tem</label><select id="cp"><option value="1">1 bản</option><option value="2">2 bản giống nhau</option><option value="3">3 bản giống nhau</option><option value="4">4 bản giống nhau</option></select></div><div><label>&nbsp;</label><label class="row" style="margin:0;padding:8px 0;border:0;color:inherit;font-size:14px"><input type="checkbox" class="ck" id="fill" checked><span>Lấp ô trống cuối bằng bản phụ</span></label></div></div>
     <div id="in-out"></div>
     <div class="prev" id="prev"></div>
     <div class="sticky"><button class="pri" id="pdf-btn" data-act="pdf">Tải PDF tem</button></div>
@@ -190,7 +190,7 @@ const CATS=['Dụng cụ cầm tay','Dụng cụ điện – máy cầm tay','D�
 const CATI=['🔧','🛠️','📏','⚡','🚰','🔩','⚙️','🧴','🧤','📺','🍳','🍽️','🧂','🥩','🔌','🛋️','📄','👕','🕯️','💊','🧽','📦'];
 const FCOL={'Ngoài trời':'#3f7d4e','Trệt':'#b3541e','Lầu 1':'#7b1e2b','Lầu 2':'#2f5f8a','Lầu 3':'#6a4c93','Tầng thượng':'#b8860b'};
 const TH=new Map();let pend=null,picT=null;
-const S={mv:null,camChk:'',cp:1,fill:true,ff:'',locs:new Map(),items:new Map(),tab:'tim',cur:'',q:'',sel:new Set(),pf:'chua',ready:false,fc:'',fs:'',me:null,users:[],logs:[],at:0};
+const S={cnt:{},mv:null,camChk:'',cp:1,fill:true,ff:'',locs:new Map(),items:new Map(),tab:'tim',cur:'',q:'',sel:new Set(),pf:'chua',ready:false,fc:'',fs:'',me:null,users:[],logs:[],at:0};
 let token='';try{token=localStorage.getItem('n25tok')||''}catch(e){}
 try{const c=JSON.parse(localStorage.getItem('n25ban')||'null');if(c&&c.url)document.getElementById('splash').style.backgroundImage=`url(${c.url})`}catch(e){}
 setTimeout(()=>{const p=document.querySelector('#splash p');if(p&&!document.getElementById('splash').classList.contains('off'))p.textContent='Máy chủ đang chậm, chạm vào màn hình để vào…'},4000);setTimeout(()=>{hideSplash()},8000);document.getElementById('splash').addEventListener('click',()=>{const sp=document.getElementById('splash');if(Date.now()-spT>3000)sp.classList.add('off')});
@@ -570,8 +570,9 @@ function renderLoc(){
   }else if(!ks.length)h+='<div class="empty">Chưa có phòng nào. Bấm “＋ Phòng” để bắt đầu.</div>';
   $('loc-out').innerHTML=h;
 }
+const cntSel=c=>S.sel.has(c)?`<select data-cnt="${esc(c)}" style="width:auto;padding:6px 8px" title="Số tem">${[1,2,3,4,5,6].map(n=>`<option value="${n}" ${(S.cnt[c]||1)===n?'selected':''}>${n} tem</option>`).join('')}</select>`:'';
 function labelList(){
-  const out=[...S.sel].sort().flatMap(c=>S.cp===2?[c,c]:[c]);
+  const out=[...S.sel].sort().flatMap(c=>Array(Math.max(1,(S.cnt[c]||1)*S.cp)).fill(c));
   if(out.length%2&&S.fill)out.push(out[out.length-1]);
   return out;
 }
@@ -582,7 +583,7 @@ function renderIn(){
   const inF=c=>S.pf==='tat'||(S.pf==='cho'?loc(c).printed==='1':!loc(c).printed);
   const all=[...S.locs.keys()].sort(byCode).filter(c=>!loc(c).locked&&(inF(c)||S.sel.has(c)));
   const st=l=>l.printed==='2'?' · đã dán':l.printed?` · <span class="warn">chờ dán</span> · ${esc(l.printedBy||'')} in ${l.printedAt?when(l.printedAt):''}`:'';
-  $('in-out').innerHTML=(selIt.length?'<h3>Tem cho đồ vật</h3><div class="list">'+selIt.map(c=>{const i=S.items.get(itemOfCode(c));return `<label class="row" style="margin:0;color:inherit;font-size:inherit"><input type="checkbox" class="ck" data-ck="${esc(c)}" checked>${itile(itemOfCode(c),i)}<div class="t"><div class="n">${esc(i.name)}</div><div class="s">${esc(pathName(i.loc))}</div></div></label>`}).join('')+'</div><h3>Tem vị trí</h3>':'')+(all.length?'<div class="list">'+all.map(c=>`<label class="row" style="margin:0;color:inherit;font-size:inherit"><input type="checkbox" class="ck" data-ck="${esc(c)}" ${S.sel.has(c)?'checked':''}>${lbdg(c)}<div class="t"><div class="n">${esc(loc(c).name)}</div><div class="s"><span class="code">${esc(short(c))}</span>${st(loc(c))}</div></div></label>`).join('')+'</div>':'<div class="empty">'+(S.pf==='cho'?'Không có tem nào đang chờ dán.':S.locs.size?'Tất cả vị trí đã in tem. Chọn “Tất cả” để in lại.':'Chưa có vị trí nào để in tem.')+'</div>');
+  $('in-out').innerHTML=(selIt.length?'<h3>Tem cho đồ vật</h3><div class="list">'+selIt.map(c=>{const i=S.items.get(itemOfCode(c));return `<label class="row" style="margin:0;color:inherit;font-size:inherit"><input type="checkbox" class="ck" data-ck="${esc(c)}" checked>${itile(itemOfCode(c),i)}<div class="t"><div class="n">${esc(i.name)}</div><div class="s">${esc(pathName(i.loc))}</div></div>${cntSel(c)}</label>`}).join('')+'</div><h3>Tem vị trí</h3>':'')+(all.length?'<div class="list">'+all.map(c=>`<label class="row" style="margin:0;color:inherit;font-size:inherit"><input type="checkbox" class="ck" data-ck="${esc(c)}" ${S.sel.has(c)?'checked':''}>${lbdg(c)}<div class="t"><div class="n">${esc(loc(c).name)}</div><div class="s"><span class="code">${esc(short(c))}</span>${st(loc(c))}</div>${cntSel(c)}</div></label>`).join('')+'</div>':'<div class="empty">'+(S.pf==='cho'?'Không có tem nào đang chờ dán.':S.locs.size?'Tất cả vị trí đã in tem. Chọn “Tất cả” để in lại.':'Chưa có vị trí nào để in tem.')+'</div>');
   const pv=$('prev'),ls=labelList();pv.innerHTML='';
   if(window.qrcode)ls.slice(0,4).forEach(c=>pv.appendChild(drawLabel(c,10)));
   const b=$('pdf-btn');b.disabled=!ls.length;b.textContent=ls.length?`🏷️ Tải PDF (${ls.length} tem, ${Math.ceil(ls.length/2)} hàng)`:'Chọn vị trí cần in tem';
@@ -595,6 +596,7 @@ function render(){
   $('fmic').style.display=S.me?'block':'none';$('me').style.display=$('reload').style.display=S.me?'':'none';$('me').innerHTML=S.me?av(S.me,22)+esc(S.me.name)+' ▾':'';if(!S.me)$('stat').textContent='';
   if(!S.me)return;
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===S.tab));
+  {const t=document.querySelector('[data-tab=in-tem]');let b=t.querySelector('.nb');if(!b){b=document.createElement('span');b.className='nb';b.style.cssText='position:absolute;top:4px;margin-left:22px;background:#d33;color:#fff;border-radius:999px;font-size:11px;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 4px';t.style.position='relative';t.appendChild(b)}b.textContent=S.sel.size||'';b.style.display=S.sel.size?'':'none'}
   $('stat').textContent=S.ready?`${S.locs.size} vị trí · ${S.items.size} đồ vật`:'';
   if(S.tab==='tim')renderTim();
   else if(S.tab==='vi-tri')renderLoc();
@@ -720,7 +722,7 @@ async function makePdf(arg){
   const name='tem-nha25-'+new Date().toISOString().slice(0,10)+'.pdf';
   try{doc.save(name)}catch(e){toast('Không tải được PDF trên trình duyệt này, hãy mở bằng Chrome trên laptop.');return}
   toast('Đã tạo PDF. In ở tỉ lệ 100%.');
-  const uniq=[...new Set(codes)].filter(c=>S.locs.has(c));if(arg){toast('Đã tạo PDF (2 tem giống nhau: dán 1, giữ 1). In ở tỉ lệ 100%.');return}S.sel.clear();if(await act('printed',{codes:uniq})){S.pf='cho';render();toast('Đã tạo PDF. In ở tỉ lệ 100%, dán tem rồi quét tem để xác nhận.')}
+  const uniq=[...new Set(codes)].filter(c=>S.locs.has(c));if(arg){toast('Đã tạo PDF '+codes.length+' tem. In ở tỉ lệ 100%.');return}S.sel.clear();S.cnt={};if(await act('printed',{codes:uniq})){S.pf='cho';render();toast('Đã tạo PDF. In ở tỉ lệ 100%, dán tem rồi quét tem để xác nhận.')}
 }
 
 /* ---------- quét ---------- */
@@ -794,16 +796,19 @@ document.addEventListener('click',async e=>{
   else if(a==='item-tem'){
     const i=S.items.get(d.id);if(!i)return;
     sheet(`<h2>🏷️ In tem cho món</h2><p><b>${esc(i.name)}</b></p><div class="note">Đang để ở: <b>${esc(pathName(i.loc))}</b></div>
-    <button class="pri big" data-act="item-tem-go" data-id="${esc(d.id)}">✅ In tem – đúng chỗ đang để</button>
-    <label>Hoặc chuyển món sang chỗ khác rồi in tem</label><select id="it-loc"><option value="">— chọn chỗ mới —</option>${locOptions('',c=>c!==i.loc)}</select>
+    <label>Số tem giống nhau cho món này</label><select id="it-n">${[1,2,3,4,5,6].map(n=>`<option value="${n}">${n} tem</option>`).join('')}</select>
+    <button class="pri big" data-act="item-tem-add" data-id="${esc(d.id)}">➕ Thêm vào danh sách in (gom nhiều món, in 1 lần)</button>
+    <button class="big" data-act="item-tem-go" data-id="${esc(d.id)}">✅ In ngay tem này – đúng chỗ đang để</button>
+    <label>Hoặc chuyển món sang chỗ khác rồi in ngay</label><select id="it-loc"><option value="">— chọn chỗ mới —</option>${locOptions('',c=>c!==i.loc)}</select>
     <button class="big" data-act="item-tem-move" data-id="${esc(d.id)}">🚚 Chuyển sang chỗ này & in tem</button>
     <div class="note">Tem chỉ ghi tên món; chỗ để luôn lấy từ app nên đổi chỗ sau này không phải in lại. Máy in ra 2 tem giống nhau: dán 1, giữ 1 dự phòng.</div>
     <div class="btns"><button data-act="close">Huỷ</button></div>`)}
-  else if(a==='item-tem-go'){el.disabled=true;try{await makePdf([itemCode(d.id)]);closeSheet()}finally{el.disabled=false}}
+  else if(a==='item-tem-add'){S.sel.add(itemCode(d.id));S.cnt[itemCode(d.id)]=+($('it-n').value||1);closeSheet();render();toast('Đã thêm. Đang chờ in: '+S.sel.size+' tem'+(S.sel.size%2?' (lẻ, tem cuối sẽ in thêm 1 bản)':'')+'. Vào tab In tem để tải PDF.')}
+  else if(a==='item-tem-go'){el.disabled=true;try{await makePdf(Array(+($('it-n').value||1)).fill(itemCode(d.id)));closeSheet()}finally{el.disabled=false}}
   else if(a==='item-tem-move'){
     const nl=$('it-loc').value,i=S.items.get(d.id);if(!nl){toast('Chọn chỗ mới.');return}if(!i)return;
     el.disabled=true;
-    if(await putItem(d.id,{...i,loc:nl})){try{await makePdf([itemCode(d.id)])}catch(er){}closeSheet()}else el.disabled=false}
+    if(await putItem(d.id,{...i,loc:nl})){try{await makePdf(Array(+($('it-n').value||1)).fill(itemCode(d.id)))}catch(er){}closeSheet()}else el.disabled=false}
   else if(a==='loc-save'){
     const name=$('f-name').value.trim();if(!name){toast('Nhập tên.');return}
     const old=d.ed?loc(d.c):null;
@@ -961,6 +966,7 @@ document.addEventListener('click',async e=>{
 document.addEventListener('change',async e=>{
   const ck=e.target.dataset&&e.target.dataset.ck;
   if(e.target.dataset&&e.target.dataset.extd){await extend(e.target.dataset.extd,e.target.value);return}
+  if(e.target.dataset&&e.target.dataset.cnt){S.cnt[e.target.dataset.cnt]=+e.target.value;renderIn();return}
   if(ck){e.target.checked?S.sel.add(ck):S.sel.delete(ck);renderIn();return}
   if(e.target.id==='cp'||e.target.id==='fill'){S.cp=+$('cp').value;S.fill=$('fill').checked;renderIn();return}
   if(e.target.id==='pic'&&e.target.files[0]&&picT){
