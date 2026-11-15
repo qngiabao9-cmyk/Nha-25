@@ -513,6 +513,19 @@ function renderTim(){
   const due=kid()?0:dueList().length,dueBar=due&&!q?`<button class="big pri" data-act="exp-open">⏰ ${due} món hết hạn trong 1 ngày – bấm để gia hạn / bỏ</button>`:'';
   $('tim-out').innerHTML=dueBar+(S.locs.size?tiles:'')+camBar+h;
 }
+/* 📋 danh mục tổng thể + chi tiết theo từng ngăn / hộp */
+let catTxt='';
+function catalog(base,list,title){
+  const grp=new Map();for(const [id,i] of list){if(!grp.has(i.loc))grp.set(i.loc,[]);grp.get(i.loc).push([id,i])}
+  const codes=[...grp.keys()].sort(byCode),name=c=>relPath(c,base)||loc(c).name;
+  const qt=i=>i.qty?' × '+i.qty+(i.unit?' '+i.unit:''):'';
+  catTxt=title+' – '+list.length+' món ('+fmtD(today())+')\n'+codes.map(c=>'\n'+name(c)+':\n'+grp.get(c).map(([,i])=>'  • '+i.name+qt(i)+(i.exp?' · HSD '+fmtD(i.exp):'')+(i.holder?' · '+i.holder+' đang giữ':'')).join('\n')).join('\n');
+  let h=`<h3>📋 Danh mục (${list.length} món · ${codes.length} chỗ)</h3>`;
+  h+='<div class="list">'+codes.map(c=>`<div class="row" data-act="open" data-c="${esc(c)}"><div class="t"><div class="n">${esc(name(c))}</div><div class="s">${grp.get(c).map(([,i])=>esc(i.name+qt(i))).join(' · ')}</div></div><div class="q">${grp.get(c).length}</div></div>`).join('')+'</div>';
+  h+='<div class="btns"><button class="chip" data-act="cat-copy">📄 Sao chép / gửi danh mục</button></div>';
+  h+='<h3>Chi tiết từng món</h3>'+codes.map(c=>`<div class="note" style="margin:12px 0 4px"><b>${esc(name(c))}</b> (${grp.get(c).length})</div><div class="list" style="margin-top:0">`+grp.get(c).map(([id,i])=>itemRow(id,i,false)).join('')+'</div>').join('');
+  return h;
+}
 function renderLoc(){
   if(S.cur&&(!S.locs.has(S.cur)||loc(S.cur).locked))S.cur='';
   const c=S.cur,l=c?loc(c):null;let h='';
@@ -522,7 +535,7 @@ function renderLoc(){
     const sub=[];const walk=x=>{sub.push(...itemsAt(x));for(const k of kids(x))walk(k)};mem.forEach(walk);
     h+=crumbs(c,g)+`<h2>📁 ${esc(g[g.length-1])}</h2><div class="note">${mem.length} mục · bấm vào từng mục để xem tiếp</div>`;
     h+='<h3>Bên trong</h3><div class="list">'+groupRows(c,g)+'</div>';
-    if(sub.length)h+=`<h3>Đồ vật trong nhóm này (${sub.length})</h3><div class="list">`+sub.map(([id,i])=>itemRow(id,i,c)).join('')+'</div>';
+    if(sub.length)h+=catalog(c,sub,g[g.length-1]);
     $('loc-out').innerHTML=h;window.scrollTo(0,0);return;
   }
   if(!l){
@@ -548,7 +561,7 @@ function renderLoc(){
     const its=itemsAt(c);if(inFridge(c))its.sort((a,b)=>(expDays(a[1])??1e9)-(expDays(b[1])??1e9));
     const sub=[];if(l.kind!=='P'){const walk=x=>{for(const k of kids(x)){sub.push(...itemsAt(k));walk(k)}};walk(c)}
     if(its.length||!ks.length){h+=`<h3>Đồ vật ở đây (${its.length})</h3>`;h+=its.length?'<div class="list">'+its.map(([id,i])=>itemRow(id,i,false)).join('')+'</div>':'<div class="empty">Chưa có đồ vật nào ở đây.</div>'}
-    if(sub.length)h+=`<h3>Đồ trong các ngăn / hộp (${sub.length})</h3><div class="list">`+sub.map(([id,i])=>itemRow(id,i,c)).join('')+'</div>';
+    if(sub.length)h+=catalog(c,sub,shortName(c));
   }else if(!ks.length)h+='<div class="empty">Chưa có phòng nào. Bấm “＋ Phòng” để bắt đầu.</div>';
   $('loc-out').innerHTML=h;
 }
@@ -828,6 +841,7 @@ document.addEventListener('click',async e=>{
     if(await act('bulk',{loc:S.cur,items})){pendBulk=null;closeSheet();toast('Đã nhập '+items.length+' món.')}else el.disabled=false;
   }
   else if(a==='mic')listen(el,d.t);
+  else if(a==='cat-copy'){if(navigator.share){try{await navigator.share({text:catTxt});return}catch(er){if(er&&er.name==='AbortError')return}}try{await navigator.clipboard.writeText(catTxt);toast('Đã sao chép danh mục, dán vào Zalo / ghi chú.')}catch(er){sheet('<h2>Danh mục</h2><textarea style="min-height:300px">'+esc(catTxt)+'</textarea><div class="btns"><button data-act="close">Đóng</button></div>')}}
   else if(a==='exp-open')expSheet(false);
   else if(a==='ext'){const i=S.items.get(d.id);if(!i)return;const b=i.exp&&i.exp>today()?new Date(i.exp+'T00:00:00'):new Date();b.setDate(b.getDate()+(+d.n));el.disabled=true;await extend(d.id,b.toLocaleDateString('sv'));el.disabled=false}
   else if(a==='exp-del'){if(armed!==el){armed=el;el.textContent='Bấm lần nữa để bỏ';return}el.disabled=true;await delItem(d.id)}
