@@ -103,12 +103,14 @@ details{margin-top:14px;border-top:1px solid var(--line);padding-top:10px} summa
 .warn{color:var(--warn);font-weight:600}
 .mic{flex:none;font-size:22px;padding:6px 14px;border-radius:12px}.mic.on{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
 .fmic{position:fixed;right:14px;bottom:calc(86px + env(safe-area-inset-bottom));width:60px;height:60px;border-radius:50%;font-size:28px;padding:0;z-index:7;background:var(--acc);color:var(--acc-ink);border-color:var(--acc);box-shadow:0 3px 12px rgba(0,0,0,.35);display:none}.fmic.on{background:var(--warn);border-color:var(--warn)}
+#splash{position:fixed;inset:0;z-index:50;background:linear-gradient(135deg,#8e2433,#4a0f18);background-size:cover;background-position:center;display:flex;align-items:flex-end;transition:opacity .4s}#splash.off{opacity:0;pointer-events:none}#splash div{width:100%;padding:24px 22px calc(40px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(0,0,0,.7));color:#fff}#splash h1{margin:0;font-size:40px;text-shadow:0 2px 8px rgba(0,0,0,.6)}#splash p{margin:6px 0 0;opacity:.9}
 .ck{width:22px;height:22px;flex:none;accent-color:var(--acc)}
 .sticky{position:sticky;bottom:76px;background:var(--bg);padding:8px 0 10px;border-top:1px solid var(--line)}
 .sticky button{width:100%}
 </style>
 </head>
 <body>
+<div id="splash"><div><h1>Nhà 25</h1><p>Đang mở cửa…</p></div></div>
 <header id="hero"><div class="hz"><div class="hi"><div><h1>Nhà 25</h1><span id="stat"></span></div><span style="flex:1"></span><button class="chip" id="reload" data-act="reload" title="Tải lại">↻</button><button class="chip" id="me" data-act="me-menu"></button></div></div></header>
 <main>
   <div class="banner" id="banner"></div>
@@ -190,6 +192,8 @@ const FCOL={'Ngoài trời':'#3f7d4e','Trệt':'#b3541e','Lầu 1':'#7b1e2b','L�
 const TH=new Map();let pend=null,picT=null;
 const S={mv:null,camChk:'',cp:1,fill:true,ff:'',locs:new Map(),items:new Map(),tab:'tim',cur:'',q:'',sel:new Set(),pf:'chua',ready:false,fc:'',fs:'',me:null,users:[],logs:[],at:0};
 let token='';try{token=localStorage.getItem('n25tok')||''}catch(e){}
+try{const c=JSON.parse(localStorage.getItem('n25ban')||'null');if(c&&c.url)document.getElementById('splash').style.backgroundImage=`url(${c.url})`}catch(e){}
+let spT=Date.now();function hideSplash(){const sp=document.getElementById('splash');if(!sp||sp.classList.contains('off'))return;setTimeout(()=>sp.classList.add('off'),Math.max(0,900-(Date.now()-spT)))}
 const adm=()=>!!S.me&&S.me.role==='chu';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -414,7 +418,7 @@ function apply(d){
   if(d.token){token=d.token;try{localStorage.setItem('n25tok',token)}catch(e){}}
   S.me=d.me;S.users=d.users||[];S.logs=d.logs||[];S.camChk=d.camChk||'';
   S.locs=new Map(d.locs.map(l=>[l.code,l]));S.items=new Map(d.items.map(i=>[i.id,i]));
-  S.ready=true;S.at=Date.now();banner('');render();fetchThumbs();
+  S.ready=true;S.at=Date.now();banner('');render();hideSplash();fetchThumbs();
   if($('expl'))expSheet(true);else if(!S.expShown&&S.me&&!kid()){S.expShown=true;let t='';try{t=localStorage.getItem('n25exp_'+S.me.id)||''}catch(e){}if(t!==today()&&dueList().length){try{localStorage.setItem('n25exp_'+S.me.id,today())}catch(e){}setTimeout(()=>expSheet(false),500)}}
   if(d.house!==S.house){S.house=d.house;setBanner(d.house)}
 }
@@ -437,8 +441,8 @@ const putItem=(id,data)=>actU('saveItem',{id:id||'',item:data},(id?'Đã lưu �
 const delItem=id=>actU('delItem',{id},'Đã xoá “'+((S.items.get(id)||{}).name||'')+'”.');
 function logout(){S.expShown=false;token='';try{localStorage.removeItem('n25tok')}catch(e){}S.me=null;S.ready=false;S.locs=new Map();S.items=new Map();S.sel.clear();closeSheet();render();loadWho()}
 async function loadWho(){
-  try{const r=await call('who'),w=r.users;S.who=w;const cur=$('l-user').value;$('l-user').innerHTML=w.map(u=>`<option value="${esc(u.id)}">${esc(u.name)}</option>`).join('');if(w.some(u=>u.id===cur))$('l-user').value=cur;$('l-msg').textContent='';loginMode();if(r.house!==S.house){S.house=r.house;setBanner(r.house)}}
-  catch(e){const m=String((e&&e.message)||e);$('l-msg').textContent=/config\.js/.test(m)?m:'Không kết nối được máy chủ. Kiểm tra mạng rồi mở lại trang.'}
+  try{const r=await call('who'),w=r.users;S.who=w;const cur=$('l-user').value;$('l-user').innerHTML=w.map(u=>`<option value="${esc(u.id)}">${esc(u.name)}</option>`).join('');if(w.some(u=>u.id===cur))$('l-user').value=cur;$('l-msg').textContent='';loginMode();hideSplash();if(r.house!==S.house){S.house=r.house;setBanner(r.house)}}
+  catch(e){hideSplash();const m=String((e&&e.message)||e);$('l-msg').textContent=/config\.js/.test(m)?m:'Không kết nối được máy chủ. Kiểm tra mạng rồi mở lại trang.'}
 }
 function loginMode(){
   const u=(S.who||[]).find(x=>x.id===$('l-user').value),f=!!(u&&u.first);
@@ -455,7 +459,7 @@ async function init(){
   else{try{startCode=new URLSearchParams(location.search).get('c')||''}catch(e){}}
   if(!token){loadWho();return}
   try{apply(await call('load'));if(startCode)openCode(startCode)}
-  catch(e){if(String(e&&e.message)==='AUTH')logout();else{S.me={id:'',name:'',role:''};banner('Chưa tải được dữ liệu. Bấm “Tải lại” để thử lại.');render()}}
+  catch(e){hideSplash();if(String(e&&e.message)==='AUTH')logout();else{S.me={id:'',name:'',role:''};banner('Chưa tải được dữ liệu. Bấm “Tải lại” để thử lại.');render()}}
 }
 
 /* ---------- hiển thị ---------- */
