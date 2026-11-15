@@ -101,6 +101,7 @@ nav button.on{color:var(--acc);font-weight:600}
 .two{display:flex;gap:8px}.two>div{flex:1;min-width:0}
 details{margin-top:14px;border-top:1px solid var(--line);padding-top:10px} summary{cursor:pointer;color:var(--acc);font-size:14.5px;font-weight:600}
 .warn{color:var(--warn);font-weight:600}
+.mic{flex:none;font-size:22px;padding:6px 14px;border-radius:12px}.mic.on{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
 .ck{width:22px;height:22px;flex:none;accent-color:var(--acc)}
 .sticky{position:sticky;bottom:76px;background:var(--bg);padding:8px 0 10px;border-top:1px solid var(--line)}
 .sticky button{width:100%}
@@ -122,7 +123,7 @@ details{margin-top:14px;border-top:1px solid var(--line);padding-top:10px} summa
   </section>
 
   <section id="v-tim">
-    <input type="search" id="q" placeholder="Tìm đồ vật, vị trí, mã…" autocomplete="off">
+    <div style="display:flex;gap:8px"><input type="search" id="q" placeholder="Tìm đồ vật, vị trí, mã…" autocomplete="off"><button class="mic" data-act="mic" data-t="q" title="Nói">🎤</button></div>
     <div class="two" style="margin-top:8px"><div><select id="fc"></select></div><div><select id="fs"><option value="">Chung + riêng</option><option value="chung">Khu vực chung</option><option value="rieng">Phòng riêng</option></select></div></div>
     <div class="btns" id="tim-add"><button class="pri" data-act="item-new">＋ Thêm đồ vật</button></div>
     <div id="tim-out"></div>
@@ -281,6 +282,45 @@ function camWindow(i){
   return cam?`<div class="note">📹 Xem lại camera <b>${esc(cam)}</b> ${rng}.</div><button class="big" data-act="yoosee">📹 Mở Yoosee</button>`:`<div class="note">Khu này chưa có camera. Món còn được thấy lần cuối ${from?when(from):'(chưa rõ)'}.</div>`;
 }
 const byCode=(a,b)=>a.localeCompare(b,'en',{numeric:true});
+const DEF_EXP=90,plusDays=n=>{const t=new Date();t.setDate(t.getDate()+n);return t.toLocaleDateString('sv')};let pendBulk=null;
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null;
+function listen(btn,id){
+  const el=$(id);if(!el)return;
+  if(rec){try{rec.stop()}catch(e){}return}
+  if(!SR){el.focus();toast('Máy này chưa hỗ trợ nút nói trong app. Bấm nút 🎤 trên bàn phím để nói.');return}
+  const r=new SR();rec=r;r.lang='vi-VN';r.interimResults=false;r.continuous=false;r.maxAlternatives=1;
+  btn.classList.add('on');toast('Đang nghe… nói đi');
+  r.onresult=e=>{
+    const t=String(e.results[0][0].transcript||'').trim();if(!t)return;
+    if(id==='k-name'){try{const x=parseLine(t);$('k-name').value=x.name;$('k-qty').value=x.qty;$('k-unit').value=x.unit;if(x.exp)$('k-exp').value=fmtD(x.exp)}catch(er){el.value=t;toast(er.message)}}
+    else if(id==='b-txt'){el.value=(el.value.trim()?el.value.replace(/\s*$/,'\n'):'')+t;el.dispatchEvent(new Event('input',{bubbles:true}))}
+    else{el.value=t;el.dispatchEvent(new Event('input',{bubbles:true}))}
+    toast('Đã nghe: '+t);
+  };
+  r.onerror=e=>toast(e.error==='not-allowed'||e.error==='service-not-allowed'?'Chưa cho phép micro / nhận dạng giọng nói. Vào Cài đặt iPhone > Safari > Micrô, và bật Đọc chính tả.':e.error==='no-speech'?'Không nghe thấy gì, bấm 🎤 thử lại.':'Không nghe rõ, thử lại.');
+  r.onend=()=>{rec=null;btn.classList.remove('on')};
+  try{r.start()}catch(e){rec=null;btn.classList.remove('on');el.focus();toast('Bấm nút 🎤 trên bàn phím để nói.')}
+}
+const NUMW={'một':1,'hai':2,'bốn':4,'sáu':6,'bảy':7,'tám':8,'chín':9,'mười':10};
+function dmy(t){const m=/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2}|\d{4}))?$/.exec(t);if(!m)return null;
+  const now=new Date();let y=m[3]?(m[3].length===2?2000+ +m[3]:+m[3]):now.getFullYear();
+  let x=new Date(y,+m[2]-1,+m[1]);if(x.getMonth()!==+m[2]-1||x.getDate()!==+m[1])return null;
+  if(!m[3]&&x<new Date(now.getFullYear(),now.getMonth(),now.getDate()-1)){y++;x=new Date(y,+m[2]-1,+m[1])}
+  return x.toLocaleDateString('sv')}
+/* 1 dòng nhập: "Thịt bò, 2, túi, 20/12" hoặc nói "thịt bò 2 túi hạn 20/12" */
+function parseLine(t){
+  t=t.trim().replace(/[.。]+$/,'');if(!t)return null;let name,qty='1',unit='',exp='';
+  if(/,(?!\d)|\t/.test(t)){const p=t.split(/,(?!\d)|\t/).map(x=>x.trim());name=p[0];qty=p[1]||'1';unit=p[2]||'';exp=p[3]||''}
+  else{
+    let m=/\s+(?:hạn|hsd|hết hạn)?\s*(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)$/i.exec(t);if(m){exp=m[1];t=t.slice(0,m.index)}
+    m=/\s+(\d+(?:[.,]\d+)?|một|hai|bốn|sáu|bảy|tám|chín|mười)(?:\s+(\S+))?$/i.exec(t);
+    if(m){qty=String(NUMW[m[1].toLowerCase()]||m[1].replace(',','.'));unit=m[2]||'';t=t.slice(0,m.index)}
+    name=t.trim();
+  }
+  if(!name)return null;
+  if(exp){const e=dmy(exp);if(!e)throw new Error('Hạn “'+exp+'” ở dòng “'+name+'” không đúng (ngày/tháng).');exp=e}
+  return {name,qty,unit,exp};
+}
 const kids=code=>[...S.locs.keys()].filter(c=>(loc(c).parent||'')===code).sort(byCode);
 /* cây thư mục ảo: tên “A – B – C” tự gom thành thư mục A › B khi có từ 2 mục cùng tiền tố */
 const SEP=' – ';
@@ -346,7 +386,7 @@ function codeErr(c,chu){if(!CODE_RE.test(c))return 'Mã gồm 4–20 ký tự: c
 const kbGet=id=>{try{return localStorage.getItem('n25kb_'+id)||'numeric'}catch(e){return 'numeric'}};
 const kbSet=(id,m)=>{try{localStorage.setItem('n25kb_'+id,m)}catch(e){}};
 function kbApply(m){document.querySelectorAll('.pw').forEach(x=>x.setAttribute('inputmode',m));document.querySelectorAll('[data-act=kb]').forEach(b=>b.textContent=m==='numeric'?'abc':'123')}
-const ERR={KID:'Tài khoản trẻ em chỉ được ghi lấy / trả đồ.',NOUNDO:'Không hoàn tác được: đã quá 10 phút, hoặc sau đó đã có thay đổi khác.',NEWPIN:'Bạn chưa có mã, hãy đặt mã lần đầu.',HASPIN:'Tài khoản này đã có mã. Nếu chưa tự đặt, báo ngay Mr. Gia Bảo.',AUTH:'Phiên đăng nhập đã hết, hãy đăng nhập lại.',PIN:'Sai mã đăng nhập.',LOCK:'Nhập sai quá 5 lần, máy chủ khoá tài khoản này 10 phút. Thử lại sau.',DENY:'Bạn không có quyền với mục này.',BUSY:'Máy chủ đang bận, thử lại.',NOTEMPTY:'Còn đồ vật hoặc vị trí bên trong, hãy chuyển hoặc xoá trước.',GONE:'Mục này không còn tồn tại, bấm Tải lại.'};
+const ERR={NOAI:'Nút gợi ý chưa được cài khoá API Claude (xem HUONG-DAN).',AILIMIT:'Hôm nay đã dùng hết số lượt gợi ý, mai thử lại.',KID:'Tài khoản trẻ em chỉ được ghi lấy / trả đồ.',NOUNDO:'Không hoàn tác được: đã quá 10 phút, hoặc sau đó đã có thay đổi khác.',NEWPIN:'Bạn chưa có mã, hãy đặt mã lần đầu.',HASPIN:'Tài khoản này đã có mã. Nếu chưa tự đặt, báo ngay Mr. Gia Bảo.',AUTH:'Phiên đăng nhập đã hết, hãy đăng nhập lại.',PIN:'Sai mã đăng nhập.',LOCK:'Nhập sai quá 5 lần, máy chủ khoá tài khoản này 10 phút. Thử lại sau.',DENY:'Bạn không có quyền với mục này.',BUSY:'Máy chủ đang bận, thử lại.',NOTEMPTY:'Còn đồ vật hoặc vị trí bên trong, hãy chuyển hoặc xoá trước.',GONE:'Mục này không còn tồn tại, bấm Tải lại.'};
 function fail(e){const m=String((e&&e.message)||e);console.error(e);if(m==='AUTH')logout();toast(ERR[m]||('Không thực hiện được: '+m))}
 function apply(d){
   if(d.token){token=d.token;try{localStorage.setItem('n25tok',token)}catch(e){}}
@@ -560,7 +600,7 @@ function formItem(id){
     if(kid()){sheet(h+'<div class="btns"><button data-act="close">Đóng</button></div>');loadHist(id);return}
     h+=`<div class="two" style="align-items:flex-end"><div><label>Vật tư: số lượng</label><input type="text" id="mv-n" inputmode="decimal" value="1"></div><div><button data-act="mv" data-m="dung" data-id="${esc(id)}" style="width:100%">Dùng bớt</button></div><div><button data-act="mv" data-m="nhap" data-id="${esc(id)}" style="width:100%">Nhập thêm</button></div></div>`;
     h+='<details><summary>Sửa thông tin</summary>';
-  }else h+=phBox('item','','',true);
+  }else h+=phBox('item','','',true)+(window.N25_AI?'<button class="big" data-act="ai">🤖 Gợi ý chỗ cất (chụp ảnh hoặc nhập tên trước)</button><div id="ai-out" class="note"></div>':'');
   h+=`<label>Tên đồ vật</label><input type="text" id="f-name" value="${esc(i.name)}" placeholder="Máy khoan, hộ chiếu, dây HDMI…">`;
   h+=`<label>Nhóm</label><select id="f-cat"><option value="">— chọn nhóm —</option>${CATS.map(c=>`<option ${c===i.cat?'selected':''}>${esc(c)}</option>`).join('')}</select>`;
   h+=`<div class="two"><div><label>Số lượng</label><input type="text" id="f-qty" inputmode="decimal" value="${esc(i.qty||'')}"></div><div><label>Đơn vị</label><input type="text" id="f-unit" value="${esc(i.unit||'')}" placeholder="cái, hộp, m…"></div><div><label>Báo khi còn ≤</label><input type="text" id="f-min" inputmode="decimal" value="${esc(i.min??'')}" placeholder="vật tư"></div></div>`;
@@ -581,9 +621,10 @@ function formItem(id){
 function formQuick(){
   const c=S.cur,food=inFridge(c);
   sheet(`<h2>⚡ Thêm nhanh</h2><div class="note">Vào: <b>${esc(pathName(c))}</b>${food?' · nhóm thực phẩm tươi – đông lạnh · ngày cho vào: hôm nay':''}</div>
-  <label>Tên</label><input type="text" id="k-name" placeholder="${food?'Thịt bò, sữa chua, rau cải…':'Tên đồ vật'}">
-  <div class="two"><div><label>Số lượng</label><input type="text" id="k-qty" inputmode="decimal" value="1"></div><div><label>Đơn vị</label><input type="text" id="k-unit" placeholder="hộp, gói, kg…"></div><div><label>Hạn sử dụng</label><input type="text" class="dt" id="k-exp" inputmode="numeric" maxlength="10" placeholder="dd/mm/yyyy"></div></div>
+  <label>Tên – hoặc bấm 🎤 nói cả câu, ví dụ “thịt bò 2 túi hạn 20/12”</label><div style="display:flex;gap:8px"><input type="text" id="k-name" list="k-names" autocomplete="off" placeholder="${food?'Thịt bò, sữa chua, rau cải…':'Tên đồ vật'}"><button class="mic" data-act="mic" data-t="k-name">🎤</button></div>
+  <div class="two"><div><label>Số lượng</label><input type="text" id="k-qty" inputmode="decimal" value="1"></div><div><label>Đơn vị</label><input type="text" id="k-unit" placeholder="hộp, gói, kg…"></div><div><label>Hạn sử dụng</label><input type="text" class="dt" id="k-exp" inputmode="numeric" maxlength="10" placeholder="${food?'trống = '+DEF_EXP+' ngày':'dd/mm/yyyy'}"></div></div>
   ${food?'<div class="btns" style="margin:8px 0 0"><button class="chip" data-act="k-d" data-n="3">+3 ngày</button><button class="chip" data-act="k-d" data-n="7">+1 tuần</button><button class="chip" data-act="k-d" data-n="30">+1 tháng</button><button class="chip" data-act="k-d" data-n="90">+3 tháng</button></div>':''}
+  <datalist id="k-names">${[...new Set([...S.items.values()].map(i=>i.name))].sort().map(n=>`<option value="${esc(n)}">`).join('')}</datalist>
   <div class="btns"><button class="pri" data-act="quick-save" data-food="${food?1:''}">Lưu & thêm tiếp</button><button data-act="close">Xong</button></div><div class="note" id="k-log"></div>`);
 }
 async function loadHist(id){
@@ -737,23 +778,47 @@ document.addEventListener('click',async e=>{
     el.disabled=true;if(await act('kiemke',{code:S.cur,ok,miss})){closeSheet();toast(`Đã kiểm kê: ${ok.length} còn, ${miss.length} không thấy.`)}else el.disabled=false;
   }
   else if(a==='bulk'){
-    sheet(`<h2>📋 Nhập danh sách</h2><div class="note">Vào: <b>${esc(pathName(S.cur))}</b>. Mỗi dòng 1 món: <b>tên, số lượng, đơn vị</b> (số lượng, đơn vị có thể bỏ). Có thể nói bằng micro bàn phím.</div>
-    <textarea id="b-txt" style="min-height:180px" placeholder="Kìm điện, 2, cái&#10;Tua vít bake&#10;Băng keo điện, 5, cuộn"></textarea>
-    <label>Nhóm cho tất cả</label><select id="b-cat"><option value="">— không chọn —</option>${CATS.map(c=>`<option>${esc(c)}</option>`).join('')}</select>
-    <div class="btns"><button class="pri" data-act="bulk-save">Lưu</button><button data-act="close">Huỷ</button></div><div class="note" id="b-pre"></div>`);
+    const fz=inFridge(S.cur);
+    sheet(`<h2>📋 Nhập danh sách</h2><div class="note">Vào: <b>${esc(pathName(S.cur))}</b>. Mỗi dòng (hoặc cách nhau bằng dấu ;) là 1 món: <b>tên, số lượng, đơn vị, hạn dùng</b> – chỉ tên là bắt buộc. Có thể bấm 🎤 trên bàn phím và nói: “thịt bò 2 túi hạn 20/12”.</div>
+    <button class="big mic" data-act="mic" data-t="b-txt" style="width:100%">🎤 Bấm rồi nói 1 món (bấm lại để nói món tiếp)</button>
+    <textarea id="b-txt" style="min-height:180px" oninput="pendBulk=null;var b=document.getElementById('b-pre');if(b)b.innerHTML=''" placeholder="${fz?'Thịt bò, 2, túi, 20/12&#10;Tôm 1 hộp hạn 15/1&#10;Xúc xích 10 gói':'Kìm điện, 2, cái&#10;Tua vít bake&#10;Băng keo điện 5 cuộn'}"></textarea>
+    <label>Nhóm cho tất cả</label><select id="b-cat"><option value="">— không chọn —</option>${CATS.map(c=>`<option ${fz&&c===FRESH?'selected':''}>${esc(c)}</option>`).join('')}</select>${fz?'<div class="note">Tủ lạnh: tự ghi ngày cho vào là hôm nay; không nói hạn thì mặc định '+DEF_EXP+' ngày.</div>':''}
+    <div class="btns"><button class="pri" data-act="bulk-save">Xem trước</button><button data-act="close">Huỷ</button></div><div class="note" id="b-pre"></div>`);
   }
   else if(a==='bulk-save'){
-    const items=$('b-txt').value.split(/\n+/).map(t=>t.trim()).filter(Boolean).map(t=>{const p=t.split(/[,;\t]/).map(x=>x.trim());return {name:p[0],qty:p[1]||'1',unit:p[2]||'',cat:$('b-cat').value}}).filter(x=>x.name);
+    let items;try{items=$('b-txt').value.split(/\n|;/).map(parseLine).filter(Boolean)}catch(er){toast(er.message);return}
+    const fz=inFridge(S.cur);items.forEach(x=>{x.cat=$('b-cat').value;if(fz){x.putAt=today();if(!x.exp){x.exp=plusDays(DEF_EXP);x.def=1}}});
     if(!items.length){toast('Danh sách trống.');return}
     if(items.length>100){toast('Tối đa 100 món mỗi lần.');return}
-    el.disabled=true;if(await act('bulk',{loc:S.cur,items})){closeSheet();toast('Đã nhập '+items.length+' món.')}else el.disabled=false;
+    pendBulk=items;
+    $('b-pre').innerHTML=`<h3>Kiểm tra lại (${items.length} món)</h3><div class="list">`+items.map(x=>`<div class="row" style="cursor:default"><div class="t"><div class="n">${esc(x.name)}</div><div class="s">× ${esc(x.qty)}${x.unit?' '+esc(x.unit):''}${x.exp?' · HSD '+fmtD(x.exp)+(x.def?' (mặc định '+DEF_EXP+' ngày)':''):''}</div></div></div>`).join('')+'</div><div class="note">Sai chỗ nào thì sửa trong ô phía trên rồi bấm Xem trước lại.</div><button class="pri big" data-act="bulk-ok">✅ Đúng rồi, lưu '+items.length+' món</button>';
+    $('b-pre').scrollIntoView({behavior:'smooth'});
   }
+  else if(a==='bulk-ok'){
+    if(!pendBulk)return;el.disabled=true;const items=pendBulk.map(({def,...x})=>x);
+    if(await act('bulk',{loc:S.cur,items})){pendBulk=null;closeSheet();toast('Đã nhập '+items.length+' món.')}else el.disabled=false;
+  }
+  else if(a==='mic')listen(el,d.t);
+  else if(a==='ai'){
+    const name=$('f-name').value.trim();if(!pend&&!name){toast('Chụp ảnh hoặc nhập tên món trước.');return}
+    el.disabled=true;$('ai-out').textContent='Đang xem ảnh và tìm chỗ phù hợp…';
+    try{
+      const r=await call('suggest',{name,img:pend?pend.ai:''});
+      if(r.name&&!$('f-name').value.trim())$('f-name').value=r.name;
+      if(r.cat&&CATS.includes(r.cat)&&!$('f-cat').value)$('f-cat').value=r.cat;
+      $('ai-out').innerHTML=r.sug.length?'<b>Gợi ý – chạm để chọn:</b>'+r.sug.map(x=>`<div style="margin-top:6px"><button class="chip on" data-act="ai-pick" data-c="${esc(x.code)}">📍 ${esc(pathName(x.code))}</button><div>${esc(x.why||'')}</div></div>`).join('')+'<div style="margin-top:6px">Không hợp thì tự chọn ở ô “Nằm ở”.</div>':'Không tìm được chỗ phù hợp, hãy tự chọn ở ô “Nằm ở”.';
+    }catch(er){const m=String((er&&er.message)||er);$('ai-out').textContent=ERR[m]||('Không gợi ý được: '+m)}
+    el.disabled=false;
+  }
+  else if(a==='ai-pick'){$('f-loc').value=d.c;$('f-loc').scrollIntoView({behavior:'smooth',block:'center'});toast('Đã chọn chỗ. Kiểm tra rồi bấm Lưu.')}
   else if(a==='k-d'){const t=new Date();t.setDate(t.getDate()+(+d.n));$('k-exp').value=fmtD(t.toLocaleDateString('sv'))}
   else if(a==='quick-save'){
     const name=$('k-name').value.trim();if(!name){toast('Nhập tên.');return}
     let kx;try{kx=dv('k-exp')}catch(er){toast(er.message);return}
+    if(!kx&&d.food)kx=plusDays(DEF_EXP);
     el.disabled=true;
-    const ok=await putItem('',{name,qty:$('k-qty').value.trim(),unit:$('k-unit').value.trim(),loc:S.cur,cat:d.food?FRESH:'',exp:kx,putAt:d.food?today():'',ts:Date.now()});
+    const same=itemsAt(S.cur).find(([,i])=>norm(i.name)===norm(name)&&(i.exp||'')===kx&&!isLost(i));
+    const ok=same?await actU('move',{id:same[0],act:'nhap',qty:$('k-qty').value.trim()||'1'},'Đã cộng thêm vào “'+same[1].name+'”.'):await putItem('',{name,qty:$('k-qty').value.trim(),unit:$('k-unit').value.trim(),loc:S.cur,cat:d.food?FRESH:'',exp:kx,putAt:d.food?today():'',ts:Date.now()});
     el.disabled=false;if(!ok||!$('k-name'))return;
     $('k-log').textContent=($('k-log').textContent?$('k-log').textContent+', ':'Đã thêm: ')+name;
     $('k-name').value='';$('k-qty').value='1';$('k-exp').value='';$('k-name').focus();
@@ -839,7 +904,7 @@ document.addEventListener('change',async e=>{
     if(t.kind==='house'){toast('Đang lưu ảnh…');if(await act('setPhoto',{kind:'house',full:shrink(img,1400,.72)})){closeSheet();toast('Đã đổi ảnh ngôi nhà.')}return}
     if(t.kind==='user'){toast('Đang lưu ảnh…');if(await act('setPhoto',{kind:'user',thumb:shrink(img,120,.7,true)})){closeSheet();toast('Đã đổi ảnh đại diện.')}return}
     const thumb=shrink(img,140,.6,true),full=shrink(img,1100,.72);
-    if(t.kind==='item'&&!t.id){pend={thumb,full};const b=$('ph');if(b)b.innerHTML=`<img src="${thumb}" alt=""><button data-act="pic" data-k="item" data-id="">📷 Đổi ảnh</button>`;return}
+    if(t.kind==='item'&&!t.id){pend={thumb,full,ai:shrink(img,512,.6)};const b=$('ph');if(b)b.innerHTML=`<img src="${thumb}" alt=""><button data-act="pic" data-k="item" data-id="">📷 Đổi ảnh</button>`;return}
     toast('Đang lưu ảnh…');
     if(await act('setPhoto',{kind:t.kind,id:t.id,thumb,full})){
       const o=t.kind==='item'?S.items.get(t.id):S.locs.get(t.id);if(o)TH.set((t.kind==='item'?'i:':'l:')+t.id+':'+o.imgId,thumb);
