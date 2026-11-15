@@ -283,13 +283,18 @@ function camWindow(i){
   const rng=from?`từ <b>${when(from)}</b> đến <b>${when(to)}</b>`:`trước <b>${when(to)}</b>`;
   return cam?`<div class="note">📹 Xem lại camera <b>${esc(cam)}</b> ${rng}.</div><button class="big" data-act="yoosee">📹 Mở Yoosee</button>`:`<div class="note">Khu này chưa có camera. Món còn được thấy lần cuối ${from?when(from):'(chưa rõ)'}.</div>`;
 }
+const itemCode=id=>HOUSE+'-V-'+String(id).toUpperCase();
+const itemOfCode=c=>{const m=/^N25-V-(.+)$/i.exec(c);if(!m)return null;const k=m[1].toLowerCase();return [...S.items.keys()].find(x=>x.toLowerCase()===k)||null};
 const byCode=(a,b)=>a.localeCompare(b,'en',{numeric:true});
 const DEF_EXP=90,plusDays=n=>{const t=new Date();t.setDate(t.getDate()+n);return t.toLocaleDateString('sv')};let pendBulk=null;
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null;
 function listen(btn,id){
   const el=$(id);if(!el)return;
   if(rec){try{rec.stop()}catch(e){}return}
-  if(!SR){el.focus();toast('Máy này chưa hỗ trợ nút nói trong app. Bấm nút 🎤 trên bàn phím để nói.');return}
+  if(!SR||isIOS()){
+    if(id==='q'&&(S.tab!=='tim'||$('ovl').classList.contains('on'))){closeSheet();go('tim')}
+    const f=$(id);if(id==='q')f.value='';f.focus();
+    toast('Chạm nút 🎤 ở góc dưới bàn phím rồi nói');return}
   const r=new SR();rec=r;r.lang='vi-VN';r.interimResults=false;r.continuous=false;r.maxAlternatives=1;
   btn.classList.add('on');toast('Đang nghe… nói đi');
   r.onresult=e=>{
@@ -322,6 +327,20 @@ function parseLine(t){
   if(!name)return null;
   if(exp){const e=dmy(exp);if(!e)throw new Error('Hạn “'+exp+'” ở dòng “'+name+'” không đúng (ngày/tháng).');exp=e}
   return {name,qty,unit,exp};
+}
+/* ⏰ cảnh báo hạn dùng: món hết hạn trong vòng 1 ngày (hoặc đã quá hạn) → gia hạn hoặc bỏ */
+const dueList=()=>[...S.items].filter(([,i])=>{const d=expDays(i);return d!==null&&d<=1&&!isLost(i)}).sort((a,b)=>expDays(a[1])-expDays(b[1]));
+const extBtns=id=>[[3,'+3 ngày'],[7,'+1 tuần'],[30,'+1 tháng'],[90,'+3 tháng']].map(([n,t])=>`<button class="chip" data-act="ext" data-id="${esc(id)}" data-n="${n}">${t}</button>`).join('')+`<label class="chip" style="position:relative;margin:0;cursor:pointer">📅 Ngày khác<input type="date" data-extd="${esc(id)}" style="position:absolute;inset:0;opacity:0;width:100%"></label>`;
+function expSheet(keep){
+  const L=dueList();
+  if(!L.length){if(keep||$('expl')){closeSheet();toast('Đã xử lý xong các món sắp hết hạn.')}else toast('Không có món nào sắp hết hạn.');return}
+  const lb=i=>{const d=expDays(i);return d<0?'ĐÃ QUÁ HẠN '+(-d)+' ngày':d===0?'HẾT HẠN HÔM NAY':'hết hạn NGÀY MAI'};
+  sheet(`<h2>⏰ Sắp hết hạn (${L.length})</h2><div class="note">Kiểm tra từng món: còn dùng được thì <b>gia hạn</b>, hỏng / đã dùng hết thì bấm <b>🗑 Bỏ</b>.</div><div class="list" id="expl">`+L.map(([id,i])=>`<div class="row" style="cursor:default;flex-wrap:wrap">${itile(id,i)}<div class="t"><div class="n">${esc(i.name)}${i.qty?' × '+esc(i.qty)+(i.unit?' '+esc(i.unit):''):''}</div><div class="s"><span class="warn">${lb(i)}</span> (${fmtD(i.exp)}) · ${esc(pathName(i.loc))}</div></div><div class="btns" style="width:100%;margin:4px 0 0">${extBtns(id)}<button class="chip dan" data-act="exp-del" data-id="${esc(id)}">🗑 Bỏ</button></div></div>`).join('')+'</div><div class="btns"><button data-act="close">Để sau</button></div>');
+}
+async function extend(id,to){
+  const i=S.items.get(id);if(!i)return;
+  if(!to){toast('Chọn ngày.');return}
+  if(await putItem(id,{...i,exp:to})){toast('Đã gia hạn “'+i.name+'” đến '+fmtD(to)+'.');if(!$('expl'))closeSheet()}
 }
 const kids=code=>[...S.locs.keys()].filter(c=>(loc(c).parent||'')===code).sort(byCode);
 /* cây thư mục ảo: tên “A – B – C” tự gom thành thư mục A › B khi có từ 2 mục cùng tiền tố */
@@ -374,7 +393,8 @@ function nextCode(parent,kind){
   return pre+String(max+1).padStart(pad,'0');
 }
 const API=String(window.N25_API||'').trim(),GAS=!!(window.google&&google.script&&google.script.run);
-function call(action,p){return new Promise((ok,no)=>{
+let busyN=0;function busy(d){busyN=Math.max(0,busyN+d);const b=$('reload');if(b)b.textContent=busyN?'⏳':'↻'}
+function call(action,p){busy(1);return new Promise((ok,no)=>{
   if(!GAS){
     if(!/^https:\/\/script\.google\.com\/.+\/exec$/.test(API)){no(new Error('Chưa khai báo địa chỉ máy chủ trong tệp config.js.'));return}
     fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({token,action,p:p||{}})})
@@ -382,7 +402,7 @@ function call(action,p){return new Promise((ok,no)=>{
     return;
   }
   google.script.run.withSuccessHandler(r=>{if(r&&r.ok)ok(r.data);else no(new Error((r&&r.err)||'Lỗi máy chủ'))}).withFailureHandler(e=>no(e)).api(token,action,p||{});
-})}
+}).finally(()=>busy(-1))}
 const CODE_RE=/^[\x21-\x7E]{4,20}$/;
 function codeErr(c,chu){if(!CODE_RE.test(c))return 'Mã gồm 4–20 ký tự: chữ không dấu, chữ số hoặc ký hiệu; không khoảng trắng.';if(chu&&c.length<8)return 'Tài khoản chủ nhà cần mã ít nhất 8 ký tự.';return ''}
 const kbGet=id=>{try{return localStorage.getItem('n25kb_'+id)||'numeric'}catch(e){return 'numeric'}};
@@ -395,6 +415,7 @@ function apply(d){
   S.me=d.me;S.users=d.users||[];S.logs=d.logs||[];S.camChk=d.camChk||'';
   S.locs=new Map(d.locs.map(l=>[l.code,l]));S.items=new Map(d.items.map(i=>[i.id,i]));
   S.ready=true;S.at=Date.now();banner('');render();fetchThumbs();
+  if($('expl'))expSheet(true);else if(!S.expShown&&S.me&&!kid()){S.expShown=true;let t='';try{t=localStorage.getItem('n25exp_'+S.me.id)||''}catch(e){}if(t!==today()&&dueList().length){try{localStorage.setItem('n25exp_'+S.me.id,today())}catch(e){}setTimeout(()=>expSheet(false),500)}}
   if(d.house!==S.house){S.house=d.house;setBanner(d.house)}
 }
 async function act(action,p){try{apply(await call(action,p));return true}catch(e){fail(e);return false}}
@@ -414,7 +435,7 @@ const putLoc=(code,data,isNew)=>actU('saveLoc',{code:isNew?'':code,loc:data},isN
 const delLoc=code=>actU('delLoc',{code},'Đã xoá “'+((loc(code)||{}).name||'')+'”.');
 const putItem=(id,data)=>actU('saveItem',{id:id||'',item:data},(id?'Đã lưu “':'Đã thêm “')+data.name+'”.');
 const delItem=id=>actU('delItem',{id},'Đã xoá “'+((S.items.get(id)||{}).name||'')+'”.');
-function logout(){token='';try{localStorage.removeItem('n25tok')}catch(e){}S.me=null;S.ready=false;S.locs=new Map();S.items=new Map();S.sel.clear();closeSheet();render();loadWho()}
+function logout(){S.expShown=false;token='';try{localStorage.removeItem('n25tok')}catch(e){}S.me=null;S.ready=false;S.locs=new Map();S.items=new Map();S.sel.clear();closeSheet();render();loadWho()}
 async function loadWho(){
   try{const r=await call('who'),w=r.users;S.who=w;const cur=$('l-user').value;$('l-user').innerHTML=w.map(u=>`<option value="${esc(u.id)}">${esc(u.name)}</option>`).join('');if(w.some(u=>u.id===cur))$('l-user').value=cur;$('l-msg').textContent='';loginMode();if(r.house!==S.house){S.house=r.house;setBanner(r.house)}}
   catch(e){const m=String((e&&e.message)||e);$('l-msg').textContent=/config\.js/.test(m)?m:'Không kết nối được máy chủ. Kiểm tra mạng rồi mở lại trang.'}
@@ -489,7 +510,8 @@ function renderTim(){
   }
   const cams=[...new Set([...S.locs.values()].flatMap(l=>String(l.cam||'').split(',').map(x=>x.trim()).filter(Boolean)))];
   const camBar=cams.length&&!q&&!S.ff?`<div class="btns" style="align-items:center"><button class="chip" data-act="yoosee">📹 Camera</button><span class="note" style="margin:0">${cams.map(esc).join(' · ')}</span></div>`:'';
-  $('tim-out').innerHTML=(S.locs.size?tiles:'')+camBar+h;
+  const due=kid()?0:dueList().length,dueBar=due&&!q?`<button class="big pri" data-act="exp-open">⏰ ${due} món hết hạn trong 1 ngày – bấm để gia hạn / bỏ</button>`:'';
+  $('tim-out').innerHTML=dueBar+(S.locs.size?tiles:'')+camBar+h;
 }
 function renderLoc(){
   if(S.cur&&(!S.locs.has(S.cur)||loc(S.cur).locked))S.cur='';
@@ -537,11 +559,12 @@ function labelList(){
 }
 function renderIn(){
   document.querySelectorAll('[data-act=pf]').forEach(b=>b.classList.toggle('on',b.dataset.v===S.pf));
-  for(const c of [...S.sel])if(!S.locs.has(c))S.sel.delete(c);
+  for(const c of [...S.sel])if(!S.locs.has(c)&&!itemOfCode(c))S.sel.delete(c);
+  const selIt=[...S.sel].filter(c=>itemOfCode(c));
   const inF=c=>S.pf==='tat'||(S.pf==='cho'?loc(c).printed==='1':!loc(c).printed);
   const all=[...S.locs.keys()].sort(byCode).filter(c=>!loc(c).locked&&(inF(c)||S.sel.has(c)));
   const st=l=>l.printed==='2'?' · đã dán':l.printed?` · <span class="warn">chờ dán</span> · ${esc(l.printedBy||'')} in ${l.printedAt?when(l.printedAt):''}`:'';
-  $('in-out').innerHTML=all.length?'<div class="list">'+all.map(c=>`<label class="row" style="margin:0;color:inherit;font-size:inherit"><input type="checkbox" class="ck" data-ck="${esc(c)}" ${S.sel.has(c)?'checked':''}>${lbdg(c)}<div class="t"><div class="n">${esc(loc(c).name)}</div><div class="s"><span class="code">${esc(short(c))}</span>${st(loc(c))}</div></div></label>`).join('')+'</div>':'<div class="empty">'+(S.pf==='cho'?'Không có tem nào đang chờ dán.':S.locs.size?'Tất cả vị trí đã in tem. Chọn “Tất cả” để in lại.':'Chưa có vị trí nào để in tem.')+'</div>';
+  $('in-out').innerHTML=(selIt.length?'<h3>Tem cho đồ vật</h3><div class="list">'+selIt.map(c=>{const i=S.items.get(itemOfCode(c));return `<label class="row" style="margin:0;color:inherit;font-size:inherit"><input type="checkbox" class="ck" data-ck="${esc(c)}" checked>${itile(itemOfCode(c),i)}<div class="t"><div class="n">${esc(i.name)}</div><div class="s">${esc(pathName(i.loc))}</div></div></label>`}).join('')+'</div><h3>Tem vị trí</h3>':'')+(all.length?'<div class="list">'+all.map(c=>`<label class="row" style="margin:0;color:inherit;font-size:inherit"><input type="checkbox" class="ck" data-ck="${esc(c)}" ${S.sel.has(c)?'checked':''}>${lbdg(c)}<div class="t"><div class="n">${esc(loc(c).name)}</div><div class="s"><span class="code">${esc(short(c))}</span>${st(loc(c))}</div></div></label>`).join('')+'</div>':'<div class="empty">'+(S.pf==='cho'?'Không có tem nào đang chờ dán.':S.locs.size?'Tất cả vị trí đã in tem. Chọn “Tất cả” để in lại.':'Chưa có vị trí nào để in tem.')+'</div>');
   const pv=$('prev'),ls=labelList();pv.innerHTML='';
   if(window.qrcode)ls.slice(0,4).forEach(c=>pv.appendChild(drawLabel(c,10)));
   const b=$('pdf-btn');b.disabled=!ls.length;b.textContent=ls.length?`🏷️ Tải PDF (${ls.length} tem, ${Math.ceil(ls.length/2)} hàng)`:'Chọn vị trí cần in tem';
@@ -598,9 +621,11 @@ function formItem(id){
       h+=i.holder?`<div class="note warn">${esc(i.holder)} đang giữ từ ${fmtD(i.heldSince)}${overdue(i)?' – quá '+HOLD_DAYS+' ngày':''}</div><button class="pri big" data-act="mv" data-m="tra" data-id="${esc(id)}">↩️ Đã trả về chỗ cũ</button>`:`<button class="pri big" data-act="mv" data-m="lay" data-id="${esc(id)}">🤲 Tôi lấy dùng</button>`;
       h+=`<div class="btns"><button data-act="mv" data-m="mat" data-id="${esc(id)}">❓ Không thấy</button>${kid()?'':`<button data-act="mvscan" data-m="chuyen" data-id="${esc(id)}">🚚 Chuyển chỗ (quét tem)</button>`}</div>`;
     }
+    if(i.exp)h+=`<div class="note">Hạn dùng: <b>${fmtD(i.exp)}</b> · gia hạn:</div><div class="btns" style="margin-top:4px">${extBtns(id)}</div>`;
     h+=`<h3>Lịch sử</h3><div id="hist" class="note">Đang tải lịch sử…</div>`;
     if(kid()){sheet(h+'<div class="btns"><button data-act="close">Đóng</button></div>');loadHist(id);return}
     h+=`<div class="two" style="align-items:flex-end"><div><label>Vật tư: số lượng</label><input type="text" id="mv-n" inputmode="decimal" value="1"></div><div><button data-act="mv" data-m="dung" data-id="${esc(id)}" style="width:100%">Dùng bớt</button></div><div><button data-act="mv" data-m="nhap" data-id="${esc(id)}" style="width:100%">Nhập thêm</button></div></div>`;
+    h+=`<div class="btns"><button class="chip" data-act="item-tem" data-id="${esc(id)}">🏷️ In tem dán lên món này</button></div>`;
     h+='<details><summary>Sửa thông tin</summary>';
   }else h+=phBox('item','','',true)+(window.N25_AI?'<button class="big" data-act="ai">🤖 Gợi ý chỗ cất (chụp ảnh hoặc nhập tên trước)</button><div id="ai-out" class="note"></div>':'');
   h+=`<label>Tên đồ vật</label><input type="text" id="f-name" value="${esc(i.name)}" placeholder="Máy khoan, hộ chiếu, dây HDMI…">`;
@@ -658,7 +683,7 @@ function drawLabel(code,S_){
   for(const t of lines){const px=fit(t,4*S_,2*S_,'bold');g.fillText(t,tx,y);y+=px*1.12}
   y+=0.5*S_;g.fillRect(tx,y,tw,Math.max(1,Math.round(0.2*S_)));y+=0.9*S_;
   const l=loc(code);
-  let name=l?l.name:'';
+  const iid=itemOfCode(code);let name=l?l.name:iid?S.items.get(iid).name:'';
   if(l&&(l.kind==='T'||l.kind==='N')&&loc(l.parent)){for(const pn of [loc(l.parent).name,shortName(l.parent)]){const t=pn+SEP+l.name;if(t.length<=34){name=t;break}}}
   const wrap=px=>{g.font=`${px}px ${F}`;const out=[];let cur='';for(const w of name.split(/\s+/)){const t=cur?cur+' '+w:w;if(g.measureText(t).width<=tw||!cur)cur=t;else{out.push(cur);cur=w}}if(cur)out.push(cur);return out};
   let px=2.5*S_,nl=wrap(px);const room=H*S_-1.5*S_-y;
@@ -677,7 +702,7 @@ async function makePdf(){
   const name='tem-nha25-'+new Date().toISOString().slice(0,10)+'.pdf';
   try{doc.save(name)}catch(e){toast('Không tải được PDF trên trình duyệt này, hãy mở bằng Chrome trên laptop.');return}
   toast('Đã tạo PDF. In ở tỉ lệ 100%.');
-  const uniq=[...new Set(codes)];S.sel.clear();if(await act('printed',{codes:uniq})){S.pf='cho';render();toast('Đã tạo PDF. In ở tỉ lệ 100%, dán tem rồi quét tem để xác nhận.')}
+  const uniq=[...new Set(codes)].filter(c=>S.locs.has(c));S.sel.clear();if(await act('printed',{codes:uniq})){S.pf='cho';render();toast('Đã tạo PDF. In ở tỉ lệ 100%, dán tem rồi quét tem để xác nhận.')}
 }
 
 /* ---------- quét ---------- */
@@ -719,6 +744,7 @@ function openCode(raw,scanned){
   raw=String(raw||'');const mm=/[?&]c=([^&#]+)/.exec(raw);if(mm){try{raw=decodeURIComponent(mm[1])}catch(e){}}
   startCode='';
   const code=raw.trim().toUpperCase();if(!code)return;
+  const iid=itemOfCode(code);if(iid){$('scan-msg').textContent='';openLoc(S.items.get(iid).loc);formItem(iid);return}
   const hit=S.locs.has(code)?code:S.locs.has(HOUSE+'-'+code)?HOUSE+'-'+code:null;
   if(hit&&loc(hit).locked){$('scan-msg').textContent='Phòng riêng, bạn không có quyền xem.';go('quet')}
   else if(hit&&S.mv){
@@ -739,7 +765,7 @@ document.addEventListener('click',async e=>{
   if(e.target===$('ovl')){closeSheet();return}
   const el=e.target.closest('[data-act]');if(!el)return;
   const a=el.dataset.act,d=el.dataset;
-  if(a!=='loc-del'&&a!=='item-del')armed=null;
+  if(a!=='loc-del'&&a!=='item-del'&&a!=='exp-del')armed=null;
   if(a==='open'){e.stopPropagation();closeSheet();openLoc(d.c)}
   else if(a==='grp'){S.cur=d.c;try{S.grp=JSON.parse(d.g)}catch(er){S.grp=[]}go('vi-tri')}
   else if(a==='close')closeSheet();
@@ -747,6 +773,7 @@ document.addEventListener('click',async e=>{
   else if(a==='loc-new')formLoc(null,d.k);
   else if(a==='loc-edit')formLoc(S.cur);
   else if(a==='loc-print'){S.sel.add(S.cur);go('in-tem')}
+  else if(a==='item-tem'){S.sel.add(itemCode(d.id));closeSheet();go('in-tem');toast('Đã chọn tem cho món này. Bấm Tải PDF để in.')}
   else if(a==='loc-save'){
     const name=$('f-name').value.trim();if(!name){toast('Nhập tên.');return}
     const old=d.ed?loc(d.c):null;
@@ -801,6 +828,9 @@ document.addEventListener('click',async e=>{
     if(await act('bulk',{loc:S.cur,items})){pendBulk=null;closeSheet();toast('Đã nhập '+items.length+' món.')}else el.disabled=false;
   }
   else if(a==='mic')listen(el,d.t);
+  else if(a==='exp-open')expSheet(false);
+  else if(a==='ext'){const i=S.items.get(d.id);if(!i)return;const b=i.exp&&i.exp>today()?new Date(i.exp+'T00:00:00'):new Date();b.setDate(b.getDate()+(+d.n));el.disabled=true;await extend(d.id,b.toLocaleDateString('sv'));el.disabled=false}
+  else if(a==='exp-del'){if(armed!==el){armed=el;el.textContent='Bấm lần nữa để bỏ';return}el.disabled=true;await delItem(d.id)}
   else if(a==='ai'){
     const name=$('f-name').value.trim();if(!pend&&!name){toast('Chụp ảnh hoặc nhập tên món trước.');return}
     el.disabled=true;$('ai-out').textContent='Đang xem ảnh và tìm chỗ phù hợp…';
@@ -815,7 +845,8 @@ document.addEventListener('click',async e=>{
   else if(a==='ai-pick'){$('f-loc').value=d.c;$('f-loc').scrollIntoView({behavior:'smooth',block:'center'});toast('Đã chọn chỗ. Kiểm tra rồi bấm Lưu.')}
   else if(a==='k-d'){const t=new Date();t.setDate(t.getDate()+(+d.n));$('k-exp').value=fmtD(t.toLocaleDateString('sv'))}
   else if(a==='quick-save'){
-    const name=$('k-name').value.trim();if(!name){toast('Nhập tên.');return}
+    let name=$('k-name').value.trim();if(!name){toast('Nhập tên.');return}
+    if(!$('k-unit').value.trim()&&$('k-qty').value.trim()==='1'){try{const x=parseLine(name);if(x&&(x.unit||x.exp||x.qty!=='1')){name=x.name;$('k-name').value=x.name;$('k-qty').value=x.qty;$('k-unit').value=x.unit;if(x.exp&&!$('k-exp').value)$('k-exp').value=fmtD(x.exp)}}catch(er){toast(er.message);return}}
     let kx;try{kx=dv('k-exp')}catch(er){toast(er.message);return}
     if(!kx&&d.food)kx=plusDays(DEF_EXP);
     el.disabled=true;
@@ -898,6 +929,7 @@ document.addEventListener('click',async e=>{
 });
 document.addEventListener('change',async e=>{
   const ck=e.target.dataset&&e.target.dataset.ck;
+  if(e.target.dataset&&e.target.dataset.extd){await extend(e.target.dataset.extd,e.target.value);return}
   if(ck){e.target.checked?S.sel.add(ck):S.sel.delete(ck);renderIn();return}
   if(e.target.id==='cp'||e.target.id==='fill'){S.cp=+$('cp').value;S.fill=$('fill').checked;renderIn();return}
   if(e.target.id==='pic'&&e.target.files[0]&&picT){
