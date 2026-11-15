@@ -102,6 +102,7 @@ nav button.on{color:var(--acc);font-weight:600}
 details{margin-top:14px;border-top:1px solid var(--line);padding-top:10px} summary{cursor:pointer;color:var(--acc);font-size:14.5px;font-weight:600}
 .warn{color:var(--warn);font-weight:600}
 .mic{flex:none;font-size:22px;padding:6px 14px;border-radius:12px}.mic.on{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
+.fmic{position:fixed;right:14px;bottom:calc(86px + env(safe-area-inset-bottom));width:60px;height:60px;border-radius:50%;font-size:28px;padding:0;z-index:7;background:var(--acc);color:var(--acc-ink);border-color:var(--acc);box-shadow:0 3px 12px rgba(0,0,0,.35);display:none}.fmic.on{background:var(--warn);border-color:var(--warn)}
 .ck{width:22px;height:22px;flex:none;accent-color:var(--acc)}
 .sticky{position:sticky;bottom:76px;background:var(--bg);padding:8px 0 10px;border-top:1px solid var(--line)}
 .sticky button{width:100%}
@@ -172,6 +173,7 @@ details{margin-top:14px;border-top:1px solid var(--line);padding-top:10px} summa
 
 <div class="ovl" id="ovl"><div class="sheet" id="sheet"></div></div>
 <input type="file" id="pic" accept="image/*" hidden>
+<button class="fmic" id="fmic" data-act="mic" data-t="q" title="Nói để tìm đồ">🎤</button>
 <div id="toast"></div>
 <div id="undo"><span id="undo-t"></span><button data-act="undo-bar">Hoàn tác</button></div>
 
@@ -294,7 +296,7 @@ function listen(btn,id){
     const t=String(e.results[0][0].transcript||'').trim();if(!t)return;
     if(id==='k-name'){try{const x=parseLine(t);$('k-name').value=x.name;$('k-qty').value=x.qty;$('k-unit').value=x.unit;if(x.exp)$('k-exp').value=fmtD(x.exp)}catch(er){el.value=t;toast(er.message)}}
     else if(id==='b-txt'){el.value=(el.value.trim()?el.value.replace(/\s*$/,'\n'):'')+t;el.dispatchEvent(new Event('input',{bubbles:true}))}
-    else{el.value=t;el.dispatchEvent(new Event('input',{bubbles:true}))}
+    else{el.value=t;el.dispatchEvent(new Event('input',{bubbles:true}));if(id==='q'){S.q=t;if($('ovl').classList.contains('on'))closeSheet();if(S.tab!=='tim')go('tim')}}
     toast('Đã nghe: '+t);
   };
   r.onerror=e=>toast(e.error==='not-allowed'||e.error==='service-not-allowed'?'Chưa cho phép micro / nhận dạng giọng nói. Vào Cài đặt iPhone > Safari > Micrô, và bật Đọc chính tả.':e.error==='no-speech'?'Không nghe thấy gì, bấm 🎤 thử lại.':'Không nghe rõ, thử lại.');
@@ -549,7 +551,7 @@ function render(){
   document.querySelector('nav').style.display=S.me?'':'none';
   document.querySelector('[data-tab=in-tem]').style.display=kid()?'none':'';$('tim-add').style.display=kid()?'none':'';
   if(kid()&&S.tab==='in-tem')S.tab='tim';
-  $('me').style.display=$('reload').style.display=S.me?'':'none';$('me').innerHTML=S.me?av(S.me,22)+esc(S.me.name)+' ▾':'';if(!S.me)$('stat').textContent='';
+  $('fmic').style.display=S.me?'block':'none';$('me').style.display=$('reload').style.display=S.me?'':'none';$('me').innerHTML=S.me?av(S.me,22)+esc(S.me.name)+' ▾':'';if(!S.me)$('stat').textContent='';
   if(!S.me)return;
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===S.tab));
   $('stat').textContent=S.ready?`${S.locs.size} vị trí · ${S.items.size} đồ vật`:'';
