@@ -712,15 +712,15 @@ function drawLabel(code,S_){
   for(const t of nl){g.fillText(t,tx,y,tw);y+=px*1.18}
   return cv;
 }
-async function makePdf(){
-  const codes=labelList();if(!codes.length)return;
+async function makePdf(arg){
+  const codes=arg?(arg.length%2?arg.concat(arg[arg.length-1]):arg):labelList();if(!codes.length)return;
   if(!window.jspdf||!window.qrcode){toast('Chưa tải được thư viện in tem, kiểm tra mạng rồi mở lại trang.');return}
   const doc=new window.jspdf.jsPDF({orientation:'landscape',unit:'mm',format:[22,72],compress:true});
   codes.forEach((c,i)=>{if(i&&i%2===0)doc.addPage([22,72],'landscape');doc.addImage(drawLabel(c,16).toDataURL('image/png'),'PNG',(i%2)*37,0,35,22,undefined,'FAST')});
   const name='tem-nha25-'+new Date().toISOString().slice(0,10)+'.pdf';
   try{doc.save(name)}catch(e){toast('Không tải được PDF trên trình duyệt này, hãy mở bằng Chrome trên laptop.');return}
   toast('Đã tạo PDF. In ở tỉ lệ 100%.');
-  const uniq=[...new Set(codes)].filter(c=>S.locs.has(c));S.sel.clear();if(await act('printed',{codes:uniq})){S.pf='cho';render();toast('Đã tạo PDF. In ở tỉ lệ 100%, dán tem rồi quét tem để xác nhận.')}
+  const uniq=[...new Set(codes)].filter(c=>S.locs.has(c));if(arg){toast('Đã tạo PDF (2 tem giống nhau: dán 1, giữ 1). In ở tỉ lệ 100%.');return}S.sel.clear();if(await act('printed',{codes:uniq})){S.pf='cho';render();toast('Đã tạo PDF. In ở tỉ lệ 100%, dán tem rồi quét tem để xác nhận.')}
 }
 
 /* ---------- quét ---------- */
@@ -791,7 +791,19 @@ document.addEventListener('click',async e=>{
   else if(a==='loc-new')formLoc(null,d.k);
   else if(a==='loc-edit')formLoc(S.cur);
   else if(a==='loc-print'){S.sel.add(S.cur);go('in-tem')}
-  else if(a==='item-tem'){S.sel.add(itemCode(d.id));closeSheet();go('in-tem');toast('Đã chọn tem cho món này. Bấm Tải PDF để in.')}
+  else if(a==='item-tem'){
+    const i=S.items.get(d.id);if(!i)return;
+    sheet(`<h2>🏷️ In tem cho món</h2><p><b>${esc(i.name)}</b></p><div class="note">Đang để ở: <b>${esc(pathName(i.loc))}</b></div>
+    <button class="pri big" data-act="item-tem-go" data-id="${esc(d.id)}">✅ In tem – đúng chỗ đang để</button>
+    <label>Hoặc chuyển món sang chỗ khác rồi in tem</label><select id="it-loc"><option value="">— chọn chỗ mới —</option>${locOptions('',c=>c!==i.loc)}</select>
+    <button class="big" data-act="item-tem-move" data-id="${esc(d.id)}">🚚 Chuyển sang chỗ này & in tem</button>
+    <div class="note">Tem chỉ ghi tên món; chỗ để luôn lấy từ app nên đổi chỗ sau này không phải in lại. Máy in ra 2 tem giống nhau: dán 1, giữ 1 dự phòng.</div>
+    <div class="btns"><button data-act="close">Huỷ</button></div>`)}
+  else if(a==='item-tem-go'){el.disabled=true;try{await makePdf([itemCode(d.id)]);closeSheet()}finally{el.disabled=false}}
+  else if(a==='item-tem-move'){
+    const nl=$('it-loc').value,i=S.items.get(d.id);if(!nl){toast('Chọn chỗ mới.');return}if(!i)return;
+    el.disabled=true;
+    if(await putItem(d.id,{...i,loc:nl})){try{await makePdf([itemCode(d.id)])}catch(er){}closeSheet()}else el.disabled=false}
   else if(a==='loc-save'){
     const name=$('f-name').value.trim();if(!name){toast('Nhập tên.');return}
     const old=d.ed?loc(d.c):null;
