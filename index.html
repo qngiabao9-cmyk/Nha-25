@@ -193,6 +193,7 @@ const TH=new Map();let pend=null,picT=null;
 const S={mv:null,camChk:'',cp:1,fill:true,ff:'',locs:new Map(),items:new Map(),tab:'tim',cur:'',q:'',sel:new Set(),pf:'chua',ready:false,fc:'',fs:'',me:null,users:[],logs:[],at:0};
 let token='';try{token=localStorage.getItem('n25tok')||''}catch(e){}
 try{const c=JSON.parse(localStorage.getItem('n25ban')||'null');if(c&&c.url)document.getElementById('splash').style.backgroundImage=`url(${c.url})`}catch(e){}
+setTimeout(()=>{const p=document.querySelector('#splash p');if(p&&!document.getElementById('splash').classList.contains('off'))p.textContent='Máy chủ đang chậm, chạm vào màn hình để vào…'},4000);setTimeout(()=>{hideSplash()},8000);document.getElementById('splash').addEventListener('click',()=>{const sp=document.getElementById('splash');if(Date.now()-spT>3000)sp.classList.add('off')});
 let spT=Date.now();function hideSplash(){const sp=document.getElementById('splash');if(!sp||sp.classList.contains('off'))return;setTimeout(()=>sp.classList.add('off'),Math.max(0,900-(Date.now()-spT)))}
 const adm=()=>!!S.me&&S.me.role==='chu';
 const $=id=>document.getElementById(id);
@@ -642,7 +643,7 @@ function formItem(id){
     h+=`<h3>Lịch sử</h3><div id="hist" class="note">Đang tải lịch sử…</div>`;
     if(kid()){sheet(h+'<div class="btns"><button data-act="close">Đóng</button></div>');loadHist(id);return}
     h+=`<div class="two" style="align-items:flex-end"><div><label>Vật tư: số lượng</label><input type="text" id="mv-n" inputmode="decimal" value="1"></div><div><button data-act="mv" data-m="dung" data-id="${esc(id)}" style="width:100%">Dùng bớt</button></div><div><button data-act="mv" data-m="nhap" data-id="${esc(id)}" style="width:100%">Nhập thêm</button></div></div>`;
-    h+=`<div class="btns"><button class="chip" data-act="item-tem" data-id="${esc(id)}">🏷️ In tem dán lên món này</button></div>`;
+    h+=`<div class="btns"><button class="big" data-act="item-tem" data-id="${esc(id)}">🏷️ In tem dán lên món này</button></div>`;
     h+='<details><summary>Sửa thông tin</summary>';
   }else h+=phBox('item','','',true)+(window.N25_AI?'<button class="big" data-act="ai">🤖 Gợi ý chỗ cất (chụp ảnh hoặc nhập tên trước)</button><div id="ai-out" class="note"></div>':'');
   h+=`<label>Tên đồ vật</label><input type="text" id="f-name" value="${esc(i.name)}" placeholder="Máy khoan, hộ chiếu, dây HDMI…">`;
