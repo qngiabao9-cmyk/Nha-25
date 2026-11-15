@@ -55,7 +55,7 @@ section{display:none} section.on{display:block}
 .banner{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:13.5px;margin-bottom:12px;display:none}
 .banner.on{display:block}
 input,select,textarea,button{font:inherit;color:inherit}
-input[type=text],input[type=search],input[type=date],select,textarea{width:100%;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 12px}
+input[type=text],input[type=password],input[type=search],input[type=date],select,textarea{width:100%;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 12px}
 textarea{min-height:64px;resize:vertical}
 label{display:block;font-size:13px;color:var(--mut);margin:12px 0 4px}
 button{cursor:pointer;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 14px}
@@ -115,8 +115,8 @@ details{margin-top:14px;border-top:1px solid var(--line);padding-top:10px} summa
     <h2>Chào mừng về nhà</h2>
     <label>Bạn là ai?</label><div class="people" id="l-grid"></div><select id="l-user" hidden></select>
     <p class="note" id="l-first" hidden>Lần đầu vào app: hãy tự đặt mã đăng nhập (4–20 chữ cái hoặc chữ số, ví dụ PIN 6 số) và ghi nhớ. Quên mã thì nhờ Mr. Gia Bảo đặt lại.</p>
-    <label for="l-pin" id="l-pin-lb">Mã đăng nhập</label><div style="display:flex;gap:8px"><input type="text" class="pw" id="l-pin" inputmode="numeric" maxlength="20" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="-webkit-text-security:disc"><button type="button" class="chip" data-act="kb" style="padding:0 12px">abc</button></div>
-    <div id="l-pin2-box" hidden><label for="l-pin2">Nhập lại mã PIN</label><input type="text" class="pw" id="l-pin2" inputmode="numeric" maxlength="20" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="-webkit-text-security:disc"></div>
+    <label for="l-pin" id="l-pin-lb">Mã đăng nhập</label><div style="display:flex;gap:8px"><input type="password" class="pw" id="l-pin" inputmode="numeric" maxlength="20" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="-webkit-text-security:disc"><button type="button" class="chip" data-act="kb" style="padding:0 12px">abc</button></div>
+    <div id="l-pin2-box" hidden><label for="l-pin2">Nhập lại mã PIN</label><input type="password" class="pw" id="l-pin2" inputmode="numeric" maxlength="20" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="-webkit-text-security:disc"></div>
     <div class="btns"><button class="pri" data-act="login" id="l-btn">Vào nhà</button></div>
     <p class="note" id="l-msg"></p>
   </section>
@@ -304,8 +304,8 @@ function call(action,p){return new Promise((ok,no)=>{
   }
   google.script.run.withSuccessHandler(r=>{if(r&&r.ok)ok(r.data);else no(new Error((r&&r.err)||'Lỗi máy chủ'))}).withFailureHandler(e=>no(e)).api(token,action,p||{});
 })}
-const CODE_RE=/^[A-Za-z0-9]{4,20}$/;
-function codeErr(c,chu){if(!CODE_RE.test(c))return 'Mã phải gồm 4–20 chữ cái hoặc chữ số (không dấu, không khoảng trắng).';if(chu&&c.length<8)return 'Tài khoản chủ nhà cần mã ít nhất 8 ký tự.';return ''}
+const CODE_RE=/^[\x21-\x7E]{4,20}$/;
+function codeErr(c,chu){if(!CODE_RE.test(c))return 'Mã gồm 4–20 ký tự: chữ không dấu, chữ số hoặc ký hiệu; không khoảng trắng.';if(chu&&c.length<8)return 'Tài khoản chủ nhà cần mã ít nhất 8 ký tự.';return ''}
 const kbGet=id=>{try{return localStorage.getItem('n25kb_'+id)||'numeric'}catch(e){return 'numeric'}};
 const kbSet=(id,m)=>{try{localStorage.setItem('n25kb_'+id,m)}catch(e){}};
 function kbApply(m){document.querySelectorAll('.pw').forEach(x=>x.setAttribute('inputmode',m));document.querySelectorAll('[data-act=kb]').forEach(b=>b.textContent=m==='numeric'?'abc':'123')}
@@ -752,8 +752,8 @@ document.addEventListener('click',async e=>{
   }
   else if(a==='logout')logout();
   else if(a==='me-menu'){
-    const km=kbGet(S.me.id),pf=id=>`<input type="text" class="pw" id="${id}" inputmode="${km}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="20" style="-webkit-text-security:disc">`;
-    sheet(`<div class="ph">${av(S.me,72)}<div><h2 style="margin:0">${esc(S.me.name)}</h2><div class="btns" style="margin:6px 0 0"><button data-act="pic" data-k="user" data-id="">📷 Ảnh đại diện</button>${adm()?'<button data-act="pic" data-k="house" data-id="">🏠 Ảnh ngôi nhà</button>':''}</div></div></div><h3>Đổi mã đăng nhập</h3><div class="btns" style="margin:4px 0 0"><button type="button" class="chip" data-act="kb">${km==='numeric'?'abc':'123'}</button><span class="note" style="margin:0">đổi bàn phím chữ / số</span></div><label>Mã hiện tại</label>${pf('p-old')}<label>Mã mới (4–20 chữ cái hoặc chữ số${adm()?', chủ nhà ≥ 8 ký tự':''})</label>${pf('p-new')}<label>Nhập lại mã mới</label>${pf('p-new2')}<div class="btns"><button class="pri" data-act="pin-save">Đổi mã</button><button data-act="close">Huỷ</button></div><details><summary>Thoát tài khoản</summary><p class="note">Thoát khỏi máy này. Lần sau mở app phải nhập lại mã.</p><div class="btns"><button class="dan" data-act="logout">Thoát</button></div></details>`);
+    const km=kbGet(S.me.id),pf=id=>`<input type="password" class="pw" id="${id}" inputmode="${km}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="20" style="-webkit-text-security:disc">`;
+    sheet(`<div class="ph">${av(S.me,72)}<div><h2 style="margin:0">${esc(S.me.name)}</h2><div class="btns" style="margin:6px 0 0"><button data-act="pic" data-k="user" data-id="">📷 Ảnh đại diện</button>${adm()?'<button data-act="pic" data-k="house" data-id="">🏠 Ảnh ngôi nhà</button>':''}</div></div></div><h3>Đổi mã đăng nhập</h3><div class="btns" style="margin:4px 0 0"><button type="button" class="chip" data-act="kb">${km==='numeric'?'abc':'123'}</button><span class="note" style="margin:0">đổi bàn phím chữ / số</span></div><label>Mã hiện tại</label>${pf('p-old')}<label>Mã mới (4–20 ký tự${adm()?', chủ nhà ≥ 8 ký tự':''})</label>${pf('p-new')}<label>Nhập lại mã mới</label>${pf('p-new2')}<div class="btns"><button class="pri" data-act="pin-save">Đổi mã</button><button data-act="close">Huỷ</button></div><details><summary>Thoát tài khoản</summary><p class="note">Thoát khỏi máy này. Lần sau mở app phải nhập lại mã.</p><div class="btns"><button class="dan" data-act="logout">Thoát</button></div></details>`);
   }
   else if(a==='pin-save'){
     const o=$('p-old').value.trim(),n=$('p-new').value.trim(),n2=$('p-new2').value.trim();
