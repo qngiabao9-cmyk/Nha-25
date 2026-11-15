@@ -210,7 +210,7 @@ function lbdg(code){
   const l=loc(code),t=l.imgId&&TH.get('l:'+code+':'+l.imgId);if(t)return `<img class="th" src="${t}" alt="">`;
   const r=roomOf(code);return `<div class="bdg" style="background:${(r&&FCOL[r.floor])||'#7a6d6f'}">${l.kind}</div>`;
 }
-let thBusy=false;
+let thBusy=false,thTry=0;
 async function fetchThumbs(){
   if(thBusy||!S.me)return;
   const items=[...S.items].filter(([id,i])=>i.imgId&&!TH.has('i:'+id+':'+i.imgId)).map(x=>x[0]).slice(0,80);
@@ -221,8 +221,8 @@ async function fetchThumbs(){
     const r=await call('thumbs',{items,locs});
     for(const id of items){const i=S.items.get(id);if(i)TH.set('i:'+id+':'+i.imgId,r.items[id]||'')}
     for(const c of locs){const l=S.locs.get(c);if(l)TH.set('l:'+c+':'+l.imgId,r.locs[c]||'')}
-    thBusy=false;render();fetchThumbs();
-  }catch(e){thBusy=false}
+    thBusy=false;thTry=0;render();fetchThumbs();
+  }catch(e){thBusy=false;if(++thTry<4)setTimeout(fetchThumbs,3000*thTry)}
 }
 async function setBanner(id){
   const h=$('hero');
