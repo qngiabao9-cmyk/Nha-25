@@ -413,7 +413,9 @@ function callOnce(action,p){return new Promise((ok,no)=>{
   }
   google.script.run.withSuccessHandler(r=>{if(r&&r.ok)ok(r.data);else no(new Error((r&&r.err)||'Lỗi máy chủ'))}).withFailureHandler(e=>no(e)).api(token,action,p||{});
 })}
+let WQ=Promise.resolve();
 async function call(action,p){busy(1);try{
+  if(!READ_A[action]){const r=WQ.then(()=>callOnce(action,p));WQ=r.catch(()=>{});return await r}
   try{return await callOnce(action,p)}
   catch(e){const m=String((e&&e.message)||e);if(READ_A[action]&&/kết nối|Failed|network|abort/i.test(m)){await new Promise(r=>setTimeout(r,1500));return await callOnce(action,p)}throw e}
 }finally{busy(-1)}}
@@ -547,6 +549,7 @@ function catalog(base,list,title){
   h+='<h3>Chi tiết từng món</h3>'+codes.map(c=>`<div class="note" style="margin:12px 0 4px"><b>${esc(name(c))}</b> (${grp.get(c).length})</div><div class="list" style="margin-top:0">`+grp.get(c).map(([id,i])=>itemRow(id,i,false)).join('')+'</div>').join('');
   return h;
 }
+const backBtn='<div style="position:sticky;top:0;z-index:5;background:var(--bg);padding:6px 0"><button class="chip on" data-act="back" style="font-size:15px;padding:8px 14px">← Quay lại</button></div>';
 function renderLoc(){
   if(S.cur&&(!S.locs.has(S.cur)||loc(S.cur).locked))S.cur='';
   const c=S.cur,l=c?loc(c):null;let h='';
@@ -554,7 +557,7 @@ function renderLoc(){
   if(g.length){
     const mem=inGrp(c,g);if(!mem.length){S.grp=[];renderLoc();return}
     const sub=[];const walk=x=>{sub.push(...itemsAt(x));for(const k of kids(x))walk(k)};mem.forEach(walk);
-    h+=crumbs(c,g)+`<h2>📁 ${esc(g[g.length-1])}</h2><div class="note">${mem.length} mục · bấm vào từng mục để xem tiếp</div>`;
+    h+=backBtn+crumbs(c,g)+`<h2>📁 ${esc(g[g.length-1])}</h2><div class="note">${mem.length} mục · bấm vào từng mục để xem tiếp</div>`;
     h+='<h3>Bên trong</h3><div class="list">'+groupRows(c,g)+'</div>';
     if(sub.length)h+=catalog(c,sub,g[g.length-1]);
     $('loc-out').innerHTML=h;window.scrollTo(0,0);return;
@@ -563,7 +566,7 @@ function renderLoc(){
     h+='<h2>Nhà 25</h2><div class="note">Phòng → Tủ/Kệ → Ngăn, và Hộp đặt ở bất kỳ đâu.</div>';
   }else{
     const p=pathOf(c);
-    h+=crumbs(c,[]);
+    h+=backBtn+crumbs(c,[]);
     h+=`<h2>${esc(p.length>1?shortName(c):l.name)}</h2><div><span class="code">${esc(c)}</span> · <span class="note">${KINDS[l.kind]}${l.floor?' · '+esc(l.floor):''} · ${esc(scopeText(c))}${l.printed==='2'?' · đã dán tem':l.printed?' · tem chờ dán':''}</span></div>`;
     h+=phBox('loc',c,l.imgId,!kid()&&(l.kind!=='P'||adm()));
     if(l.note)h+=`<div class="note">${esc(l.note)}</div>`;
@@ -581,7 +584,7 @@ function renderLoc(){
   if(l){
     const its=itemsAt(c);if(inFridge(c))its.sort((a,b)=>(expDays(a[1])??1e9)-(expDays(b[1])??1e9));
     const sub=[];if(l.kind!=='P'){const walk=x=>{for(const k of kids(x)){sub.push(...itemsAt(k));walk(k)}};walk(c)}
-    if(its.length||!ks.length){h+=`<h3>Đồ vật ở đây (${its.length})</h3>`;h+=its.length?'<div class="list">'+its.map(([id,i])=>itemRow(id,i,false)).join('')+'</div>':'<div class="empty">Chưa có đồ vật nào ở đây.</div>'}
+    if(its.length||!ks.length){h+=`<h3>${ks.length?'Đồ vật để chung, chưa xếp vào ngăn':'Đồ vật ở đây'} (${its.length})</h3>`;h+=its.length?'<div class="list">'+its.map(([id,i])=>itemRow(id,i,false)).join('')+'</div>':'<div class="empty">Chưa có đồ vật nào ở đây.</div>'}
     if(sub.length)h+=catalog(c,sub,shortName(c));
   }else if(!ks.length)h+='<div class="empty">Chưa có phòng nào. Bấm “＋ Phòng” để bắt đầu.</div>';
   $('loc-out').innerHTML=h;
@@ -682,8 +685,10 @@ function formItem(id){
   if(ed)loadHist(id);
 }
 function formQuick(){
-  const c=S.cur,food=inFridge(c);
+  const c=S.cur,food=inFridge(c),sub=[];const wk=x=>{for(const k of kids(x)){if(loc(k).kind!=='H')sub.push(k);wk(k)}};wk(c);
+  const pick=sub.length?`<label>Cất vào ngăn nào?</label><select id="k-loc"><option value="${esc(c)}">${esc(loc(c).name)} (để chung, chưa chọn ngăn)</option>${sub.map(k=>`<option value="${esc(k)}">${esc(relPath(k,c))}</option>`).join('')}</select>`:'';
   sheet(`<h2>⚡ Thêm nhanh</h2><div class="note">Vào: <b>${esc(pathName(c))}</b>${food?' · nhóm thực phẩm tươi – đông lạnh · ngày cho vào: hôm nay':''}</div>
+  ${pick}
   <label>Tên – hoặc bấm 🎤 nói cả câu, ví dụ “thịt bò 2 túi hạn 20/12”</label><div style="display:flex;gap:8px"><input type="text" id="k-name" list="k-names" autocomplete="off" placeholder="${food?'Thịt bò, sữa chua, rau cải…':'Tên đồ vật'}"><button class="mic" data-act="mic" data-t="k-name">🎤</button></div>
   <div class="two"><div><label>Số lượng</label><input type="text" id="k-qty" inputmode="decimal" value="1"></div><div><label>Đơn vị</label><input type="text" id="k-unit" placeholder="hộp, gói, kg…"></div><div><label>Hạn sử dụng</label><input type="text" class="dt" id="k-exp" inputmode="numeric" maxlength="10" placeholder="${food?'trống = '+DEF_EXP+' ngày':'dd/mm/yyyy'}"></div></div>
   ${food?'<div class="btns" style="margin:8px 0 0"><button class="chip" data-act="k-d" data-n="3">+3 ngày</button><button class="chip" data-act="k-d" data-n="7">+1 tuần</button><button class="chip" data-act="k-d" data-n="30">+1 tháng</button><button class="chip" data-act="k-d" data-n="90">+3 tháng</button></div>':''}
@@ -806,6 +811,7 @@ document.addEventListener('click',async e=>{
   if(a!=='loc-del'&&a!=='item-del'&&a!=='exp-del')armed=null;
   if(a==='open'){e.stopPropagation();closeSheet();openLoc(d.c)}
   else if(a==='grp'){S.cur=d.c;try{S.grp=JSON.parse(d.g)}catch(er){S.grp=[]}go('vi-tri')}
+  else if(a==='back'){const g=S.grp||[];if(g.length)S.grp=g.slice(0,-1);else{S.cur=(loc(S.cur)&&loc(S.cur).parent)||'';S.grp=[]}go('vi-tri')}
   else if(a==='close')closeSheet();
   else if(a==='mv-cancel'){S.mv=null;closeSheet()}
   else if(a==='loc-new')formLoc(null,d.k);
@@ -902,13 +908,16 @@ document.addEventListener('click',async e=>{
     let name=$('k-name').value.trim();if(!name){toast('Nhập tên.');return}
     if(!$('k-unit').value.trim()&&$('k-qty').value.trim()==='1'){try{const x=parseLine(name);if(x&&(x.unit||x.exp||x.qty!=='1')){name=x.name;$('k-name').value=x.name;$('k-qty').value=x.qty;$('k-unit').value=x.unit;if(x.exp&&!$('k-exp').value)$('k-exp').value=fmtD(x.exp)}}catch(er){toast(er.message);return}}
     let kx;try{kx=dv('k-exp')}catch(er){toast(er.message);return}
-    if(!kx&&d.food)kx=plusDays(DEF_EXP);
-    el.disabled=true;
-    const same=itemsAt(S.cur).find(([,i])=>norm(i.name)===norm(name)&&(i.exp||'')===kx&&!isLost(i));
-    const ok=same?await actU('move',{id:same[0],act:'nhap',qty:$('k-qty').value.trim()||'1'},'Đã cộng thêm vào “'+same[1].name+'”.'):await putItem('',{name,qty:$('k-qty').value.trim(),unit:$('k-unit').value.trim(),loc:S.cur,cat:d.food?FRESH:'',exp:kx,putAt:d.food?today():'',ts:Date.now()});
-    el.disabled=false;if(!ok||!$('k-name'))return;
+    const lc=$('k-loc')?$('k-loc').value:S.cur,food=inFridge(lc);
+    if(!kx&&food)kx=plusDays(DEF_EXP);
+    const qty=$('k-qty').value.trim()||'1',unit=$('k-unit').value.trim();
+    const same=itemsAt(lc).find(([,i])=>norm(i.name)===norm(name)&&(i.exp||'')===kx&&!isLost(i));
     $('k-log').textContent=($('k-log').textContent?$('k-log').textContent+', ':'Đã thêm: ')+name;
-    $('k-name').value='';$('k-qty').value='1';$('k-exp').value='';$('k-name').focus();
+    $('k-name').value='';$('k-qty').value='1';$('k-unit').value='';$('k-exp').value='';$('k-name').focus();
+    if(same){const q=(parseFloat(same[1].qty)||0)+(parseFloat(String(qty).replace(',','.'))||0);S.items.set(same[0],{...same[1],qty:String(q)})}
+    else{const tid='tmp'+Date.now()+Math.random().toString(36).slice(2,6);S.items.set(tid,{id:tid,name,qty,unit,loc:lc,cat:food?FRESH:'',exp:kx,putAt:food?today():'',ts:Date.now()})}
+    render();
+    (async()=>{const ok=same?await actU('move',{id:same[0],act:'nhap',qty},'Đã cộng thêm vào “'+same[1].name+'”.'):await putItem('',{name,qty,unit,loc:lc,cat:food?FRESH:'',exp:kx,putAt:food?today():'',ts:Date.now()});if(!ok){toast('Chưa lưu được “'+name+'”, đã tải lại.');act('load')}})();
   }
   else if(a==='item-edit')formItem(d.id);
   else if(a==='item-save'){
@@ -918,8 +927,10 @@ document.addEventListener('click',async e=>{
     let D;try{D={exp:dv('f-exp'),putAt:dv('f-put'),bought:dv('f-bought'),wty:dv('f-wty')}}catch(er){toast(er.message);return}
     const old=d.id?S.items.get(d.id):null,prevIds=new Set(S.items.keys());
     el.disabled=true;
-    const ok=await putItem(d.id,{name,qty:$('f-qty').value.trim(),note:$('f-note').value.trim(),loc:lc,ts:old&&old.ts||Date.now(),cat:$('f-cat').value,unit:$('f-unit').value.trim(),min:$('f-min').value.trim(),model:$('f-model').value.trim(),bought:D.bought,price:$('f-price').value.trim(),shop:$('f-shop').value.trim(),wty:D.wty,wnote:$('f-wnote').value.trim(),exp:D.exp,putAt:D.putAt});
-    el.disabled=false;if(!ok)return;
+    const data={name,qty:$('f-qty').value.trim(),note:$('f-note').value.trim(),loc:lc,ts:old&&old.ts||Date.now(),cat:$('f-cat').value,unit:$('f-unit').value.trim(),min:$('f-min').value.trim(),model:$('f-model').value.trim(),bought:D.bought,price:$('f-price').value.trim(),shop:$('f-shop').value.trim(),wty:D.wty,wnote:$('f-wnote').value.trim(),exp:D.exp,putAt:D.putAt};
+    if(!pend){if(old)S.items.set(d.id,{...old,...data});else{const tid='tmp'+Date.now();S.items.set(tid,{id:tid,...data})}render();if(!d.more)closeSheet();toast('Đang lưu…')}
+    const ok=await putItem(d.id,data);
+    el.disabled=false;if(!ok){if(!pend)act('load');return}
     if(pend&&!d.id){const nid=[...S.items.keys()].find(k=>!prevIds.has(k));if(nid){const pp=pend;pend=null;if(await act('setPhoto',{kind:'item',id:nid,thumb:pp.thumb,full:pp.full}))TH.set('i:'+nid+':'+S.items.get(nid).imgId,pp.thumb)}const b=$('ph');if(b&&d.more)b.outerHTML=phBox('item','','',true)}
     if(d.more){for(const k of ['name','note','model','price','wty','wnote','min','exp'])$('f-'+k).value='';$('f-qty').value='1';$('f-name').focus();toast('Đã lưu “'+name+'”.')}else closeSheet();
   }
@@ -929,8 +940,9 @@ document.addEventListener('click',async e=>{
   }
   else if(a==='mv'){
     el.disabled=true;const nm=(S.items.get(d.id)||{}).name||'';
-    const inSheet=!!el.closest('#sheet');
-    if(await actU('move',{id:d.id,act:d.m,qty:inSheet&&$('mv-n')?$('mv-n').value:''},{lay:'Đã ghi: bạn lấy “'+nm+'”.',tra:'Đã ghi: trả “'+nm+'”.',dung:'Đã trừ số lượng “'+nm+'”.',nhap:'Đã cộng số lượng “'+nm+'”.',mat:'Đã báo không thấy “'+nm+'”.',thay:'Đã ghi: thấy lại “'+nm+'”.'}[d.m])){if(inSheet)closeSheet()}else el.disabled=false;
+    const inSheet=!!el.closest('#sheet'),it0=S.items.get(d.id);
+    if(it0&&(d.m==='lay'||d.m==='tra')){S.items.set(d.id,{...it0,holder:d.m==='lay'?S.me.name:'',heldSince:d.m==='lay'?today():'',lost:''});render();if(inSheet)closeSheet()}
+    if(await actU('move',{id:d.id,act:d.m,qty:inSheet&&$('mv-n')?$('mv-n').value:''},{lay:'Đã ghi: bạn lấy “'+nm+'”.',tra:'Đã ghi: trả “'+nm+'”.',dung:'Đã trừ số lượng “'+nm+'”.',nhap:'Đã cộng số lượng “'+nm+'”.',mat:'Đã báo không thấy “'+nm+'”.',thay:'Đã ghi: thấy lại “'+nm+'”.'}[d.m])){if(inSheet)closeSheet()}else{el.disabled=false;if(it0)act('load')}
   }
   else if(a==='undo'){e.stopPropagation();el.disabled=true;await doUndo(d.ts,d.id)}
   else if(a==='undo-bar'){if(undoG)await doUndo(undoG.ts,undoG.itemId)}
