@@ -114,9 +114,9 @@ details{margin-top:14px;border-top:1px solid var(--line);padding-top:10px} summa
   <section id="v-login">
     <h2>Chào mừng về nhà</h2>
     <label>Bạn là ai?</label><div class="people" id="l-grid"></div><select id="l-user" hidden></select>
-    <p class="note" id="l-first" hidden>Lần đầu vào app: hãy tự đặt mã PIN của bạn (4–6 chữ số) và ghi nhớ. Quên PIN thì nhờ Mr. Gia Bảo đặt lại.</p>
-    <label for="l-pin" id="l-pin-lb">Mã PIN</label><input type="text" id="l-pin" inputmode="numeric" maxlength="6" autocomplete="off" style="-webkit-text-security:disc">
-    <div id="l-pin2-box" hidden><label for="l-pin2">Nhập lại mã PIN</label><input type="text" id="l-pin2" inputmode="numeric" maxlength="6" autocomplete="off" style="-webkit-text-security:disc"></div>
+    <p class="note" id="l-first" hidden>Lần đầu vào app: hãy tự đặt mã đăng nhập (4–20 chữ cái hoặc chữ số, ví dụ PIN 6 số) và ghi nhớ. Quên mã thì nhờ Mr. Gia Bảo đặt lại.</p>
+    <label for="l-pin" id="l-pin-lb">Mã đăng nhập</label><div style="display:flex;gap:8px"><input type="text" class="pw" id="l-pin" inputmode="numeric" maxlength="20" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="-webkit-text-security:disc"><button type="button" class="chip" data-act="kb" style="padding:0 12px">abc</button></div>
+    <div id="l-pin2-box" hidden><label for="l-pin2">Nhập lại mã PIN</label><input type="text" class="pw" id="l-pin2" inputmode="numeric" maxlength="20" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="-webkit-text-security:disc"></div>
     <div class="btns"><button class="pri" data-act="login" id="l-btn">Vào nhà</button></div>
     <p class="note" id="l-msg"></p>
   </section>
@@ -248,6 +248,7 @@ function banner(m){const b=$('banner');b.textContent=m||'';b.classList.toggle('o
 const loc=c=>S.locs.get(c);
 function pathOf(code){const out=[];let c=code,g=0;while(c&&S.locs.has(c)&&g++<12){out.unshift(c);c=loc(c).parent}return out}
 const pathName=code=>pathOf(code).map(c=>loc(c).name).join(' – ');
+const relPath=(code,base)=>{const p=pathOf(code),k=p.indexOf(base);return p.slice(k+1).map(c=>loc(c).name).join(' – ')};
 const short=code=>code.startsWith(HOUSE+'-')?code.slice(HOUSE.length+1):code;
 const roomOf=code=>{const p=pathOf(code);return p.length?loc(p[0]):null};
 function scopeText(code){const r=roomOf(code);if(!r)return '';return (r.scope==='rieng'?'Riêng':'Chung')+(r.owner?' · phụ trách: '+r.owner:'')}
@@ -279,7 +280,8 @@ function camWindow(i){
   const rng=from?`từ <b>${when(from)}</b> đến <b>${when(to)}</b>`:`trước <b>${when(to)}</b>`;
   return cam?`<div class="note">📹 Xem lại camera <b>${esc(cam)}</b> ${rng}.</div><button class="big" data-act="yoosee">📹 Mở Yoosee</button>`:`<div class="note">Khu này chưa có camera. Món còn được thấy lần cuối ${from?when(from):'(chưa rõ)'}.</div>`;
 }
-const kids=code=>[...S.locs.keys()].filter(c=>(loc(c).parent||'')===code).sort();
+const byCode=(a,b)=>a.localeCompare(b,'en',{numeric:true});
+const kids=code=>[...S.locs.keys()].filter(c=>(loc(c).parent||'')===code).sort(byCode);
 const itemsAt=code=>[...S.items].filter(([,i])=>i.loc===code).sort((a,b)=>norm(a[1].name).localeCompare(norm(b[1].name)));
 function deepCount(code){let n=itemsAt(code).length;for(const k of kids(code))n+=deepCount(k);return n}
 function nextCode(parent,kind){
@@ -302,7 +304,12 @@ function call(action,p){return new Promise((ok,no)=>{
   }
   google.script.run.withSuccessHandler(r=>{if(r&&r.ok)ok(r.data);else no(new Error((r&&r.err)||'Lỗi máy chủ'))}).withFailureHandler(e=>no(e)).api(token,action,p||{});
 })}
-const ERR={KID:'Tài khoản trẻ em chỉ được ghi lấy / trả đồ.',NOUNDO:'Không hoàn tác được: đã quá 10 phút, hoặc sau đó đã có thay đổi khác.',NEWPIN:'Bạn chưa có PIN, hãy đặt PIN lần đầu.',HASPIN:'Tài khoản này đã có PIN. Nếu chưa tự đặt, báo ngay Mr. Gia Bảo.',AUTH:'Phiên đăng nhập đã hết, hãy đăng nhập lại.',PIN:'Sai mã PIN.',LOCK:'Nhập sai quá 5 lần, thử lại sau 10 phút.',DENY:'Bạn không có quyền với mục này.',BUSY:'Máy chủ đang bận, thử lại.',NOTEMPTY:'Còn đồ vật hoặc vị trí bên trong, hãy chuyển hoặc xoá trước.',GONE:'Mục này không còn tồn tại, bấm Tải lại.'};
+const CODE_RE=/^[A-Za-z0-9]{4,20}$/;
+function codeErr(c,chu){if(!CODE_RE.test(c))return 'Mã phải gồm 4–20 chữ cái hoặc chữ số (không dấu, không khoảng trắng).';if(chu&&c.length<8)return 'Tài khoản chủ nhà cần mã ít nhất 8 ký tự.';return ''}
+const kbGet=id=>{try{return localStorage.getItem('n25kb_'+id)||'numeric'}catch(e){return 'numeric'}};
+const kbSet=(id,m)=>{try{localStorage.setItem('n25kb_'+id,m)}catch(e){}};
+function kbApply(m){document.querySelectorAll('.pw').forEach(x=>x.setAttribute('inputmode',m));document.querySelectorAll('[data-act=kb]').forEach(b=>b.textContent=m==='numeric'?'abc':'123')}
+const ERR={KID:'Tài khoản trẻ em chỉ được ghi lấy / trả đồ.',NOUNDO:'Không hoàn tác được: đã quá 10 phút, hoặc sau đó đã có thay đổi khác.',NEWPIN:'Bạn chưa có mã, hãy đặt mã lần đầu.',HASPIN:'Tài khoản này đã có mã. Nếu chưa tự đặt, báo ngay Mr. Gia Bảo.',AUTH:'Phiên đăng nhập đã hết, hãy đăng nhập lại.',PIN:'Sai mã đăng nhập.',LOCK:'Nhập sai quá 5 lần, máy chủ khoá tài khoản này 10 phút. Thử lại sau.',DENY:'Bạn không có quyền với mục này.',BUSY:'Máy chủ đang bận, thử lại.',NOTEMPTY:'Còn đồ vật hoặc vị trí bên trong, hãy chuyển hoặc xoá trước.',GONE:'Mục này không còn tồn tại, bấm Tải lại.'};
 function fail(e){const m=String((e&&e.message)||e);console.error(e);if(m==='AUTH')logout();toast(ERR[m]||('Không thực hiện được: '+m))}
 function apply(d){
   if(d.token){token=d.token;try{localStorage.setItem('n25tok',token)}catch(e){}}
@@ -337,8 +344,9 @@ function loginMode(){
   const u=(S.who||[]).find(x=>x.id===$('l-user').value),f=!!(u&&u.first);
   $('l-grid').innerHTML=(S.who||[]).map(x=>`<button data-act="pick" data-u="${esc(x.id)}" class="${u&&x.id===u.id?'on':''}">${av(x,52)}<span>${esc(x.name)}</span></button>`).join('');
   $('l-first').hidden=!f;$('l-pin2-box').hidden=!f;
-  $('l-pin-lb').textContent=f?'Đặt mã PIN mới (4–6 chữ số)':'Mã PIN';
-  $('l-btn').textContent=f?'Đặt PIN và vào nhà':'Vào nhà';
+  $('l-pin-lb').textContent=f?'Đặt mã đăng nhập mới (4–20 chữ cái hoặc chữ số)':'Mã đăng nhập';
+  $('l-btn').textContent=f?'Đặt mã và vào nhà':'Vào nhà';
+  if(u)kbApply(kbGet(u.id));
 }
 let startCode='';
 async function init(){
@@ -354,11 +362,11 @@ async function init(){
 function locRow(code,withPath){
   const l=loc(code),n=deepCount(code);
   if(l.locked)return `<div class="row" style="cursor:default;opacity:.6"><div class="bdg" style="background:#7a6d6f">🔒</div><div class="t"><div class="n">${esc(l.name)}</div><div class="s">Phòng riêng${l.owner?' · '+esc(l.owner):''} · bạn không có quyền xem</div></div></div>`;
-  return `<div class="row" data-act="open" data-c="${esc(code)}">${lbdg(code)}<div class="t"><div class="n">${esc(l.name)}</div><div class="s">${withPath&&l.parent?esc(pathName(l.parent))+' · ':''}<span class="code">${esc(short(code))}</span>${l.kind==='P'?' · '+esc(scopeText(code)):''}</div></div><div class="q">${n?n+' đồ':''}</div></div>`;
+  return `<div class="row" data-act="open" data-c="${esc(code)}">${lbdg(code)}<div class="t"><div class="n">${esc(l.name)}</div><div class="s">${withPath&&l.parent?esc(pathName(l.parent))+' · ':''}<span class="code">${esc(short(code))}</span>${l.kind==='P'?' · '+esc(scopeText(code)):''}${l.kind==='T'&&l.note?' · '+esc(l.note):''}</div></div><div class="q">${n?n+' đồ':''}</div></div>`;
 }
 function itemRow(id,i,withLoc){
   const bits=[];
-  if(withLoc)bits.push(esc(pathName(i.loc)||'(vị trí đã xoá)'));
+  if(withLoc)bits.push(esc((typeof withLoc==='string'?relPath(i.loc,withLoc):pathName(i.loc))||'(vị trí đã xoá)'));
   if(i.cat)bits.push(esc(i.cat));
   if(isLost(i))bits.push(`<span class="warn">❓ KHÔNG THẤY · ${esc(i.lostBy||'')} báo ${i.lostAt?when(i.lostAt):''}</span>`);
   if(i.holder)bits.push(`<span class="warn">${esc(i.holder)} đang giữ${overdue(i)?' – QUÁ HẠN':''}</span>`);
@@ -428,8 +436,9 @@ function renderLoc(){
   else if(ks.length)h+='<h3>Bên trong</h3><div class="list">'+ks.map(x=>locRow(x)).join('')+'</div>';
   if(l){
     const its=itemsAt(c);if(inFridge(c))its.sort((a,b)=>(expDays(a[1])??1e9)-(expDays(b[1])??1e9));
-    h+=`<h3>Đồ vật ở đây (${its.length})</h3>`;
-    h+=its.length?'<div class="list">'+its.map(([id,i])=>itemRow(id,i,false)).join('')+'</div>':'<div class="empty">Chưa có đồ vật nào ở đây.</div>';
+    const sub=[];if(l.kind!=='P'){const walk=x=>{for(const k of kids(x)){sub.push(...itemsAt(k));walk(k)}};walk(c)}
+    if(its.length||!ks.length){h+=`<h3>Đồ vật ở đây (${its.length})</h3>`;h+=its.length?'<div class="list">'+its.map(([id,i])=>itemRow(id,i,false)).join('')+'</div>':'<div class="empty">Chưa có đồ vật nào ở đây.</div>'}
+    if(sub.length)h+=`<h3>Đồ trong các ngăn / hộp (${sub.length})</h3><div class="list">`+sub.map(([id,i])=>itemRow(id,i,c)).join('')+'</div>';
   }else if(!ks.length)h+='<div class="empty">Chưa có phòng nào. Bấm “＋ Phòng” để bắt đầu.</div>';
   $('loc-out').innerHTML=h;
 }
@@ -442,7 +451,7 @@ function renderIn(){
   document.querySelectorAll('[data-act=pf]').forEach(b=>b.classList.toggle('on',b.dataset.v===S.pf));
   for(const c of [...S.sel])if(!S.locs.has(c))S.sel.delete(c);
   const inF=c=>S.pf==='tat'||(S.pf==='cho'?loc(c).printed==='1':!loc(c).printed);
-  const all=[...S.locs.keys()].sort().filter(c=>!loc(c).locked&&(inF(c)||S.sel.has(c)));
+  const all=[...S.locs.keys()].sort(byCode).filter(c=>!loc(c).locked&&(inF(c)||S.sel.has(c)));
   const st=l=>l.printed==='2'?' · đã dán':l.printed?` · <span class="warn">chờ dán</span> · ${esc(l.printedBy||'')} in ${l.printedAt?when(l.printedAt):''}`:'';
   $('in-out').innerHTML=all.length?'<div class="list">'+all.map(c=>`<label class="row" style="margin:0;color:inherit;font-size:inherit"><input type="checkbox" class="ck" data-ck="${esc(c)}" ${S.sel.has(c)?'checked':''}>${lbdg(c)}<div class="t"><div class="n">${esc(loc(c).name)}</div><div class="s"><span class="code">${esc(short(c))}</span>${st(loc(c))}</div></div></label>`).join('')+'</div>':'<div class="empty">'+(S.pf==='cho'?'Không có tem nào đang chờ dán.':S.locs.size?'Tất cả vị trí đã in tem. Chọn “Tất cả” để in lại.':'Chưa có vị trí nào để in tem.')+'</div>';
   const pv=$('prev'),ls=labelList();pv.innerHTML='';
@@ -470,7 +479,7 @@ function openLoc(code){if(code&&loc(code)&&loc(code).locked){toast('Phòng riên
 function sheet(html){$('sheet').innerHTML=html;$('ovl').classList.add('on');const f=$('sheet').querySelector('input[type=text]');if(f&&!f.value)f.focus()}
 function closeSheet(){S.mv=null;$('ovl').classList.remove('on');$('sheet').innerHTML=''}
 function locOptions(sel,filter){
-  return [...S.locs.keys()].filter(c=>!loc(c).locked).filter(filter||(()=>true)).sort().map(c=>`<option value="${esc(c)}" ${c===sel?'selected':''}>${esc(pathName(c))} (${esc(short(c))})</option>`).join('');
+  return [...S.locs.keys()].filter(c=>!loc(c).locked).filter(filter||(()=>true)).sort(byCode).map(c=>`<option value="${esc(c)}" ${c===sel?'selected':''}>${esc(pathName(c))} (${esc(short(c))})</option>`).join('');
 }
 function formLoc(code,kind){
   const ed=!!code,l=ed?loc(code):{kind,name:'',note:'',parent:S.cur};
@@ -731,10 +740,11 @@ document.addEventListener('click',async e=>{
     const first=!$('l-pin2-box').hidden,pin=$('l-pin').value.trim();
     try{
       if(first){
-        if(!/^\d{4,6}$/.test(pin))throw new Error('Mã PIN phải gồm 4–6 chữ số.');
-        if(pin!==$('l-pin2').value.trim())throw new Error('Hai lần nhập PIN không khớp.');
-        apply(await call('setPin',{user:$('l-user').value,pin}));toast('Đã lưu PIN. Hãy ghi nhớ PIN này.');
-      }else apply(await call('login',{user:$('l-user').value,pin}));
+        const ce=codeErr(pin,$('l-user').value==='giabao');if(ce)throw new Error(ce);
+        if(pin!==$('l-pin2').value.trim())throw new Error('Hai lần nhập mã không khớp.');
+        apply(await call('setPin',{user:$('l-user').value,pin}));toast('Đã lưu mã. Hãy ghi nhớ mã này.');
+      }else{const r=await call('login',{user:$('l-user').value,pin});apply(r);if(r.weak)setTimeout(()=>{document.querySelector('[data-act=me-menu]').click();toast('Tài khoản chủ nhà nên dùng mật khẩu ít nhất 8 ký tự. Hãy đổi ngay.')},300)}
+      if(/\D/.test(pin))kbSet($('l-user').value,'text');
       $('l-pin').value='';$('l-pin2').value='';if(startCode)openCode(startCode);
     }
     catch(e){const m=String((e&&e.message)||e);$('l-msg').textContent=ERR[m]||m;if(m==='NEWPIN'||m==='HASPIN')loadWho()}
@@ -742,17 +752,18 @@ document.addEventListener('click',async e=>{
   }
   else if(a==='logout')logout();
   else if(a==='me-menu'){
-    const pf=id=>`<input type="text" id="${id}" inputmode="numeric" autocomplete="off" maxlength="6" style="-webkit-text-security:disc">`;
-    sheet(`<div class="ph">${av(S.me,72)}<div><h2 style="margin:0">${esc(S.me.name)}</h2><div class="btns" style="margin:6px 0 0"><button data-act="pic" data-k="user" data-id="">📷 Ảnh đại diện</button>${adm()?'<button data-act="pic" data-k="house" data-id="">🏠 Ảnh ngôi nhà</button>':''}</div></div></div><h3>Đổi mã PIN</h3><label>PIN hiện tại</label>${pf('p-old')}<label>PIN mới (4–6 chữ số)</label>${pf('p-new')}<label>Nhập lại PIN mới</label>${pf('p-new2')}<div class="btns"><button class="pri" data-act="pin-save">Đổi PIN</button><button data-act="close">Huỷ</button></div><details><summary>Thoát tài khoản</summary><p class="note">Thoát khỏi máy này. Lần sau mở app phải nhập lại PIN.</p><div class="btns"><button class="dan" data-act="logout">Thoát</button></div></details>`);
+    const km=kbGet(S.me.id),pf=id=>`<input type="text" class="pw" id="${id}" inputmode="${km}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="20" style="-webkit-text-security:disc">`;
+    sheet(`<div class="ph">${av(S.me,72)}<div><h2 style="margin:0">${esc(S.me.name)}</h2><div class="btns" style="margin:6px 0 0"><button data-act="pic" data-k="user" data-id="">📷 Ảnh đại diện</button>${adm()?'<button data-act="pic" data-k="house" data-id="">🏠 Ảnh ngôi nhà</button>':''}</div></div></div><h3>Đổi mã đăng nhập</h3><div class="btns" style="margin:4px 0 0"><button type="button" class="chip" data-act="kb">${km==='numeric'?'abc':'123'}</button><span class="note" style="margin:0">đổi bàn phím chữ / số</span></div><label>Mã hiện tại</label>${pf('p-old')}<label>Mã mới (4–20 chữ cái hoặc chữ số${adm()?', chủ nhà ≥ 8 ký tự':''})</label>${pf('p-new')}<label>Nhập lại mã mới</label>${pf('p-new2')}<div class="btns"><button class="pri" data-act="pin-save">Đổi mã</button><button data-act="close">Huỷ</button></div><details><summary>Thoát tài khoản</summary><p class="note">Thoát khỏi máy này. Lần sau mở app phải nhập lại mã.</p><div class="btns"><button class="dan" data-act="logout">Thoát</button></div></details>`);
   }
   else if(a==='pin-save'){
     const o=$('p-old').value.trim(),n=$('p-new').value.trim(),n2=$('p-new2').value.trim();
-    if(!/^\d{4,6}$/.test(n)){toast('PIN mới phải gồm 4–6 chữ số.');return}
-    if(n!==n2){toast('Hai lần nhập PIN mới không khớp.');return}
+    const ce=codeErr(n,adm());if(ce){toast(ce);return}
+    if(n!==n2){toast('Hai lần nhập mã mới không khớp.');return}
     el.disabled=true;
-    try{const r=await call('changePin',{old:o,pin:n});token=r.token;try{localStorage.setItem('n25tok',token)}catch(e){}closeSheet();toast('Đã đổi PIN. Các máy khác sẽ phải đăng nhập lại.')}
+    try{const r=await call('changePin',{old:o,pin:n});token=r.token;try{localStorage.setItem('n25tok',token)}catch(e){}if(/\D/.test(n))kbSet(S.me.id,'text');closeSheet();toast('Đã đổi mã. Các máy khác sẽ phải đăng nhập lại.')}
     catch(e){const m=String((e&&e.message)||e);if(m==='AUTH')logout();toast(ERR[m]||m);el.disabled=false}
   }
+  else if(a==='kb'){const f=($('ovl').classList.contains('on')&&$('sheet').querySelector('.pw'))||$('l-pin'),m=f.getAttribute('inputmode')==='numeric'?'text':'numeric';kbApply(m);f.blur();setTimeout(()=>f.focus(),50)}
   else if(a==='pick'){$('l-user').value=d.u;$('l-msg').textContent='';loginMode();$('l-pin').focus()}
   else if(a==='ff'){S.ff=S.ff===d.v?'':d.v;renderTim()}
   else if(a==='pic'){picT={kind:d.k,id:d.id};$('pic').click()}
