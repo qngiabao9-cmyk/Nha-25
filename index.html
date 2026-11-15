@@ -38,9 +38,9 @@ header #stat{color:rgba(255,255,255,.9);font-size:13px}
 header .chip{cursor:pointer;color:#fff;border-color:rgba(255,255,255,.55);background:rgba(0,0,0,.28);padding:5px 10px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
 .av{flex:none;display:inline-grid;place-items:center;border-radius:50%;color:#fff;font-weight:700;object-fit:cover;overflow:hidden}
 .th{flex:none;width:46px;height:46px;border-radius:10px;object-fit:cover;display:grid;place-items:center;font-size:23px}
-.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 4px}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0 4px}
 .tile{display:flex;flex-direction:column;align-items:flex-start;gap:0;padding:9px 10px;border-radius:12px;box-shadow:var(--sh);text-align:left}
-.tile b{font-size:21px;line-height:1.15}.tile span{font-size:11.5px;color:var(--mut)}
+.tile b{font-size:20px;line-height:1.15}.tile span{font-size:11.5px;color:var(--mut)}
 .tile.on{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}.tile.on span{color:inherit}
 .tile.w b{color:var(--warn)}.tile.on.w b{color:inherit}
 .people{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
@@ -185,7 +185,7 @@ const CATS=['Dụng cụ cầm tay','Dụng cụ điện – máy cầm tay','D�
 const CATI=['🔧','🛠️','📏','⚡','🚰','🔩','⚙️','🧴','🧤','📺','🍳','🍽️','🧂','🥩','🔌','🛋️','📄','👕','🕯️','💊','🧽','📦'];
 const FCOL={'Ngoài trời':'#3f7d4e','Trệt':'#b3541e','Lầu 1':'#7b1e2b','Lầu 2':'#2f5f8a','Lầu 3':'#6a4c93','Tầng thượng':'#b8860b'};
 const TH=new Map();let pend=null,picT=null;
-const S={cp:1,fill:true,ff:'',locs:new Map(),items:new Map(),tab:'tim',cur:'',q:'',sel:new Set(),pf:'chua',ready:false,fc:'',fs:'',me:null,users:[],logs:[],at:0};
+const S={mv:null,camChk:'',cp:1,fill:true,ff:'',locs:new Map(),items:new Map(),tab:'tim',cur:'',q:'',sel:new Set(),pf:'chua',ready:false,fc:'',fs:'',me:null,users:[],logs:[],at:0};
 let token='';try{token=localStorage.getItem('n25tok')||''}catch(e){}
 const adm=()=>!!S.me&&S.me.role==='chu';
 const $=id=>document.getElementById(id);
@@ -253,6 +253,10 @@ const roomOf=code=>{const p=pathOf(code);return p.length?loc(p[0]):null};
 function scopeText(code){const r=roomOf(code);if(!r)return '';return (r.scope==='rieng'?'Riêng':'Chung')+(r.owner?' · phụ trách: '+r.owner:'')}
 const today=()=>new Date().toLocaleDateString('sv');
 const fmtD=d=>String(d||'').split('-').reverse().join('/');
+function dv(id){const t=$(id).value.trim();if(!t)return '';const m=/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/.exec(t);
+  if(m){const y=m[3].length===2?'20'+m[3]:m[3],o=y+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0'),x=new Date(o+'T00:00:00');
+    if(!isNaN(x)&&x.getDate()===+m[1]&&x.getMonth()+1===+m[2])return o}
+  $(id).focus();throw new Error('Ngày “'+t+'” không đúng. Gõ theo dạng ngày/tháng/năm, ví dụ 18/12/2026.')}
 const low=i=>i.min!=null&&i.min!==''&&!isNaN(parseFloat(i.min))&&(parseFloat(i.qty)||0)<=parseFloat(i.min);
 const wtyDays=i=>i.wty?Math.round((new Date(i.wty)-new Date(today()))/864e5):null;
 const FRESH='Thực phẩm tươi – đông lạnh';
@@ -260,6 +264,21 @@ const expDays=i=>i.exp?Math.round((new Date(i.exp)-new Date(today()))/864e5):nul
 const expired=i=>{const d=expDays(i);return d!==null&&d<0};
 const expSoon=i=>{const d=expDays(i);return d!==null&&d>=0&&d<=(i.cat===FRESH?3:30)};
 const inFridge=code=>pathOf(code).some(c=>/tủ lạnh|tủ đông/i.test(loc(c).name));
+const HOLD_DAYS=3;
+const overdue=i=>!!i.holder&&!!i.heldSince&&i.cat!==FRESH&&(new Date(today())-new Date(i.heldSince))/864e5>HOLD_DAYS;
+const isLost=i=>i.lost==='1';
+function camOf(code){for(const c of pathOf(code).reverse()){if(loc(c).cam)return loc(c).cam}return ''}
+const isIOS=()=>/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+function openYoosee(){
+  if(isIOS())location.href='shortcuts://run-shortcut?name='+encodeURIComponent('Mở Yoosee');
+  else if(/Android/.test(navigator.userAgent))location.href='intent://#Intent;package=com.yoosee;S.browser_fallback_url='+encodeURIComponent('https://play.google.com/store/search?q=yoosee')+';end';
+  else toast('Mở app Yoosee trên điện thoại để xem camera.');
+}
+function camWindow(i){
+  const cam=camOf(i.loc),from=+(i.seenAt||i.ts||0),to=+(i.lostAt||Date.now());
+  const rng=from?`từ <b>${when(from)}</b> đến <b>${when(to)}</b>`:`trước <b>${when(to)}</b>`;
+  return cam?`<div class="note">📹 Xem lại camera <b>${esc(cam)}</b> ${rng}.</div><button class="big" data-act="yoosee">📹 Mở Yoosee</button>`:`<div class="note">Khu này chưa có camera. Món còn được thấy lần cuối ${from?when(from):'(chưa rõ)'}.</div>`;
+}
 const kids=code=>[...S.locs.keys()].filter(c=>(loc(c).parent||'')===code).sort();
 const itemsAt=code=>[...S.items].filter(([,i])=>i.loc===code).sort((a,b)=>norm(a[1].name).localeCompare(norm(b[1].name)));
 function deepCount(code){let n=itemsAt(code).length;for(const k of kids(code))n+=deepCount(k);return n}
@@ -287,14 +306,14 @@ const ERR={KID:'Tài khoản trẻ em chỉ được ghi lấy / trả đồ.',N
 function fail(e){const m=String((e&&e.message)||e);console.error(e);if(m==='AUTH')logout();toast(ERR[m]||('Không thực hiện được: '+m))}
 function apply(d){
   if(d.token){token=d.token;try{localStorage.setItem('n25tok',token)}catch(e){}}
-  S.me=d.me;S.users=d.users||[];S.logs=d.logs||[];
+  S.me=d.me;S.users=d.users||[];S.logs=d.logs||[];S.camChk=d.camChk||'';
   S.locs=new Map(d.locs.map(l=>[l.code,l]));S.items=new Map(d.items.map(i=>[i.id,i]));
   S.ready=true;S.at=Date.now();banner('');render();fetchThumbs();
   if(d.house!==S.house){S.house=d.house;setBanner(d.house)}
 }
 async function act(action,p){try{apply(await call(action,p));return true}catch(e){fail(e);return false}}
 const kid=()=>!!S.me&&S.me.role==='tre';
-const AT={lay:'lấy dùng',tra:'trả lại',dung:'dùng bớt',nhap:'nhập thêm',them:'thêm',sua:'sửa',chuyen:'chuyển chỗ',xoa:'xoá',themvt:'tạo vị trí',suavt:'sửa vị trí',chuyenvt:'chuyển hộp',xoavt:'xoá vị trí',hoantac:'hoàn tác',intem:'in tem',dantem:'xác nhận đã dán tem',anh:'đổi ảnh'};
+const AT={mat:'báo không thấy',thay:'đã thấy',kiemke:'kiểm kê',nhaplo:'nhập danh sách',lay:'lấy dùng',tra:'trả lại',dung:'dùng bớt',nhap:'nhập thêm',them:'thêm',sua:'sửa',chuyen:'chuyển chỗ',xoa:'xoá',themvt:'tạo vị trí',suavt:'sửa vị trí',chuyenvt:'chuyển hộp',xoavt:'xoá vị trí',hoantac:'hoàn tác',intem:'in tem',dantem:'xác nhận đã dán tem',anh:'đổi ảnh'};
 const when=ts=>{const d=new Date(+ts);return d.toLocaleDateString('vi-VN')+' '+d.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'})};
 const logLine=g=>`${esc(g.user)} ${AT[g.act]||esc(g.act)}${g.qty?' '+esc(g.qty):''}${g.note&&g.act!=='hoantac'?' · '+esc(g.note):''} · ${when(g.ts)}`;
 const undoChip=g=>g.canUndo?`<button class="chip u" data-act="undo" data-ts="${esc(g.ts)}" data-id="${esc(g.itemId)}">Hoàn tác</button>`:'';
@@ -341,12 +360,13 @@ function itemRow(id,i,withLoc){
   const bits=[];
   if(withLoc)bits.push(esc(pathName(i.loc)||'(vị trí đã xoá)'));
   if(i.cat)bits.push(esc(i.cat));
-  if(i.holder)bits.push(`<span class="warn">${esc(i.holder)} đang giữ</span>`);
+  if(isLost(i))bits.push(`<span class="warn">❓ KHÔNG THẤY · ${esc(i.lostBy||'')} báo ${i.lostAt?when(i.lostAt):''}</span>`);
+  if(i.holder)bits.push(`<span class="warn">${esc(i.holder)} đang giữ${overdue(i)?' – QUÁ HẠN':''}</span>`);
   if(low(i))bits.push('<span class="warn">sắp hết</span>');
   const x=expDays(i);if(x!==null)bits.push(x<0?`<span class="warn">ĐÃ HẾT HẠN ${fmtD(i.exp)}</span>`:expSoon(i)?`<span class="warn">${x?'hạn còn '+x+' ngày':'hết hạn hôm nay'}</span>`:'HSD '+fmtD(i.exp));
   const w=wtyDays(i);if(w!==null)bits.push(w<0?'hết BH':w<=30?`<span class="warn">BH còn ${w} ngày</span>`:'BH đến '+fmtD(i.wty));
   if(i.note)bits.push(esc(i.note));
-  return `<div class="row" data-act="item-edit" data-id="${esc(id)}">${itile(id,i)}<div class="t"><div class="n">${esc(i.name)}</div><div class="s">${bits.join(' · ')}</div></div><div class="q">${i.qty?'× '+esc(i.qty)+(i.unit?' '+esc(i.unit):''):''}</div>${withLoc&&S.locs.has(i.loc)?`<button class="chip" data-act="open" data-c="${esc(i.loc)}">Đến</button>`:''}</div>`;
+  return `<div class="row" data-act="item-edit" data-id="${esc(id)}">${itile(id,i)}<div class="t"><div class="n">${esc(i.name)}</div><div class="s">${bits.join(' · ')}</div></div><div class="q">${i.qty?'× '+esc(i.qty)+(i.unit?' '+esc(i.unit):''):''}</div>${withLoc&&S.locs.has(i.loc)?`<button class="chip" data-act="open" data-c="${esc(i.loc)}">Đến</button>`:isLost(i)?'':`<button class="chip" data-act="mv" data-m="${i.holder?'tra':'lay'}" data-id="${esc(id)}">${i.holder?'Trả':'Lấy'}</button>`}</div>`;
 }
 function renderTim(){
   const q=norm(S.q.trim());let h='';
@@ -354,16 +374,18 @@ function renderTim(){
   const list=l=>'<div class="list">'+l.map(([id,i])=>itemRow(id,i,true)).join('')+'</div>';
   const inScope=i=>{if(!S.fs)return true;const r=roomOf(i.loc);return (r&&r.scope==='rieng'?'rieng':'chung')===S.fs};
   const soon=i=>{const w=wtyDays(i);return w!==null&&w>=0&&w<=30};
-  const FF={giu:i=>!!i.holder,het:low,bh:soon,hsd:expSoon,qua:expired};
+  const FF={giu:i=>!!i.holder,qh:overdue,mat:isLost,het:low,bh:soon,hsd:expSoon,qua:expired};
   const all=[...S.items.values()];
-  const tiles='<div class="tiles">'+[['','Đồ vật',all.length],['giu','Đang giữ',all.filter(FF.giu).length],['het','Sắp hết',all.filter(low).length],['bh','Sắp hết BH',all.filter(soon).length],['hsd','Sắp hết hạn',all.filter(expSoon).length],['qua','Đã hết hạn',all.filter(expired).length]].map(([k,lb,n])=>`<button class="tile${S.ff===k&&k?' on':''}${k&&n?' w':''}" data-act="ff" data-v="${k}"><b>${n}</b><span>${lb}</span></button>`).join('')+'</div>';
+  const tiles='<div class="tiles">'+[['','Đồ vật',all.length],['giu','Đang giữ',all.filter(FF.giu).length],['qh','Giữ quá hạn',all.filter(overdue).length],['mat','Không thấy',all.filter(isLost).length],['het','Sắp hết',all.filter(low).length],['bh','Sắp hết BH',all.filter(soon).length],['hsd','Sắp hết hạn',all.filter(expSoon).length],['qua','Đã hết hạn',all.filter(expired).length]].map(([k,lb,n])=>`<button class="tile${S.ff===k&&k?' on':''}${k&&n?' w':''}" data-act="ff" data-v="${k}"><b>${n}</b><span>${lb}</span></button>`).join('')+'</div>';
   const base=[...S.items].filter(([,i])=>(!S.fc||(i.cat||'Khác')===S.fc)&&inScope(i)&&(!S.ff||FF[S.ff](i)));
   if(!q&&!S.fc&&!S.fs&&!S.ff){
     if(!S.locs.size)h='<div class="empty">Chưa có gì. Vào tab <b>Vị trí</b> tạo phòng, tủ, ngăn, hộp trước, rồi thêm đồ vật vào từng chỗ.</div>';
     else if(!S.items.size)h='<div class="empty">Chưa có đồ vật nào. Vào tab <b>Vị trí</b> tạo tủ, ngăn, hộp trong từng phòng, rồi bấm “Thêm đồ vật”.</div>';
     else{
-      const att=base.filter(([,i])=>{const w=wtyDays(i);return i.holder||low(i)||expired(i)||expSoon(i)||(w!==null&&w>=0&&w<=30)}).sort((a,b)=>(expDays(a[1])??1e9)-(expDays(b[1])??1e9));
+      const att=base.filter(([,i])=>{const w=wtyDays(i);return isLost(i)||i.holder||low(i)||expired(i)||expSoon(i)||(w!==null&&w>=0&&w<=30)}).sort((a,b)=>(expDays(a[1])??1e9)-(expDays(b[1])??1e9));
       if(att.length)h+=`<h3>Cần chú ý (${att.length})</h3>`+list(att);
+      const cd=S.camChk?Math.floor((Date.now()-S.camChk)/864e5):null;
+      if((cd===null||cd>=30)&&!kid())h+=`<div class="list"><div class="row" style="cursor:default"><span class="th" style="background:var(--soft)">📹</span><div class="t"><div class="n">Kiểm tra thẻ nhớ camera</div><div class="s">${cd===null?'Chưa kiểm tra lần nào':'Lần cuối '+cd+' ngày trước'} · mở Yoosee → Xem lại thử 1 khung giờ hôm qua ở từng camera</div></div><button class="chip" data-act="camchk">Đã kiểm tra</button></div></div>`;
       const cnt=new Map();for(const [,i] of base){const c=CATS.includes(i.cat)?i.cat:'Khác';cnt.set(c,(cnt.get(c)||0)+1)}
       h+='<h3>Theo nhóm</h3><div class="list">'+CATS.filter(c=>cnt.has(c)).map(c=>`<div class="row" data-act="cat" data-v="${esc(c)}"><span class="th" style="background:hsl(${catIdx(c)*47%360},45%,90%)">${CATI[catIdx(c)]}</span><div class="t"><div class="n">${esc(c)}</div></div><div class="q">${cnt.get(c)}</div></div>`).join('')+'</div>';
       h+='<h3>Mới thêm gần đây</h3>'+list([...S.items].sort((x,y)=>(y[1].ts||0)-(x[1].ts||0)).slice(0,8));
@@ -378,7 +400,9 @@ function renderTim(){
     if(ls.length)h+=`<h3>Vị trí (${ls.length})</h3><div class="list">`+ls.map(c=>locRow(c,true)).join('')+'</div>';
     if(!h)h='<div class="empty">Không tìm thấy.</div>';
   }
-  $('tim-out').innerHTML=(S.locs.size?tiles:'')+h;
+  const cams=[...new Set([...S.locs.values()].flatMap(l=>String(l.cam||'').split(',').map(x=>x.trim()).filter(Boolean)))];
+  const camBar=cams.length&&!q&&!S.ff?`<div class="btns" style="align-items:center"><button class="chip" data-act="yoosee">📹 Camera</button><span class="note" style="margin:0">${cams.map(esc).join(' · ')}</span></div>`:'';
+  $('tim-out').innerHTML=(S.locs.size?tiles:'')+camBar+h;
 }
 function renderLoc(){
   if(S.cur&&(!S.locs.has(S.cur)||loc(S.cur).locked))S.cur='';
@@ -391,12 +415,13 @@ function renderLoc(){
     h+=`<h2>${esc(l.name)}</h2><div><span class="code">${esc(c)}</span> · <span class="note">${KINDS[l.kind]}${l.floor?' · '+esc(l.floor):''} · ${esc(scopeText(c))}${l.printed==='2'?' · đã dán tem':l.printed?' · tem chờ dán':''}</span></div>`;
     h+=phBox('loc',c,l.imgId,!kid()&&(l.kind!=='P'||adm()));
     if(l.note)h+=`<div class="note">${esc(l.note)}</div>`;
+    const cm=camOf(c);if(cm)h+=`<div class="note">📹 Camera: ${esc(cm)} <button class="chip" data-act="yoosee">Mở Yoosee</button></div>`;
   }
   h+='<div class="btns">';
   if(l&&!kid())h+='<button class="pri" data-act="quick">⚡ Thêm nhanh</button><button data-act="item-new">＋ Thêm đồ vật</button>';
   if(!kid())for(const k of CHILD[l?l.kind:''])if(k!=='P'||adm())h+=`<button data-act="loc-new" data-k="${k}">＋ ${KINDS[k]}</button>`;
   if(l&&!kid()&&(l.kind!=='P'||adm()))h+='<button data-act="loc-edit">✏️ Sửa</button>';
-  if(l&&!kid())h+='<button data-act="loc-print">🏷️ In tem</button>';
+  if(l&&!kid())h+='<button data-act="loc-print">🏷️ In tem</button><button data-act="bulk">📋 Nhập danh sách</button>'+(itemsAt(c).length?'<button data-act="kk">✅ Kiểm kê</button>':'');
   h+='</div>';
   const ks=kids(c);
   if(!l){for(const f of [...FLOORS,'']){const g=ks.filter(x=>(FLOORS.includes(loc(x).floor)?loc(x).floor:'')===f);if(g.length)h+=`<h3>${f||'Chưa xếp tầng'}</h3><div class="list">`+g.map(x=>locRow(x)).join('')+'</div>'}}
@@ -438,12 +463,12 @@ function render(){
   else if(S.tab==='in-tem')renderIn();
   else $('codes').innerHTML=[...S.locs.keys()].sort().map(c=>`<option value="${esc(c)}">${esc(pathName(c))}</option>`).join('');
 }
-function go(tab){stopLive();S.tab=tab;render();window.scrollTo(0,0)}
+function go(tab){stopLive();if(tab!=='quet'&&tab!=='vi-tri')S.mv=null;S.tab=tab;render();window.scrollTo(0,0)}
 function openLoc(code){if(code&&loc(code)&&loc(code).locked){toast('Phòng riêng, bạn không có quyền xem.');return}S.cur=code;go('vi-tri')}
 
 /* ---------- biểu mẫu ---------- */
 function sheet(html){$('sheet').innerHTML=html;$('ovl').classList.add('on');const f=$('sheet').querySelector('input[type=text]');if(f&&!f.value)f.focus()}
-function closeSheet(){$('ovl').classList.remove('on');$('sheet').innerHTML=''}
+function closeSheet(){S.mv=null;$('ovl').classList.remove('on');$('sheet').innerHTML=''}
 function locOptions(sel,filter){
   return [...S.locs.keys()].filter(c=>!loc(c).locked).filter(filter||(()=>true)).sort().map(c=>`<option value="${esc(c)}" ${c===sel?'selected':''}>${esc(pathName(c))} (${esc(short(c))})</option>`).join('');
 }
@@ -455,6 +480,7 @@ function formLoc(code,kind){
   if(l.kind==='P'){
     h+=`<label>Tầng</label><select id="f-floor">${FLOORS.map(f=>`<option ${f===(l.floor||'Trệt')?'selected':''}>${f}</option>`).join('')}</select>`;
     h+=`<label>Phạm vi</label><select id="f-scope"><option value="chung" ${l.scope!=='rieng'?'selected':''}>Khu vực chung – cả nhà cùng biết, cùng dọn</option><option value="rieng" ${l.scope==='rieng'?'selected':''}>Phòng riêng – người ở phòng chịu trách nhiệm</option></select>`;
+    h+=`<label>Camera quay khu này (tên trong Yoosee, cách nhau bằng dấu phẩy)</label><input type="text" id="f-cam" value="${esc(l.cam||'')}" placeholder="Phòng khách">`;
     h+=`<label>Người phụ trách</label><input type="text" id="f-owner" value="${esc(l.owner||'')}" placeholder="Để trống nếu cả nhà cùng lo">`;
     const mem=String(l.members||'').split(',').map(x=>x.trim());
     h+=`<label>Phòng riêng: ai được xem đồ bên trong (chủ nhà luôn xem được)</label><div class="list">${S.users.map(u=>`<label class="row" style="margin:0;color:inherit;font-size:inherit"><input type="checkbox" class="ck" data-mem="${esc(u.id)}" ${mem.includes(u.id)?'checked':''}><div class="t">${esc(u.name)}</div></label>`).join('')}</div>`;
@@ -470,7 +496,11 @@ function formItem(id){
   pend=null;
   let h=ed?`<h2>${esc(i.name)}</h2>${phBox('item',id,i.imgId,!kid())}<div class="note">${esc(pathName(i.loc))}${i.qty?' · còn '+esc(i.qty)+(i.unit?' '+esc(i.unit):''):''}</div>`:'<h2>Thêm đồ vật</h2>';
   if(ed){
-    h+=i.holder?`<div class="note warn">${esc(i.holder)} đang giữ từ ${fmtD(i.heldSince)}</div><button class="pri big" data-act="mv" data-m="tra" data-id="${esc(id)}">↩️ Đã trả về chỗ cũ</button>`:`<button class="pri big" data-act="mv" data-m="lay" data-id="${esc(id)}">🤲 Tôi lấy dùng</button>`;
+    if(isLost(i))h+=`<div class="note warn">❓ ${esc(i.lostBy||'')} báo KHÔNG THẤY lúc ${i.lostAt?when(i.lostAt):''}</div>${camWindow(i)}<button class="pri big" data-act="mv" data-m="thay" data-id="${esc(id)}">✅ Đã thấy, vẫn ở chỗ cũ</button>${kid()?'':`<button class="big" data-act="mvscan" data-m="thay" data-id="${esc(id)}">📍 Thấy ở chỗ khác (quét tem chỗ đó)</button>`}`;
+    else{
+      h+=i.holder?`<div class="note warn">${esc(i.holder)} đang giữ từ ${fmtD(i.heldSince)}${overdue(i)?' – quá '+HOLD_DAYS+' ngày':''}</div><button class="pri big" data-act="mv" data-m="tra" data-id="${esc(id)}">↩️ Đã trả về chỗ cũ</button>`:`<button class="pri big" data-act="mv" data-m="lay" data-id="${esc(id)}">🤲 Tôi lấy dùng</button>`;
+      h+=`<div class="btns"><button data-act="mv" data-m="mat" data-id="${esc(id)}">❓ Không thấy</button>${kid()?'':`<button data-act="mvscan" data-m="chuyen" data-id="${esc(id)}">🚚 Chuyển chỗ (quét tem)</button>`}</div>`;
+    }
     h+=`<h3>Lịch sử</h3><div id="hist" class="note">Đang tải lịch sử…</div>`;
     if(kid()){sheet(h+'<div class="btns"><button data-act="close">Đóng</button></div>');loadHist(id);return}
     h+=`<div class="two" style="align-items:flex-end"><div><label>Vật tư: số lượng</label><input type="text" id="mv-n" inputmode="decimal" value="1"></div><div><button data-act="mv" data-m="dung" data-id="${esc(id)}" style="width:100%">Dùng bớt</button></div><div><button data-act="mv" data-m="nhap" data-id="${esc(id)}" style="width:100%">Nhập thêm</button></div></div>`;
@@ -480,13 +510,13 @@ function formItem(id){
   h+=`<label>Nhóm</label><select id="f-cat"><option value="">— chọn nhóm —</option>${CATS.map(c=>`<option ${c===i.cat?'selected':''}>${esc(c)}</option>`).join('')}</select>`;
   h+=`<div class="two"><div><label>Số lượng</label><input type="text" id="f-qty" inputmode="decimal" value="${esc(i.qty||'')}"></div><div><label>Đơn vị</label><input type="text" id="f-unit" value="${esc(i.unit||'')}" placeholder="cái, hộp, m…"></div><div><label>Báo khi còn ≤</label><input type="text" id="f-min" inputmode="decimal" value="${esc(i.min??'')}" placeholder="vật tư"></div></div>`;
   h+=`<label>Nằm ở</label><select id="f-loc"><option value="">— chọn vị trí —</option>${locOptions(i.loc)}</select>`;
-  h+=`<div class="two"><div><label>Hạn sử dụng (nếu có)</label><input type="date" id="f-exp" value="${esc(i.exp||'')}"></div><div><label>Ngày cho vào</label><input type="date" id="f-put" value="${esc(i.putAt||'')}"></div></div>`;
+  h+=`<div class="two"><div><label>Hạn sử dụng (nếu có)</label><input type="text" class="dt" id="f-exp" inputmode="numeric" maxlength="10" placeholder="dd/mm/yyyy" value="${fmtD(i.exp||'')}"></div><div><label>Ngày cho vào</label><input type="text" class="dt" id="f-put" inputmode="numeric" maxlength="10" placeholder="dd/mm/yyyy" value="${fmtD(i.putAt||'')}"></div></div>`;
   h+=`<label>Ghi chú</label><textarea id="f-note">${esc(i.note||'')}</textarea>`;
   h+=`<details ${i.model||i.bought||i.shop||i.price||i.wty||i.wnote?'open':''}><summary>Thông tin mua hàng & bảo hành</summary>`;
   h+=`<label>Hãng / model / số serial</label><input type="text" id="f-model" value="${esc(i.model||'')}" placeholder="Bosch GSB 550, SN…">`;
-  h+=`<div class="two"><div><label>Ngày mua</label><input type="date" id="f-bought" value="${esc(i.bought||'')}"></div><div><label>Giá mua (đ)</label><input type="text" id="f-price" inputmode="numeric" value="${esc(i.price||'')}"></div></div>`;
+  h+=`<div class="two"><div><label>Ngày mua</label><input type="text" class="dt" id="f-bought" inputmode="numeric" maxlength="10" placeholder="dd/mm/yyyy" value="${fmtD(i.bought||'')}"></div><div><label>Giá mua (đ)</label><input type="text" id="f-price" inputmode="numeric" value="${esc(i.price||'')}"></div></div>`;
   h+=`<label>Mua ở đâu</label><input type="text" id="f-shop" value="${esc(i.shop||'')}" placeholder="Cửa hàng, Shopee, Lazada…">`;
-  h+=`<div class="two"><div><label>Bảo hành đến ngày</label><input type="date" id="f-wty" value="${esc(i.wty||'')}"></div><div><label>Cách bảo hành</label><input type="text" id="f-wnote" value="${esc(i.wnote||'')}" placeholder="Hãng, tại cửa hàng, phiếu để ở…"></div></div>`;
+  h+=`<div class="two"><div><label>Bảo hành đến ngày</label><input type="text" class="dt" id="f-wty" inputmode="numeric" maxlength="10" placeholder="dd/mm/yyyy" value="${fmtD(i.wty||'')}"></div><div><label>Cách bảo hành</label><input type="text" id="f-wnote" value="${esc(i.wnote||'')}" placeholder="Hãng, tại cửa hàng, phiếu để ở…"></div></div>`;
   h+=`</details>`;
   if(ed)h+='</details>';
   h+=`<div class="btns"><button class="pri" data-act="item-save" data-id="${esc(id||'')}">${ed?'Lưu thay đổi':'Lưu'}</button>${ed?'':'<button data-act="item-save" data-more="1" data-id="">Lưu & thêm tiếp</button>'}<button data-act="close">Huỷ</button>${ed?'<button class="dan" data-act="item-del" data-id="'+esc(id)+'">Xoá</button>':''}</div>`;
@@ -497,7 +527,7 @@ function formQuick(){
   const c=S.cur,food=inFridge(c);
   sheet(`<h2>⚡ Thêm nhanh</h2><div class="note">Vào: <b>${esc(pathName(c))}</b>${food?' · nhóm thực phẩm tươi – đông lạnh · ngày cho vào: hôm nay':''}</div>
   <label>Tên</label><input type="text" id="k-name" placeholder="${food?'Thịt bò, sữa chua, rau cải…':'Tên đồ vật'}">
-  <div class="two"><div><label>Số lượng</label><input type="text" id="k-qty" inputmode="decimal" value="1"></div><div><label>Đơn vị</label><input type="text" id="k-unit" placeholder="hộp, gói, kg…"></div><div><label>Hạn sử dụng</label><input type="date" id="k-exp"></div></div>
+  <div class="two"><div><label>Số lượng</label><input type="text" id="k-qty" inputmode="decimal" value="1"></div><div><label>Đơn vị</label><input type="text" id="k-unit" placeholder="hộp, gói, kg…"></div><div><label>Hạn sử dụng</label><input type="text" class="dt" id="k-exp" inputmode="numeric" maxlength="10" placeholder="dd/mm/yyyy"></div></div>
   ${food?'<div class="btns" style="margin:8px 0 0"><button class="chip" data-act="k-d" data-n="3">+3 ngày</button><button class="chip" data-act="k-d" data-n="7">+1 tuần</button><button class="chip" data-act="k-d" data-n="30">+1 tháng</button><button class="chip" data-act="k-d" data-n="90">+3 tháng</button></div>':''}
   <div class="btns"><button class="pri" data-act="quick-save" data-food="${food?1:''}">Lưu & thêm tiếp</button><button data-act="close">Xong</button></div><div class="note" id="k-log"></div>`);
 }
@@ -593,6 +623,10 @@ function openCode(raw,scanned){
   const code=raw.trim().toUpperCase();if(!code)return;
   const hit=S.locs.has(code)?code:S.locs.has(HOUSE+'-'+code)?HOUSE+'-'+code:null;
   if(hit&&loc(hit).locked){$('scan-msg').textContent='Phòng riêng, bạn không có quyền xem.';go('quet')}
+  else if(hit&&S.mv){
+    const it=S.items.get(S.mv.id);if(!it){S.mv=null;return}
+    openLoc(hit);sheet(`<h2>${S.mv.m==='thay'?'📍 Thấy ở đây':'🚚 Chuyển chỗ'}</h2><p><b>${esc(it.name)}</b></p><p class="note">Từ: ${esc(pathName(it.loc))}<br>Đến: <b>${esc(pathName(hit))}</b> <span class="code">${esc(hit)}</span></p><button class="pri big" data-act="mv-ok" data-c="${esc(hit)}">Xác nhận</button><div class="btns"><button data-act="mv-cancel">Huỷ</button></div>`);
+  }
   else if(hit){
     $('scan-msg').textContent='';openLoc(hit);
     if(scanned&&!kid()&&loc(hit).printed!=='2')sheet(`<h2>Xác nhận dán tem</h2><p>Bạn vừa quét tem của <b>${esc(pathName(hit))}</b> <span class="code">${esc(hit)}</span>.</p><p class="note">Tem đã được dán đúng tại vị trí này chưa?</p><button class="pri big" data-act="stuck" data-c="${esc(hit)}">✅ Đã dán tại đây</button><div class="btns"><button data-act="close">Chưa dán</button></div>`);
@@ -610,6 +644,7 @@ document.addEventListener('click',async e=>{
   if(a!=='loc-del'&&a!=='item-del')armed=null;
   if(a==='open'){e.stopPropagation();closeSheet();openLoc(d.c)}
   else if(a==='close')closeSheet();
+  else if(a==='mv-cancel'){S.mv=null;closeSheet()}
   else if(a==='loc-new')formLoc(null,d.k);
   else if(a==='loc-edit')formLoc(S.cur);
   else if(a==='loc-print'){S.sel.add(S.cur);go('in-tem')}
@@ -617,7 +652,7 @@ document.addEventListener('click',async e=>{
     const name=$('f-name').value.trim();if(!name){toast('Nhập tên.');return}
     const old=d.ed?loc(d.c):null;
     const data={...(old||{}),kind:d.k,name,note:$('f-note').value.trim(),parent:$('f-parent')?$('f-parent').value:(old?old.parent:S.cur),ts:old&&old.ts||Date.now()};
-    if($('f-floor')){data.floor=$('f-floor').value;data.scope=$('f-scope').value;data.owner=$('f-owner').value.trim();data.members=[...document.querySelectorAll('[data-mem]:checked')].map(x=>x.dataset.mem).join(',')}
+    if($('f-floor')){data.cam=$('f-cam').value.trim();data.floor=$('f-floor').value;data.scope=$('f-scope').value;data.owner=$('f-owner').value.trim();data.members=[...document.querySelectorAll('[data-mem]:checked')].map(x=>x.dataset.mem).join(',')}
     if(old&&old.name!==name)data.printed=false;
     el.disabled=true;if(await putLoc(d.c,data,!d.ed))closeSheet();else el.disabled=false;
   }
@@ -628,11 +663,41 @@ document.addEventListener('click',async e=>{
   }
   else if(a==='item-new')formItem(null);
   else if(a==='quick')formQuick();
-  else if(a==='k-d'){const t=new Date();t.setDate(t.getDate()+(+d.n));$('k-exp').value=t.toLocaleDateString('sv')}
+  else if(a==='yoosee')openYoosee();
+  else if(a==='camchk'){el.disabled=true;if(await act('camcheck',{}))toast('Đã ghi: thẻ nhớ camera đã kiểm tra.');else el.disabled=false}
+  else if(a==='mvscan'){closeSheet();S.mv={id:d.id,m:d.m};go('quet');$('scan-msg').textContent='Quét tem chỗ mới cho “'+((S.items.get(d.id)||{}).name||'')+'”.';live()}
+  else if(a==='mv-ok'){
+    const mv=S.mv,it=mv&&S.items.get(mv.id);S.mv=null;if(!it)return;el.disabled=true;let ok;
+    if(mv.m==='thay')ok=await actU('move',{id:mv.id,act:'thay',loc:d.c},'Đã ghi: “'+it.name+'” ở '+pathName(d.c)+'.');
+    else ok=await putItem(mv.id,{...it,loc:d.c});
+    if(ok){closeSheet();openLoc(d.c)}else el.disabled=false;
+  }
+  else if(a==='kk'){
+    const its=itemsAt(S.cur);
+    sheet(`<h2>✅ Kiểm kê</h2><div class="note">${esc(pathName(S.cur))} · bỏ dấu tích món KHÔNG thấy, rồi bấm Lưu.</div><div class="list">${its.map(([id,i])=>`<label class="row" style="margin:0;color:inherit;font-size:inherit"><input type="checkbox" class="ck" data-kk="${esc(id)}" ${isLost(i)?'':'checked'}><div class="t"><div class="n">${esc(i.name)}</div><div class="s">${i.qty?'× '+esc(i.qty)+(i.unit?' '+esc(i.unit):''):''}${i.holder?' · '+esc(i.holder)+' đang giữ':''}</div></div></label>`).join('')}</div><div class="btns"><button class="pri" data-act="kk-save">Lưu kiểm kê</button><button data-act="close">Huỷ</button></div>`);
+  }
+  else if(a==='kk-save'){
+    const ok=[],miss=[];document.querySelectorAll('[data-kk]').forEach(x=>{const i=S.items.get(x.dataset.kk);if(x.checked)ok.push(x.dataset.kk);else if(i&&!isLost(i)&&!i.holder)miss.push(x.dataset.kk)});
+    el.disabled=true;if(await act('kiemke',{code:S.cur,ok,miss})){closeSheet();toast(`Đã kiểm kê: ${ok.length} còn, ${miss.length} không thấy.`)}else el.disabled=false;
+  }
+  else if(a==='bulk'){
+    sheet(`<h2>📋 Nhập danh sách</h2><div class="note">Vào: <b>${esc(pathName(S.cur))}</b>. Mỗi dòng 1 món: <b>tên, số lượng, đơn vị</b> (số lượng, đơn vị có thể bỏ). Có thể nói bằng micro bàn phím.</div>
+    <textarea id="b-txt" style="min-height:180px" placeholder="Kìm điện, 2, cái&#10;Tua vít bake&#10;Băng keo điện, 5, cuộn"></textarea>
+    <label>Nhóm cho tất cả</label><select id="b-cat"><option value="">— không chọn —</option>${CATS.map(c=>`<option>${esc(c)}</option>`).join('')}</select>
+    <div class="btns"><button class="pri" data-act="bulk-save">Lưu</button><button data-act="close">Huỷ</button></div><div class="note" id="b-pre"></div>`);
+  }
+  else if(a==='bulk-save'){
+    const items=$('b-txt').value.split(/\n+/).map(t=>t.trim()).filter(Boolean).map(t=>{const p=t.split(/[,;\t]/).map(x=>x.trim());return {name:p[0],qty:p[1]||'1',unit:p[2]||'',cat:$('b-cat').value}}).filter(x=>x.name);
+    if(!items.length){toast('Danh sách trống.');return}
+    if(items.length>100){toast('Tối đa 100 món mỗi lần.');return}
+    el.disabled=true;if(await act('bulk',{loc:S.cur,items})){closeSheet();toast('Đã nhập '+items.length+' món.')}else el.disabled=false;
+  }
+  else if(a==='k-d'){const t=new Date();t.setDate(t.getDate()+(+d.n));$('k-exp').value=fmtD(t.toLocaleDateString('sv'))}
   else if(a==='quick-save'){
     const name=$('k-name').value.trim();if(!name){toast('Nhập tên.');return}
+    let kx;try{kx=dv('k-exp')}catch(er){toast(er.message);return}
     el.disabled=true;
-    const ok=await putItem('',{name,qty:$('k-qty').value.trim(),unit:$('k-unit').value.trim(),loc:S.cur,cat:d.food?FRESH:'',exp:$('k-exp').value,putAt:d.food?today():'',ts:Date.now()});
+    const ok=await putItem('',{name,qty:$('k-qty').value.trim(),unit:$('k-unit').value.trim(),loc:S.cur,cat:d.food?FRESH:'',exp:kx,putAt:d.food?today():'',ts:Date.now()});
     el.disabled=false;if(!ok||!$('k-name'))return;
     $('k-log').textContent=($('k-log').textContent?$('k-log').textContent+', ':'Đã thêm: ')+name;
     $('k-name').value='';$('k-qty').value='1';$('k-exp').value='';$('k-name').focus();
@@ -642,9 +707,10 @@ document.addEventListener('click',async e=>{
     const name=$('f-name').value.trim(),lc=$('f-loc').value;
     if(!name){toast('Nhập tên đồ vật.');return}
     if(!lc){toast('Chọn vị trí.');return}
+    let D;try{D={exp:dv('f-exp'),putAt:dv('f-put'),bought:dv('f-bought'),wty:dv('f-wty')}}catch(er){toast(er.message);return}
     const old=d.id?S.items.get(d.id):null,prevIds=new Set(S.items.keys());
     el.disabled=true;
-    const ok=await putItem(d.id,{name,qty:$('f-qty').value.trim(),note:$('f-note').value.trim(),loc:lc,ts:old&&old.ts||Date.now(),cat:$('f-cat').value,unit:$('f-unit').value.trim(),min:$('f-min').value.trim(),model:$('f-model').value.trim(),bought:$('f-bought').value,price:$('f-price').value.trim(),shop:$('f-shop').value.trim(),wty:$('f-wty').value,wnote:$('f-wnote').value.trim(),exp:$('f-exp').value,putAt:$('f-put').value});
+    const ok=await putItem(d.id,{name,qty:$('f-qty').value.trim(),note:$('f-note').value.trim(),loc:lc,ts:old&&old.ts||Date.now(),cat:$('f-cat').value,unit:$('f-unit').value.trim(),min:$('f-min').value.trim(),model:$('f-model').value.trim(),bought:D.bought,price:$('f-price').value.trim(),shop:$('f-shop').value.trim(),wty:D.wty,wnote:$('f-wnote').value.trim(),exp:D.exp,putAt:D.putAt});
     el.disabled=false;if(!ok)return;
     if(pend&&!d.id){const nid=[...S.items.keys()].find(k=>!prevIds.has(k));if(nid){const pp=pend;pend=null;if(await act('setPhoto',{kind:'item',id:nid,thumb:pp.thumb,full:pp.full}))TH.set('i:'+nid+':'+S.items.get(nid).imgId,pp.thumb)}const b=$('ph');if(b&&d.more)b.outerHTML=phBox('item','','',true)}
     if(d.more){for(const k of ['name','note','model','price','wty','wnote','min','exp'])$('f-'+k).value='';$('f-qty').value='1';$('f-name').focus();toast('Đã lưu “'+name+'”.')}else closeSheet();
@@ -655,7 +721,8 @@ document.addEventListener('click',async e=>{
   }
   else if(a==='mv'){
     el.disabled=true;const nm=(S.items.get(d.id)||{}).name||'';
-    if(await actU('move',{id:d.id,act:d.m,qty:$('mv-n')?$('mv-n').value:''},{lay:'Đã ghi: bạn lấy “'+nm+'”.',tra:'Đã ghi: trả “'+nm+'”.',dung:'Đã trừ số lượng “'+nm+'”.',nhap:'Đã cộng số lượng “'+nm+'”.'}[d.m]))closeSheet();else el.disabled=false;
+    const inSheet=!!el.closest('#sheet');
+    if(await actU('move',{id:d.id,act:d.m,qty:inSheet&&$('mv-n')?$('mv-n').value:''},{lay:'Đã ghi: bạn lấy “'+nm+'”.',tra:'Đã ghi: trả “'+nm+'”.',dung:'Đã trừ số lượng “'+nm+'”.',nhap:'Đã cộng số lượng “'+nm+'”.',mat:'Đã báo không thấy “'+nm+'”.',thay:'Đã ghi: thấy lại “'+nm+'”.'}[d.m])){if(inSheet)closeSheet()}else el.disabled=false;
   }
   else if(a==='undo'){e.stopPropagation();el.disabled=true;await doUndo(d.ts,d.id)}
   else if(a==='undo-bar'){if(undoG)await doUndo(undoG.ts,undoG.itemId)}
@@ -731,6 +798,11 @@ document.addEventListener('change',async e=>{
 });
 $('fc').innerHTML='<option value="">Tất cả nhóm</option>'+CATS.map(c=>`<option>${esc(c)}</option>`).join('');
 $('q').addEventListener('input',e=>{S.q=e.target.value;renderTim()});
+document.addEventListener('input',e=>{const t=e.target;if(!t.classList||!t.classList.contains('dt')||(e.inputType||'').startsWith('delete'))return;
+  const p=t.value.replace(/[^\d\/]/g,'').split('/');
+  while(p.length<3&&p[p.length-1].length>2){const l=p.pop();p.push(l.slice(0,2),l.slice(2))}
+  if(p.length<3&&p[p.length-1].length===2&&e.data!=='/')p.push('');
+  t.value=p.slice(0,3).join('/').slice(0,10)});
 $('mcode').addEventListener('keydown',e=>{if(e.key==='Enter')openCode(e.target.value)});
 $('l-user').addEventListener('change',()=>{$('l-msg').textContent='';loginMode()});
 $('l-pin2').addEventListener('keydown',e=>{if(e.key==='Enter')$('l-btn').click()});
