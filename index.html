@@ -402,15 +402,21 @@ function nextCode(parent,kind){
 }
 const API=String(window.N25_API||'').trim(),GAS=!!(window.google&&google.script&&google.script.run);
 let busyN=0;function busy(d){busyN=Math.max(0,busyN+d);const b=$('reload');if(b)b.textContent=busyN?'⏳':'↻'}
-function call(action,p){busy(1);return new Promise((ok,no)=>{
+const READ_A={who:1,load:1,thumbs:1,banner:1,ping:1,history:1};
+function callOnce(action,p){return new Promise((ok,no)=>{
   if(!GAS){
     if(!/^https:\/\/script\.google\.com\/.+\/exec$/.test(API)){no(new Error('Chưa khai báo địa chỉ máy chủ trong tệp config.js.'));return}
-    fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({token,action,p:p||{}})})
-      .then(r=>r.json()).then(r=>{if(r&&r.ok)ok(r.data);else no(new Error((r&&r.err)||'Lỗi máy chủ'))},()=>no(new Error('Không kết nối được máy chủ. Kiểm tra mạng.')));
+    const ac=window.AbortController?new AbortController():null,tm=ac?setTimeout(()=>ac.abort(),35000):0;
+    fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({token,action,p:p||{}}),signal:ac?ac.signal:undefined})
+      .then(r=>r.json()).then(r=>{clearTimeout(tm);if(r&&r.ok)ok(r.data);else no(new Error((r&&r.err)||'Lỗi máy chủ'))},()=>{clearTimeout(tm);no(new Error('Không kết nối được máy chủ. Kiểm tra mạng.'))});
     return;
   }
   google.script.run.withSuccessHandler(r=>{if(r&&r.ok)ok(r.data);else no(new Error((r&&r.err)||'Lỗi máy chủ'))}).withFailureHandler(e=>no(e)).api(token,action,p||{});
-}).finally(()=>busy(-1))}
+})}
+async function call(action,p){busy(1);try{
+  try{return await callOnce(action,p)}
+  catch(e){const m=String((e&&e.message)||e);if(READ_A[action]&&/kết nối|Failed|network|abort/i.test(m)){await new Promise(r=>setTimeout(r,1500));return await callOnce(action,p)}throw e}
+}finally{busy(-1)}}
 const CODE_RE=/^[\x21-\x7E]{4,20}$/;
 function codeErr(c,chu){if(!CODE_RE.test(c))return 'Mã gồm 4–20 ký tự: chữ không dấu, chữ số hoặc ký hiệu; không khoảng trắng.';if(chu&&c.length<8)return 'Tài khoản chủ nhà cần mã ít nhất 8 ký tự.';return ''}
 const kbGet=id=>{try{return localStorage.getItem('n25kb_'+id)||'numeric'}catch(e){return 'numeric'}};
@@ -420,7 +426,7 @@ const ERR={NOAI:'Nút gợi ý chưa được cài khoá API Claude (xem HUONG-D
 function fail(e){const m=String((e&&e.message)||e);console.error(e);if(m==='AUTH')logout();toast(ERR[m]||('Không thực hiện được: '+m))}
 function apply(d){
   if(d.token){token=d.token;try{localStorage.setItem('n25tok',token)}catch(e){}}
-  S.me=d.me;S.users=d.users||[];S.logs=d.logs||[];S.camChk=d.camChk||'';
+  S.me=d.me;S.users=d.users||[];S.logs=d.logs||[];S.camChk=d.camChk||'';if(d.me&&d.locs&&d.items){try{const q=Object.assign({},d);delete q.token;localStorage.setItem('n25snap',JSON.stringify(q))}catch(e){try{localStorage.removeItem('n25snap')}catch(_){}}}
   S.locs=new Map(d.locs.map(l=>[l.code,l]));S.items=new Map(d.items.map(i=>[i.id,i]));
   S.ready=true;S.at=Date.now();banner('');render();hideSplash();fetchThumbs();
   if($('expl'))expSheet(true);else if(!S.expShown&&S.me&&!kid()){S.expShown=true;let t='';try{t=localStorage.getItem('n25exp_'+S.me.id)||''}catch(e){}if(t!==today()&&dueList().length){try{localStorage.setItem('n25exp_'+S.me.id,today())}catch(e){}setTimeout(()=>expSheet(false),500)}}
@@ -443,13 +449,19 @@ const putLoc=(code,data,isNew)=>actU('saveLoc',{code:isNew?'':code,loc:data},isN
 const delLoc=code=>actU('delLoc',{code},'Đã xoá “'+((loc(code)||{}).name||'')+'”.');
 const putItem=(id,data)=>actU('saveItem',{id:id||'',item:data},(id?'Đã lưu “':'Đã thêm “')+data.name+'”.');
 const delItem=id=>actU('delItem',{id},'Đã xoá “'+((S.items.get(id)||{}).name||'')+'”.');
-function logout(){S.expShown=false;token='';try{localStorage.removeItem('n25tok')}catch(e){}S.me=null;S.ready=false;S.locs=new Map();S.items=new Map();S.sel.clear();closeSheet();render();loadWho()}
+function logout(){S.expShown=false;token='';try{localStorage.removeItem('n25tok');localStorage.removeItem('n25snap')}catch(e){}S.me=null;S.ready=false;S.locs=new Map();S.items=new Map();S.sel.clear();closeSheet();render();loadWho()}
+let whoTry=0;
+function whoShow(w,r){S.who=w;const cur=$('l-user').value;$('l-user').innerHTML=w.map(u=>`<option value="${esc(u.id)}">${esc(u.name)}</option>`).join('');if(w.some(u=>u.id===cur))$('l-user').value=cur;$('l-msg').textContent='';loginMode();hideSplash();if(r&&r.house!==undefined&&r.house!==S.house){S.house=r.house;setBanner(r.house)}}
 async function loadWho(){
-  try{const r=await call('who'),w=r.users;S.who=w;const cur=$('l-user').value;$('l-user').innerHTML=w.map(u=>`<option value="${esc(u.id)}">${esc(u.name)}</option>`).join('');if(w.some(u=>u.id===cur))$('l-user').value=cur;$('l-msg').textContent='';loginMode();hideSplash();if(r.house!==S.house){S.house=r.house;setBanner(r.house)}}
-  catch(e){hideSplash();const m=String((e&&e.message)||e);$('l-msg').textContent=/config\.js/.test(m)?m:'Không kết nối được máy chủ. Kiểm tra mạng rồi mở lại trang.'}
+  if(!(S.who||[]).length){try{const c=JSON.parse(localStorage.getItem('n25who')||'null');if(c&&c.users&&c.users.length)whoShow(c.users,null)}catch(e){}}
+  if(!(S.who||[]).length)loginMode();
+  const had=!!(S.who||[]).length;
+  try{const r=await call('who'),w=r.users;if(!w||!w.length)throw new Error('EMPTY');whoTry=0;whoShow(w,r);try{localStorage.setItem('n25who',JSON.stringify({users:w.map(u=>({id:u.id,name:u.name,first:u.first,img:u.img})),t:Date.now()}))}catch(e){}}
+  catch(e){hideSplash();const m=String((e&&e.message)||e);if(!had)$('l-msg').textContent=/config\.js/.test(m)?m:'Máy chủ đang khởi động, đang thử lại…';if(!/config\.js/.test(m)&&++whoTry<10)setTimeout(loadWho,3000);else if(whoTry>=10&&!had)$('l-msg').textContent='Không kết nối được máy chủ. Kiểm tra mạng rồi tải lại trang.'}
 }
 function loginMode(){
   const u=(S.who||[]).find(x=>x.id===$('l-user').value),f=!!(u&&u.first);
+  if(!(S.who||[]).length){$('l-grid').innerHTML='<div class="note">Đang tải danh sách người dùng…</div>';return}
   $('l-grid').innerHTML=(S.who||[]).map(x=>`<button data-act="pick" data-u="${esc(x.id)}" class="${u&&x.id===u.id?'on':''}">${av(x,52)}<span>${esc(x.name)}</span></button>`).join('');
   $('l-first').hidden=!f;$('l-pin2-box').hidden=!f;
   $('l-pin-lb').textContent=f?'Đặt mã đăng nhập mới (4–20 chữ cái hoặc chữ số)':'Mã đăng nhập';
@@ -462,8 +474,9 @@ async function init(){
   if(GAS){try{google.script.url.getLocation(l=>{startCode=(l.parameter&&l.parameter.c)||'';if(startCode&&S.ready)openCode(startCode)})}catch(e){}}
   else{try{startCode=new URLSearchParams(location.search).get('c')||''}catch(e){}}
   if(!token){loadWho();return}
+  let cached=false;try{const c=JSON.parse(localStorage.getItem('n25snap')||'null');if(c&&c.me&&c.locs&&c.items&&token.startsWith(c.me.id+':')){apply(c);cached=true}}catch(e){}
   try{apply(await call('load'));if(startCode)openCode(startCode)}
-  catch(e){hideSplash();if(String(e&&e.message)==='AUTH')logout();else{S.me={id:'',name:'',role:''};banner('Chưa tải được dữ liệu. Bấm “Tải lại” để thử lại.');render()}}
+  catch(e){hideSplash();if(String(e&&e.message)==='AUTH')logout();else if(cached){banner('Đang xem dữ liệu đã lưu trên máy; chưa cập nhật được. Bấm ↻ để thử lại.');if(startCode)openCode(startCode)}else{S.me={id:'',name:'',role:''};banner('Chưa tải được dữ liệu. Bấm “Tải lại” để thử lại.');render()}}
 }
 
 /* ---------- hiển thị ---------- */
@@ -922,6 +935,7 @@ document.addEventListener('click',async e=>{
   else if(a==='undo'){e.stopPropagation();el.disabled=true;await doUndo(d.ts,d.id)}
   else if(a==='undo-bar'){if(undoG)await doUndo(undoG.ts,undoG.itemId)}
   else if(a==='login'){
+    if(!$('l-user').value){$('l-msg').textContent='Chưa tải xong danh sách người dùng. Chờ vài giây rồi chọn tên của bạn.';loadWho();return}
     el.disabled=true;$('l-msg').textContent='';
     const first=!$('l-pin2-box').hidden,pin=$('l-pin').value.trim();
     try{
