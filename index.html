@@ -162,7 +162,7 @@ details{margin-top:14px;border-top:1px solid var(--line);padding-top:10px} summa
     <div class="two"><div><label for="cp">Nhân bản cho tất cả tem</label><select id="cp"><option value="1">1 bản</option><option value="2">2 bản giống nhau</option><option value="3">3 bản giống nhau</option><option value="4">4 bản giống nhau</option></select></div><div><label>&nbsp;</label><label class="row" style="margin:0;padding:8px 0;border:0;color:inherit;font-size:14px"><input type="checkbox" class="ck" id="fill" checked><span>Lấp ô trống cuối bằng bản phụ</span></label></div></div>
     <div id="in-out"></div>
     <div class="prev" id="prev"></div>
-    <div class="sticky"><button class="pri" id="pdf-btn" data-act="pdf">Tải PDF tem</button></div>
+    <div class="sticky" style="display:flex;gap:8px"><button class="pri" id="print-btn" data-act="pdf" data-p="1" style="flex:2">🖨️ In ngay</button><button id="pdf-btn" data-act="pdf" style="flex:1">Tải PDF</button></div>
   </section>
 </main>
 
@@ -189,7 +189,10 @@ const FLOORS=['Ngoài trời','Trệt','Lầu 1','Lầu 2','Lầu 3','Tầng th�
 const CATS=['Dụng cụ cầm tay','Dụng cụ điện – máy cầm tay','Dụng cụ đo – kiểm tra','Vật tư điện','Vật tư nước','Vật tư cơ khí (ốc vít, bu lông, vòng bi)','Phụ tùng máy móc thiết bị','Dầu mỡ – keo – hoá chất','Bảo hộ lao động','Thiết bị điện – điện tử','Dụng cụ nấu nướng','Chén bát – ly – dao kéo','Thực phẩm khô – gia vị','Thực phẩm tươi – đông lạnh','Đồ điện bếp','Nội thất – trang trí','Giấy tờ – hồ sơ','Quần áo – chăn màn','Đồ thờ cúng','Y tế – thuốc','Vệ sinh – tẩy rửa','Khác'];
 const CATI=['🔧','🛠️','📏','⚡','🚰','🔩','⚙️','🧴','🧤','📺','🍳','🍽️','🧂','🥩','🔌','🛋️','📄','👕','🕯️','💊','🧽','📦'];
 const FCOL={'Ngoài trời':'#3f7d4e','Trệt':'#b3541e','Lầu 1':'#7b1e2b','Lầu 2':'#2f5f8a','Lầu 3':'#6a4c93','Tầng thượng':'#b8860b'};
-const TH=new Map();let pend=null,picT=null;
+const TH=new Map();
+const thLoad=()=>{try{const o=JSON.parse(localStorage.getItem('n25th')||'{}');for(const k in o)TH.set(k,o[k])}catch(e){}};
+let thSaveT;const thSave=()=>{clearTimeout(thSaveT);thSaveT=setTimeout(()=>{try{const o={};for(const [k,v] of TH)if(v)o[k]=v;localStorage.setItem('n25th',JSON.stringify(o))}catch(e){try{localStorage.removeItem('n25th')}catch(x){}}},1500)};
+thLoad();let pend=null,picT=null;
 const S={cnt:{},mv:null,camChk:'',cp:1,fill:true,ff:'',locs:new Map(),items:new Map(),tab:'tim',cur:'',q:'',sel:new Set(),pf:'chua',ready:false,fc:'',fs:'',me:null,users:[],logs:[],at:0};
 let token='';try{token=localStorage.getItem('n25tok')||''}catch(e){}
 try{const c=JSON.parse(localStorage.getItem('n25ban')||'null');if(c&&c.url)document.getElementById('splash').style.backgroundImage=`url(${c.url})`}catch(e){}
@@ -226,7 +229,7 @@ async function fetchThumbs(){
     const r=await call('thumbs',{items,locs});
     for(const id of items){const i=S.items.get(id);if(i)TH.set('i:'+id+':'+i.imgId,r.items[id]||'')}
     for(const c of locs){const l=S.locs.get(c);if(l)TH.set('l:'+c+':'+l.imgId,r.locs[c]||'')}
-    thBusy=false;thTry=0;render();fetchThumbs();
+    thBusy=false;thTry=0;thSave();render();fetchThumbs();
   }catch(e){thBusy=false;if(++thTry<4)setTimeout(fetchThumbs,3000*thTry)}
 }
 async function setBanner(id){
@@ -586,7 +589,7 @@ function renderIn(){
   $('in-out').innerHTML=(selIt.length?'<h3>Tem cho đồ vật</h3><div class="list">'+selIt.map(c=>{const i=S.items.get(itemOfCode(c));return `<label class="row" style="margin:0;color:inherit;font-size:inherit"><input type="checkbox" class="ck" data-ck="${esc(c)}" checked>${itile(itemOfCode(c),i)}<div class="t"><div class="n">${esc(i.name)}</div><div class="s">${esc(pathName(i.loc))}</div></div>${cntSel(c)}</label>`}).join('')+'</div><h3>Tem vị trí</h3>':'')+(all.length?'<div class="list">'+all.map(c=>`<label class="row" style="margin:0;color:inherit;font-size:inherit"><input type="checkbox" class="ck" data-ck="${esc(c)}" ${S.sel.has(c)?'checked':''}>${lbdg(c)}<div class="t"><div class="n">${esc(loc(c).name)}</div><div class="s"><span class="code">${esc(short(c))}</span>${st(loc(c))}</div>${cntSel(c)}</div></label>`).join('')+'</div>':'<div class="empty">'+(S.pf==='cho'?'Không có tem nào đang chờ dán.':S.locs.size?'Tất cả vị trí đã in tem. Chọn “Tất cả” để in lại.':'Chưa có vị trí nào để in tem.')+'</div>');
   const pv=$('prev'),ls=labelList();pv.innerHTML='';
   if(window.qrcode)ls.slice(0,4).forEach(c=>pv.appendChild(drawLabel(c,10)));
-  const b=$('pdf-btn');b.disabled=!ls.length;b.textContent=ls.length?`🏷️ Tải PDF (${ls.length} tem, ${Math.ceil(ls.length/2)} hàng)`:'Chọn vị trí cần in tem';
+  const b=$('pdf-btn');b.disabled=!ls.length;b.textContent=ls.length?`Tải PDF (${ls.length} tem)`:'Tải PDF';const pb=$('print-btn');pb.disabled=!ls.length;pb.textContent=ls.length?`🖨️ In ngay (${ls.length} tem, ${Math.ceil(ls.length/2)} hàng)`:'Chọn tem cần in';
 }
 function render(){
   document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id===(S.me?'v-'+S.tab:'v-login')));
@@ -714,14 +717,16 @@ function drawLabel(code,S_){
   for(const t of nl){g.fillText(t,tx,y,tw);y+=px*1.18}
   return cv;
 }
-async function makePdf(arg){
+async function makePdf(arg,print){
   const codes=arg?(arg.length%2?arg.concat(arg[arg.length-1]):arg):labelList();if(!codes.length)return;
   if(!window.jspdf||!window.qrcode){toast('Chưa tải được thư viện in tem, kiểm tra mạng rồi mở lại trang.');return}
   const doc=new window.jspdf.jsPDF({orientation:'landscape',unit:'mm',format:[22,72],compress:true});
   codes.forEach((c,i)=>{if(i&&i%2===0)doc.addPage([22,72],'landscape');doc.addImage(drawLabel(c,16).toDataURL('image/png'),'PNG',(i%2)*37,0,35,22,undefined,'FAST')});
   const name='tem-nha25-'+new Date().toISOString().slice(0,10)+'.pdf';
-  try{doc.save(name)}catch(e){toast('Không tải được PDF trên trình duyệt này, hãy mở bằng Chrome trên laptop.');return}
-  toast('Đã tạo PDF. In ở tỉ lệ 100%.');
+  let opened=false;
+  if(print){try{doc.autoPrint();opened=!!window.open(doc.output('bloburl'),'_blank')}catch(e){}if(!opened)toast('Trình duyệt chặn cửa sổ in, đang tải PDF để anh mở in.')}
+  if(!opened){try{doc.save(name)}catch(e){toast('Không tải được PDF trên trình duyệt này, hãy mở bằng Chrome trên laptop.');return}}
+  toast(opened?'Đã mở hộp thoại in. Chọn máy in tem, tỉ lệ 100%.':'Đã tạo PDF. In ở tỉ lệ 100%.');
   const uniq=[...new Set(codes)].filter(c=>S.locs.has(c));if(arg){toast('Đã tạo PDF '+codes.length+' tem. In ở tỉ lệ 100%.');return}S.sel.clear();S.cnt={};if(await act('printed',{codes:uniq})){S.pf='cho';render();toast('Đã tạo PDF. In ở tỉ lệ 100%, dán tem rồi quét tem để xác nhận.')}
 }
 
@@ -804,11 +809,11 @@ document.addEventListener('click',async e=>{
     <div class="note">Tem chỉ ghi tên món; chỗ để luôn lấy từ app nên đổi chỗ sau này không phải in lại. Máy in ra 2 tem giống nhau: dán 1, giữ 1 dự phòng.</div>
     <div class="btns"><button data-act="close">Huỷ</button></div>`)}
   else if(a==='item-tem-add'){S.sel.add(itemCode(d.id));S.cnt[itemCode(d.id)]=+($('it-n').value||1);closeSheet();render();toast('Đã thêm. Đang chờ in: '+S.sel.size+' tem'+(S.sel.size%2?' (lẻ, tem cuối sẽ in thêm 1 bản)':'')+'. Vào tab In tem để tải PDF.')}
-  else if(a==='item-tem-go'){el.disabled=true;try{await makePdf(Array(+($('it-n').value||1)).fill(itemCode(d.id)));closeSheet()}finally{el.disabled=false}}
+  else if(a==='item-tem-go'){el.disabled=true;try{await makePdf(Array(+($('it-n').value||1)).fill(itemCode(d.id)),true);closeSheet()}finally{el.disabled=false}}
   else if(a==='item-tem-move'){
     const nl=$('it-loc').value,i=S.items.get(d.id);if(!nl){toast('Chọn chỗ mới.');return}if(!i)return;
     el.disabled=true;
-    if(await putItem(d.id,{...i,loc:nl})){try{await makePdf(Array(+($('it-n').value||1)).fill(itemCode(d.id)))}catch(er){}closeSheet()}else el.disabled=false}
+    if(await putItem(d.id,{...i,loc:nl})){try{await makePdf(Array(+($('it-n').value||1)).fill(itemCode(d.id)),true)}catch(er){}closeSheet()}else el.disabled=false}
   else if(a==='loc-save'){
     const name=$('f-name').value.trim();if(!name){toast('Nhập tên.');return}
     const old=d.ed?loc(d.c):null;
@@ -961,7 +966,7 @@ document.addEventListener('click',async e=>{
   else if(a==='pf'){S.pf=d.v;render()}
   else if(a==='sel-all'){[...S.locs.keys()].forEach(c=>{const l=loc(c);if(!l.locked&&(S.pf==='tat'||(S.pf==='cho'?l.printed==='1':!l.printed)))S.sel.add(c)});render()}
   else if(a==='sel-none'){S.sel.clear();render()}
-  else if(a==='pdf'){el.disabled=true;try{await makePdf()}finally{renderIn()}}
+  else if(a==='pdf'){el.disabled=true;try{await makePdf(null,!!d.p)}finally{renderIn()}}
 });
 document.addEventListener('change',async e=>{
   const ck=e.target.dataset&&e.target.dataset.ck;
