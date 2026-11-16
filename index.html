@@ -165,7 +165,7 @@ details{margin-top:14px;border-top:1px solid var(--line);padding-top:10px} summa
     <div class="two"><div><label for="cp">Nhân bản cho tất cả tem</label><select id="cp"><option value="1">1 bản</option><option value="2">2 bản giống nhau</option><option value="3">3 bản giống nhau</option><option value="4">4 bản giống nhau</option></select></div><div><label>&nbsp;</label><label class="row" style="margin:0;padding:8px 0;border:0;color:inherit;font-size:14px"><input type="checkbox" class="ck" id="fill" checked><span>Lấp ô trống cuối bằng bản phụ</span></label></div></div>
     <div id="in-out"></div>
     <div class="prev" id="prev"></div>
-    <div class="sticky" style="display:flex;gap:8px"><button class="pri" id="print-btn" data-act="pdf" data-p="1" style="flex:2">🖨️ In ngay</button><button id="pdf-btn" data-act="pdf" style="flex:1">Tải PDF</button></div>
+    <div class="sticky" style="display:flex;gap:8px"><button class="pri" id="print-btn" data-act="pdf" data-p="1" style="flex:2">🖨️ In ngay</button><button id="pdf-btn" data-act="pdf" style="flex:1">Tải PDF</button><button id="share-btn" data-act="pdf" data-p="share" style="flex:1.4">📲 Gửi 4Barcode</button></div>
   </section>
 </main>
 
@@ -616,7 +616,7 @@ function renderIn(){
   $('in-out').innerHTML=pqBlock()+(selIt.length?'<h3>Tem cho đồ vật</h3><div class="list">'+selIt.map(c=>{const i=S.items.get(itemOfCode(c));return `<label class="row" style="margin:0;color:inherit;font-size:inherit"><input type="checkbox" class="ck" data-ck="${esc(c)}" checked>${itile(itemOfCode(c),i)}<div class="t"><div class="n">${esc(i.name)}</div><div class="s">${esc(pathName(i.loc))}</div></div>${cntSel(c)}</label>`}).join('')+'</div><h3>Tem vị trí</h3>':'')+(all.length?'<div class="list">'+all.map(c=>`<label class="row" style="margin:0;color:inherit;font-size:inherit"><input type="checkbox" class="ck" data-ck="${esc(c)}" ${S.sel.has(c)?'checked':''}>${lbdg(c)}<div class="t"><div class="n">${esc(loc(c).name)}</div><div class="s"><span class="code">${esc(short(c))}</span>${st(loc(c))}</div>${cntSel(c)}</div></label>`).join('')+'</div>':'<div class="empty">'+(S.pf==='cho'?'Không có tem nào đang chờ dán.':S.locs.size?'Tất cả vị trí đã in tem. Chọn “Tất cả” để in lại.':'Chưa có vị trí nào để in tem.')+'</div>');
   const pv=$('prev'),ls=labelList();pv.innerHTML='';
   if(window.qrcode)ls.slice(0,4).forEach(c=>pv.appendChild(drawLabel(c,10)));
-  const b=$('pdf-btn');b.disabled=!ls.length;b.textContent=ls.length?`Tải PDF (${ls.length} tem)`:'Tải PDF';const pb=$('print-btn');pb.disabled=!ls.length;pb.textContent=ls.length?`🖨️ In ngay (${ls.length} tem, ${Math.ceil(ls.length/2)} hàng)`:'Chọn tem cần in';
+  const b=$('pdf-btn');b.disabled=!ls.length;b.textContent=ls.length?`Tải PDF (${ls.length} tem)`:'Tải PDF';const sb=$('share-btn');if(sb)sb.disabled=!ls.length;const pb=$('print-btn');pb.disabled=!ls.length;pb.textContent=ls.length?`🖨️ In ngay (${ls.length} tem, ${Math.ceil(ls.length/2)} hàng)`:'Chọn tem cần in';
 }
 function render(){
   document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id===(S.me?'v-'+S.tab:'v-login')));
@@ -773,7 +773,8 @@ async function makePdf(arg,print){
   codes.forEach((c,i)=>{if(i&&i%2===0)doc.addPage([22,72],'landscape');doc.addImage(drawLabel(c,16).toDataURL('image/png'),'PNG',(i%2)*37,0,35,22,undefined,'FAST')});
   const name='tem-nha25-'+new Date().toISOString().slice(0,10)+'.pdf';
   let opened=false;
-  if(print){try{doc.autoPrint();opened=!!window.open(doc.output('bloburl'),'_blank')}catch(e){}if(!opened)toast('Trình duyệt chặn cửa sổ in, đang tải PDF để anh mở in.')}
+  if(print==='share'){try{const f=new File([doc.output('blob')],name,{type:'application/pdf'});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'Tem Nhà 25'});opened=true}else toast('Máy này chưa hỗ trợ chia sẻ file, đang tải PDF.')}catch(e){if(e&&e.name==='AbortError')return}}
+  else if(print){try{doc.autoPrint();opened=!!window.open(doc.output('bloburl'),'_blank')}catch(e){}if(!opened)toast('Trình duyệt chặn cửa sổ in, đang tải PDF để anh mở in.')}
   if(!opened){try{doc.save(name)}catch(e){toast('Không tải được PDF trên trình duyệt này, hãy mở bằng Chrome trên laptop.');return}}
   toast(opened?'Đã mở hộp thoại in. Chọn máy in tem, tỉ lệ 100%.':'Đã tạo PDF. In ở tỉ lệ 100%.');
   const uniq=[...new Set(codes)].filter(c=>S.locs.has(c));if(arg){toast('Đã tạo PDF '+codes.length+' tem. In ở tỉ lệ 100%.');return}S.sel.clear();S.cnt={};if(await act('printed',{codes:uniq,done:[...new Set(codes)]})){S.pf='cho';render();toast('Đã tạo PDF. In ở tỉ lệ 100%, dán tem rồi quét tem để xác nhận.')}
@@ -1035,7 +1036,7 @@ document.addEventListener('click',async e=>{
   else if(a==='pf'){S.pf=d.v;render()}
   else if(a==='sel-all'){[...S.locs.keys()].forEach(c=>{const l=loc(c);if(!l.locked&&(S.pf==='tat'||(S.pf==='cho'?l.printed==='1':!l.printed)))S.sel.add(c)});render()}
   else if(a==='sel-none'){S.sel.clear();render()}
-  else if(a==='pdf'){el.disabled=true;try{await makePdf(null,!!d.p)}finally{renderIn()}}
+  else if(a==='pdf'){el.disabled=true;try{await makePdf(null,d.p==='share'?'share':!!d.p)}finally{renderIn()}}
 });
 document.addEventListener('change',async e=>{
   const ck=e.target.dataset&&e.target.dataset.ck;
