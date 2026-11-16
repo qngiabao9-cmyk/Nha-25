@@ -448,7 +448,10 @@ function apply(d){
   if($('expl'))expSheet(true);else if(!S.expShown&&S.me&&!kid()){S.expShown=true;let t='';try{t=localStorage.getItem('n25exp_'+S.me.id)||''}catch(e){}if(t!==today()&&dueList().length){try{localStorage.setItem('n25exp_'+S.me.id,today())}catch(e){}setTimeout(()=>expSheet(false),500)}}
   if(d.house!==S.house){S.house=d.house;setBanner(d.house)}
 }
-async function act(action,p){try{apply(await call(action,p));return true}catch(e){fail(e);return false}}
+async function act(action,p){try{const r=await call(action,p);S.res=r&&r.res;apply(r);return true}catch(e){
+  const m=String((e&&e.message)||e);
+  if(!READ_A[action]&&/kết nối/i.test(m)){toast('Mạng chập chờn, chưa chắc đã lưu. Đang kiểm tra lại…');setTimeout(()=>act('load').then(ok=>{if(ok)toast('Đã tải lại. Xem món vừa nhập đã có chưa rồi hãy nhập lại.')}),2000)}
+  else fail(e);return false}}
 const kid=()=>!!S.me&&S.me.role==='tre';
 const AT={mat:'báo không thấy',thay:'đã thấy',kiemke:'kiểm kê',nhaplo:'nhập danh sách',lay:'lấy dùng',tra:'trả lại',dung:'dùng bớt',nhap:'nhập thêm',them:'thêm',sua:'sửa',chuyen:'chuyển chỗ',xoa:'xoá',themvt:'tạo vị trí',suavt:'sửa vị trí',chuyenvt:'chuyển hộp',xoavt:'xoá vị trí',hoantac:'hoàn tác',intem:'in tem',dantem:'xác nhận đã dán tem',anh:'đổi ảnh'};
 const when=ts=>{const d=new Date(+ts);return d.toLocaleDateString('vi-VN')+' '+d.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'})};
@@ -1076,7 +1079,11 @@ document.addEventListener('click',async e=>{
     if(!pend){if(old)S.items.set(d.id,{...old,...data});else{const tid='tmp'+Date.now();S.items.set(tid,{id:tid,...data})}render();if(!d.more)closeSheet();toast('Đang lưu…')}
     const ok=await putItem(d.id,data);
     el.disabled=false;if(!ok){if(!pend)act('load');return}
-    if(pend&&!d.id){const nid=[...S.items.keys()].find(k=>!prevIds.has(k));if(nid){const pp=pend;pend=null;if(await act('setPhoto',{kind:'item',id:nid,thumb:pp.thumb,full:pp.full}))TH.set('i:'+nid+':'+S.items.get(nid).imgId,pp.thumb)}const b=$('ph');if(b&&d.more)b.outerHTML=phBox('item','','',true)}
+    if(pend&&!d.id){/* gắn ảnh đúng món vừa tạo: dùng id máy chủ trả về; nếu không có thì chỉ nhận món MỚI cùng tên + cùng chỗ, phải duy nhất (tránh gắn nhầm vào món người khác vừa thêm) */
+      const cand=[...S.items].filter(([k,x])=>!prevIds.has(k)&&!String(k).startsWith('tmp')&&x.name===name&&x.loc===lc).map(x=>x[0]);
+      const nid=S.res&&S.items.has(S.res)&&S.items.get(S.res).name===name?S.res:cand.length===1?cand[0]:'';
+      if(!nid){pend=null;toast('Đã lưu “'+name+'” nhưng chưa gắn được ảnh. Mở món đó và bấm 📷 Thêm ảnh.')}
+      if(nid){const pp=pend;pend=null;if(await act('setPhoto',{kind:'item',id:nid,thumb:pp.thumb,full:pp.full}))TH.set('i:'+nid+':'+S.items.get(nid).imgId,pp.thumb)}const b=$('ph');if(b&&d.more)b.outerHTML=phBox('item','','',true)}
     if(d.more){for(const k of ['name','note','model','price','wty','wnote','min','exp'])$('f-'+k).value='';$('f-qty').value='1';$('f-name').focus();toast('Đã lưu “'+name+'”.')}else closeSheet();
   }
   else if(a==='item-del'){
