@@ -104,6 +104,14 @@ details{margin-top:14px;border-top:1px solid var(--line);padding-top:10px} summa
 .mic{flex:none;font-size:22px;padding:6px 14px;border-radius:12px}.mic.on{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
 .fmic{position:fixed;right:14px;bottom:calc(86px + env(safe-area-inset-bottom));width:60px;height:60px;border-radius:50%;font-size:28px;padding:0;z-index:7;background:var(--acc);color:var(--acc-ink);border-color:var(--acc);box-shadow:0 3px 12px rgba(0,0,0,.35);display:none}.fmic.on{background:var(--warn);border-color:var(--warn)}
 #bk{position:fixed;left:10px;top:calc(env(safe-area-inset-top) + 8px);z-index:40;display:none;align-items:center;gap:4px;padding:9px 15px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;border:1px solid rgba(255,255,255,.55);font-size:15px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.35);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.lpb{display:block;width:100%;text-align:left;font-size:15px;line-height:1.4;padding:12px 14px;background:var(--card);border:1.5px solid var(--acc);border-radius:12px;color:inherit}
+#lp{position:fixed;inset:0;z-index:70;background:var(--bg,#f6f2ef);display:none;flex-direction:column}#lp.on{display:flex}
+#lp .lh{display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top) + 10px) 14px 8px}#lp .lh h2{margin:0;flex:1;font-size:19px}
+#lp .lq{padding:0 14px 8px}#lp .lq input{width:100%;font-size:17px;padding:12px}
+#lp .lb{flex:1;overflow:auto;padding:0 14px 12px}#lp .lf{padding:10px 14px calc(env(safe-area-inset-bottom) + 12px);border-top:1px solid var(--line);background:var(--card)}
+#lp .bc{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:6px 0 10px}#lp .bc button{padding:6px 11px;font-size:14px;border-radius:999px}
+#lp .lr{display:flex;align-items:center;gap:10px;padding:12px 4px;border-top:1px solid var(--line)}#lp .ln{flex:1;min-width:0;cursor:pointer}#lp .ln b{display:block;font-size:17px}#lp .ln .s{font-size:13px;color:var(--mut)}
+#lp .lr button{padding:11px 16px;font-size:15px}#lp .rc{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 6px}#lp .rc button{padding:7px 12px;font-size:14px;border-radius:999px}
 @media(min-width:760px){#bk{left:calc(50% - 330px);top:12px;font-size:17px;padding:11px 20px}}
 #splash{position:fixed;inset:0;z-index:50;background:linear-gradient(135deg,#8e2433,#4a0f18);background-size:cover;background-position:center;display:flex;align-items:flex-end;transition:opacity .4s}#splash.off{opacity:0;pointer-events:none}#splash div{width:100%;padding:24px 22px calc(40px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(0,0,0,.7));color:#fff}#splash h1{margin:0;font-size:40px;text-shadow:0 2px 8px rgba(0,0,0,.6)}#splash p{margin:6px 0 0;opacity:.9}
 .ck{width:22px;height:22px;flex:none;accent-color:var(--acc)}
@@ -177,6 +185,7 @@ details{margin-top:14px;border-top:1px solid var(--line);padding-top:10px} summa
 </nav>
 
 <div class="ovl" id="ovl"><div class="sheet" id="sheet"></div></div>
+<div id="lp"></div>
 <input type="file" id="pic" accept="image/*" hidden>
 <button class="fmic" id="fmic" data-act="mic" data-t="q" title="Nói để tìm đồ">🎤</button>
 <div id="toast"></div>
@@ -663,6 +672,38 @@ function openLoc(code){if(code&&loc(code)&&loc(code).locked){toast('Phòng riên
 /* ---------- biểu mẫu ---------- */
 function sheet(html){$('sheet').innerHTML=html;$('ovl').classList.add('on');updBack();const f=$('sheet').querySelector('input[type=text]');if(f&&!f.value)f.focus()}
 function closeSheet(){S.mv=null;$('ovl').classList.remove('on');$('sheet').innerHTML='';updBack()}
+/* ---------- chọn vị trí kiểu cây thư mục: đi từng cấp, có ô tìm, nhớ 5 chỗ gần đây ---------- */
+const LPF={};let LP=null;
+const nrm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').toLowerCase();
+const lpLabel=c=>`📍 <b>${esc(pathOf(c).map(x=>loc(x).name).join(' › '))}</b> <span class="code">${esc(short(c))}</span>`;
+function locField(id,sel,filter,ph){LPF[id]=filter||(()=>true);return `<input type="hidden" id="${id}" value="${esc(sel||'')}"><button type="button" class="lpb" id="${id}-b" data-act="lp-open" data-f="${id}" data-ph="${esc(ph||'Bấm để chọn vị trí')}">${sel&&S.locs.has(sel)?lpLabel(sel):'📍 '+esc(ph||'Bấm để chọn vị trí')}</button>`}
+function lpSet(id,c){const h=$(id);if(!h)return;h.value=c;const b=$(id+'-b');if(b)b.innerHTML=c&&S.locs.has(c)?lpLabel(c):'📍 '+esc(b.dataset.ph||'Bấm để chọn vị trí')}
+const lpRecent=()=>{try{return JSON.parse(localStorage.getItem('n25lp')||'[]')}catch(e){return[]}};
+function lpRemember(c){try{localStorage.setItem('n25lp',JSON.stringify([c,...lpRecent().filter(x=>x!==c)].slice(0,5)))}catch(e){}}
+function lpOpen(f){
+  const v=$(f).value;LP={f,q:'',cur:v&&S.locs.has(v)?(loc(v).parent||''):''};
+  $('lp').innerHTML=`<div class="lh"><h2>Chọn vị trí</h2><button type="button" data-act="lp-close">✕ Đóng</button></div><div class="lq"><input type="text" id="lp-q" placeholder="🔍 Gõ để tìm: tủ lạnh, kệ sắt, ngăn 2…" autocomplete="off" autocapitalize="off"></div><div class="lb" id="lp-b"></div><div class="lf" id="lp-f"></div>`;
+  $('lp').classList.add('on');lpList()}
+function lpClose(){$('lp').classList.remove('on');$('lp').innerHTML='';LP=null}
+function lpList(){
+  if(!LP)return;const f=LPF[LP.f],ok=c=>S.locs.has(c)&&!loc(c).locked&&f(c);
+  const kids=new Map();[...S.locs.keys()].filter(c=>!loc(c).locked).sort(byCode).forEach(c=>{const p=loc(c).parent||'';if(!kids.has(p))kids.set(p,[]);kids.get(p).push(c)});
+  const memo={},has=c=>c in memo?memo[c]:(memo[c]=(kids.get(c)||[]).some(k=>ok(k)||has(k)));
+  const q=nrm(LP.q).split(/\s+/).filter(Boolean);let h='';
+  if(q.length){
+    const r=[...S.locs.keys()].filter(c=>ok(c)&&q.every(t=>nrm(pathName(c)+' '+short(c)).includes(t))).sort(byCode).slice(0,40);
+    h=r.length?r.map(c=>`<div class="lr"><div class="ln" data-act="lp-pick" data-c="${esc(c)}"><b>${esc(loc(c).name)}</b><span class="s">${esc(pathOf(c).slice(0,-1).map(x=>loc(x).name).join(' › '))} · ${esc(short(c))}</span></div><button class="pri" data-act="lp-pick" data-c="${esc(c)}">Chọn</button></div>`).join(''):'<p class="note">Không tìm thấy. Thử gõ ít chữ hơn.</p>';
+    $('lp-b').innerHTML=h;$('lp-f').innerHTML=`<div class="note" style="margin:0">Tìm thấy ${r.length} chỗ. Bấm <b>Chọn</b> ở đúng dòng.</div>`;return}
+  const rc=lpRecent().filter(ok);
+  if(rc.length)h+=`<div class="note" style="margin:8px 0 2px">Gần đây</div><div class="rc">${rc.map(c=>`<button type="button" data-act="lp-pick" data-c="${esc(c)}">${esc(pathOf(c).slice(-2).map(x=>loc(x).name).join(' › '))}</button>`).join('')}</div>`;
+  const path=LP.cur?pathOf(LP.cur):[];
+  h+=`<div class="bc"><button type="button" data-act="lp-go" data-c="">🏠 Nhà 25</button>${path.map(c=>`<span>›</span><button type="button" data-act="lp-go" data-c="${esc(c)}">${esc(loc(c).name)}</button>`).join('')}</div>`;
+  const list=(kids.get(LP.cur)||[]).filter(c=>ok(c)||has(c));
+  h+=list.length?list.map(c=>{const sub=(kids.get(c)||[]).filter(k=>ok(k)||has(k)),act=sub.length?'lp-go':ok(c)?'lp-pick':'';
+    return `<div class="lr"><div class="ln" ${act?`data-act="${act}" data-c="${esc(c)}"`:''}><b>${esc(loc(c).name)}${sub.length?' ›':''}</b><span class="s">${esc(KINDS[loc(c).kind]||'')} · ${esc(short(c))}${sub.length?' · '+sub.length+' mục bên trong':''}</span></div>${ok(c)?`<button class="pri" data-act="lp-pick" data-c="${esc(c)}">Chọn</button>`:''}</div>`}).join(''):'<p class="note">Không còn mục nào bên trong. Bấm nút xanh bên dưới để chọn chính chỗ này.</p>';
+  $('lp-b').innerHTML=h;
+  $('lp-f').innerHTML=LP.cur&&ok(LP.cur)?`<button class="pri big" data-act="lp-pick" data-c="${esc(LP.cur)}" style="width:100%">✅ Chọn chỗ này: ${esc(pathOf(LP.cur).map(x=>loc(x).name).join(' › '))}</button>`:`<div class="note" style="margin:0">Bấm vào một dòng để đi sâu hơn, hoặc bấm <b>Chọn</b>.</div>`;
+  $('lp-b').scrollTop=0}
 function locOptions(sel,filter){
   return [...S.locs.keys()].filter(c=>!loc(c).locked).filter(filter||(()=>true)).sort(byCode).map(c=>`<option value="${esc(c)}" ${c===sel?'selected':''}>${esc(pathName(c))} (${esc(short(c))})</option>`).join('');
 }
@@ -679,7 +720,7 @@ function formLoc(code,kind){
     const mem=String(l.members||'').split(',').map(x=>x.trim());
     h+=`<label>Phòng riêng: ai được xem đồ bên trong (chủ nhà luôn xem được)</label><div class="list">${S.users.map(u=>`<label class="row" style="margin:0;color:inherit;font-size:inherit"><input type="checkbox" class="ck" data-mem="${esc(u.id)}" ${mem.includes(u.id)?'checked':''}><div class="t">${esc(u.name)}</div></label>`).join('')}</div>`;
   }
-  if(ed&&l.kind==='H')h+=`<label>Hộp đang đặt ở</label><select id="f-parent">${locOptions(l.parent,c=>loc(c).kind!=='H')}</select>`;
+  if(ed&&l.kind==='H')h+=`<label>Hộp đang đặt ở</label>${locField('f-parent',l.parent,c=>loc(c).kind!=='H','Chọn nơi đặt hộp')}`;
   h+=`<label>Ghi chú</label><textarea id="f-note">${esc(l.note||'')}</textarea>`;
   h+=`<div class="btns"><button class="pri" data-act="loc-save" data-c="${esc(newCode)}" data-k="${l.kind}" data-ed="${ed?1:''}">Lưu</button><button data-act="close">Huỷ</button>${ed?'<button class="dan" data-act="loc-del" data-c="'+esc(code)+'">Xoá</button>':''}</div>`;
   sheet(h);
@@ -705,7 +746,7 @@ function formItem(id){
   h+=`<label>Tên đồ vật</label><input type="text" id="f-name" value="${esc(i.name)}" placeholder="Máy khoan, hộ chiếu, dây HDMI…">`;
   h+=`<label>Nhóm</label><select id="f-cat"><option value="">— chọn nhóm —</option>${CATS.map(c=>`<option ${c===i.cat?'selected':''}>${esc(c)}</option>`).join('')}</select>`;
   h+=`<div class="two"><div><label>Số lượng</label><input type="text" id="f-qty" inputmode="decimal" value="${esc(i.qty||'')}"></div><div><label>Đơn vị</label><input type="text" id="f-unit" value="${esc(i.unit||'')}" placeholder="cái, hộp, m…"></div><div><label>Báo khi còn ≤</label><input type="text" id="f-min" inputmode="decimal" value="${esc(i.min??'')}" placeholder="vật tư"></div></div>`;
-  h+=`<label>Nằm ở</label><select id="f-loc"><option value="">— chọn vị trí —</option>${locOptions(i.loc)}</select>`;
+  h+=`<label>Nằm ở</label>${locField('f-loc',i.loc,null,'Chọn vị trí')}`;
   h+=`<div class="two"><div><label>Hạn sử dụng (nếu có)</label><input type="text" class="dt" id="f-exp" inputmode="numeric" maxlength="10" placeholder="dd/mm/yyyy" value="${fmtD(i.exp||'')}"></div><div><label>Ngày cho vào</label><input type="text" class="dt" id="f-put" inputmode="numeric" maxlength="10" placeholder="dd/mm/yyyy" value="${fmtD(i.putAt||'')}"></div></div>`;
   h+=`<label>Ghi chú</label><textarea id="f-note">${esc(i.note||'')}</textarea>`;
   h+=`<details ${i.model||i.bought||i.shop||i.price||i.wty||i.wnote?'open':''}><summary>Thông tin mua hàng & bảo hành</summary>`;
@@ -853,6 +894,10 @@ document.addEventListener('click',async e=>{
   else if(a==='pq-all'){pqVis().forEach(e=>{S.sel.add(e.code);S.cnt[e.code]=e.n});render();toast('Đã thêm vào danh sách in. Bấm 🖨️ In ngay.')}
   else if(a==='pq-go')go('in-tem');
   else if(a==='more'){S['more_'+d.k]=!S['more_'+d.k];renderTim()}
+  else if(a==='lp-open')lpOpen(d.f);
+  else if(a==='lp-go'){if(LP){LP.cur=d.c;LP.q='';const q=$('lp-q');if(q)q.value='';lpList()}}
+  else if(a==='lp-pick'){if(LP){lpSet(LP.f,d.c);lpRemember(d.c);lpClose()}}
+  else if(a==='lp-close')lpClose();
   else if(a==='close')closeSheet();
   else if(a==='mv-cancel'){S.mv=null;closeSheet()}
   else if(a==='loc-new')formLoc(null,d.k);
@@ -865,7 +910,7 @@ document.addEventListener('click',async e=>{
     <label>Số tem giống nhau cho món này</label><select id="it-n">${[1,2,3,4,5,6].map(n=>`<option value="${n}">${n} tem</option>`).join('')}</select>
     <button class="pri big" data-act="item-tem-add" data-id="${esc(d.id)}">➕ Thêm vào danh sách in (gom nhiều món, in 1 lần)</button>
     <button class="big" data-act="item-tem-go" data-id="${esc(d.id)}">✅ In ngay tem này – đúng chỗ đang để</button>
-    <label>Hoặc chuyển món sang chỗ khác rồi in ngay</label><select id="it-loc"><option value="">— chọn chỗ mới —</option>${locOptions('',c=>c!==i.loc)}</select>
+    <label>Hoặc chuyển món sang chỗ khác rồi in ngay</label>${locField('it-loc','',c=>c!==i.loc,'Chọn chỗ mới')}
     <button class="big" data-act="item-tem-move" data-id="${esc(d.id)}">🚚 Chuyển sang chỗ này & in tem</button>
     <div class="note">Tem chỉ ghi tên món; chỗ để luôn lấy từ app nên đổi chỗ sau này không phải in lại. Máy in ra 2 tem giống nhau: dán 1, giữ 1 dự phòng.</div>
     <div class="btns"><button data-act="close">Huỷ</button></div>`)}
@@ -944,7 +989,7 @@ document.addEventListener('click',async e=>{
     }catch(er){const m=String((er&&er.message)||er);$('ai-out').textContent=ERR[m]||('Không gợi ý được: '+m)}
     el.disabled=false;
   }
-  else if(a==='ai-pick'){$('f-loc').value=d.c;$('f-loc').scrollIntoView({behavior:'smooth',block:'center'});toast('Đã chọn chỗ. Kiểm tra rồi bấm Lưu.')}
+  else if(a==='ai-pick'){lpSet('f-loc',d.c);$('f-loc-b').scrollIntoView({behavior:'smooth',block:'center'});toast('Đã chọn chỗ. Kiểm tra rồi bấm Lưu.')}
   else if(a==='k-d'){const t=new Date();t.setDate(t.getDate()+(+d.n));$('k-exp').value=fmtD(t.toLocaleDateString('sv'))}
   else if(a==='quick-save'){
     let name=$('k-name').value.trim();if(!name){toast('Nhập tên.');return}
@@ -1084,6 +1129,7 @@ $('l-user').addEventListener('change',()=>{$('l-msg').textContent='';loginMode()
 $('l-pin2').addEventListener('keydown',e=>{if(e.key==='Enter')$('l-btn').click()});
 $('l-pin').addEventListener('keydown',e=>{if(e.key==='Enter')document.querySelector('[data-act=login]').click()});
 setInterval(async()=>{if(document.hidden||!S.me||!S.me.id||$('ovl').classList.contains('on')||busyN>0)return;try{const r=await callOnce('ver',{});if(r&&r.ver&&S.ver&&r.ver!==S.ver)act('load')}catch(e){}},12000);
+document.addEventListener('input',e=>{if(e.target&&e.target.id==='lp-q'&&LP){LP.q=e.target.value;lpList()}});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.me&&S.me.id&&Date.now()-S.at>60000&&!$('ovl').classList.contains('on'))act('load')});
 init();
 if(!GAS&&'serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
