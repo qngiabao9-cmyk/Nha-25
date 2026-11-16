@@ -122,7 +122,7 @@ details{margin-top:14px;border-top:1px solid var(--line);padding-top:10px} summa
     <h2>Chào mừng về nhà</h2>
     <label>Bạn là ai?</label><div class="people" id="l-grid"></div><select id="l-user" hidden></select>
     <p class="note" id="l-first" hidden>Lần đầu vào app: hãy tự đặt mã đăng nhập (4–20 chữ cái hoặc chữ số, ví dụ PIN 6 số) và ghi nhớ. Quên mã thì nhờ Mr. Gia Bảo đặt lại.</p>
-    <label for="l-pin" id="l-pin-lb">Mã đăng nhập</label><div style="display:flex;gap:8px"><input type="password" class="pw" id="l-pin" inputmode="numeric" maxlength="20" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="-webkit-text-security:disc"><button type="button" class="chip" data-act="kb" style="padding:0 12px">abc</button></div>
+    <label for="l-pin" id="l-pin-lb">Mã đăng nhập</label><div style="display:flex;gap:8px"><input type="password" class="pw" id="l-pin" inputmode="numeric" maxlength="20" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" style="-webkit-text-security:disc"><button type="button" class="chip" data-act="kb" style="padding:0 12px">abc</button></div>
     <div id="l-pin2-box" hidden><label for="l-pin2">Nhập lại mã PIN</label><input type="password" class="pw" id="l-pin2" inputmode="numeric" maxlength="20" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="-webkit-text-security:disc"></div>
     <div class="btns"><button class="pri" data-act="login" id="l-btn">Vào nhà</button></div>
     <p class="note" id="l-msg"></p>
@@ -406,7 +406,7 @@ function nextCode(parent,kind){
 }
 const API=String(window.N25_API||'').trim(),GAS=!!(window.google&&google.script&&google.script.run);
 let busyN=0;function busy(d){busyN=Math.max(0,busyN+d);const b=$('reload');if(b)b.textContent=busyN?'⏳':'↻'}
-const READ_A={who:1,load:1,thumbs:1,banner:1,ping:1,history:1};
+const READ_A={ver:1,who:1,load:1,thumbs:1,banner:1,ping:1,history:1};
 function callOnce(action,p){return new Promise((ok,no)=>{
   if(!GAS){
     if(!/^https:\/\/script\.google\.com\/.+\/exec$/.test(API)){no(new Error('Chưa khai báo địa chỉ máy chủ trong tệp config.js.'));return}
@@ -428,9 +428,10 @@ function codeErr(c,chu){if(!CODE_RE.test(c))return 'Mã gồm 4–20 ký tự: c
 const kbGet=id=>{try{return localStorage.getItem('n25kb_'+id)||'numeric'}catch(e){return 'numeric'}};
 const kbSet=(id,m)=>{try{localStorage.setItem('n25kb_'+id,m)}catch(e){}};
 function kbApply(m){document.querySelectorAll('.pw').forEach(x=>x.setAttribute('inputmode',m));document.querySelectorAll('[data-act=kb]').forEach(b=>b.textContent=m==='numeric'?'abc':'123')}
-const ERR={NOAI:'Nút gợi ý chưa được cài khoá API Claude (xem HUONG-DAN).',AILIMIT:'Hôm nay đã dùng hết số lượt gợi ý, mai thử lại.',KID:'Tài khoản trẻ em chỉ được ghi lấy / trả đồ.',NOUNDO:'Không hoàn tác được: đã quá 10 phút, hoặc sau đó đã có thay đổi khác.',NEWPIN:'Bạn chưa có mã, hãy đặt mã lần đầu.',HASPIN:'Tài khoản này đã có mã. Nếu chưa tự đặt, báo ngay Mr. Gia Bảo.',AUTH:'Phiên đăng nhập đã hết, hãy đăng nhập lại.',PIN:'Sai mã đăng nhập.',LOCK:'Nhập sai quá 5 lần, máy chủ khoá tài khoản này 10 phút. Thử lại sau.',DENY:'Bạn không có quyền với mục này.',BUSY:'Máy chủ đang bận, thử lại.',NOTEMPTY:'Còn đồ vật hoặc vị trí bên trong, hãy chuyển hoặc xoá trước.',GONE:'Mục này không còn tồn tại, bấm Tải lại.'};
+const ERR={XFER:'Liên kết đăng nhập đã hết hạn hoặc đã dùng. Hãy lấy liên kết mới trong app đã cài.',NOAI:'Nút gợi ý chưa được cài khoá API Claude (xem HUONG-DAN).',AILIMIT:'Hôm nay đã dùng hết số lượt gợi ý, mai thử lại.',KID:'Tài khoản trẻ em chỉ được ghi lấy / trả đồ.',NOUNDO:'Không hoàn tác được: đã quá 10 phút, hoặc sau đó đã có thay đổi khác.',NEWPIN:'Bạn chưa có mã, hãy đặt mã lần đầu.',HASPIN:'Tài khoản này đã có mã. Nếu chưa tự đặt, báo ngay Mr. Gia Bảo.',AUTH:'Phiên đăng nhập đã hết, hãy đăng nhập lại.',PIN:'Sai mã đăng nhập.',LOCK:'Nhập sai quá 5 lần, máy chủ khoá tài khoản này 10 phút. Thử lại sau.',DENY:'Bạn không có quyền với mục này.',BUSY:'Máy chủ đang bận, thử lại.',NOTEMPTY:'Còn đồ vật hoặc vị trí bên trong, hãy chuyển hoặc xoá trước.',GONE:'Mục này không còn tồn tại, bấm Tải lại.'};
 function fail(e){const m=String((e&&e.message)||e);console.error(e);if(m==='AUTH')logout();toast(ERR[m]||('Không thực hiện được: '+m))}
 function apply(d){
+  S.ver=d.ver||S.ver||'';
   if(d.token){token=d.token;try{localStorage.setItem('n25tok',token)}catch(e){}}
   S.pq=d.pq||[];S.me=d.me;S.users=d.users||[];S.logs=d.logs||[];S.camChk=d.camChk||'';if(d.me&&d.locs&&d.items){try{const q=Object.assign({},d);delete q.token;localStorage.setItem('n25snap',JSON.stringify(q))}catch(e){try{localStorage.removeItem('n25snap')}catch(_){}}}
   S.locs=new Map(d.locs.map(l=>[l.code,l]));S.items=new Map(d.items.map(i=>[i.id,i]));
@@ -479,6 +480,9 @@ async function init(){
   render();
   if(GAS){try{google.script.url.getLocation(l=>{startCode=(l.parameter&&l.parameter.c)||'';if(startCode&&S.ready)openCode(startCode)})}catch(e){}}
   else{try{startCode=new URLSearchParams(location.search).get('c')||''}catch(e){}}
+  let xc='';try{xc=new URLSearchParams(location.search).get('x')||''}catch(e){}
+  if(xc){try{history.replaceState(null,'',location.pathname+(startCode?'?c='+encodeURIComponent(startCode):''))}catch(e){}
+    try{apply(await call('redeem',{code:xc}));toast('Đã đăng nhập cho Safari. Lần sau quét tem là vào thẳng.');if(startCode)openCode(startCode);return}catch(e){toast(ERR[String((e&&e.message)||e)]||'Không đăng nhập được bằng liên kết này, hãy nhập mã.')}}
   if(!token){loadWho();return}
   let cached=false;try{const c=JSON.parse(localStorage.getItem('n25snap')||'null');if(c&&c.me&&c.locs&&c.items&&token.startsWith(c.me.id+':')){apply(c);cached=true}}catch(e){}
   try{apply(await call('load'));if(startCode)openCode(startCode)}
@@ -1009,8 +1013,11 @@ document.addEventListener('click',async e=>{
   else if(a==='logout')logout();
   else if(a==='me-menu'){
     const km=kbGet(S.me.id),pf=id=>`<input type="password" class="pw" id="${id}" inputmode="${km}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="20" style="-webkit-text-security:disc">`;
-    sheet(`<div class="ph">${av(S.me,72)}<div><h2 style="margin:0">${esc(S.me.name)}</h2><div class="btns" style="margin:6px 0 0"><button data-act="pic" data-k="user" data-id="">📷 Ảnh đại diện</button>${adm()?'<button data-act="pic" data-k="house" data-id="">🏠 Ảnh ngôi nhà</button>':''}</div></div></div><h3>Đổi mã đăng nhập</h3><div class="btns" style="margin:4px 0 0"><button type="button" class="chip" data-act="kb">${km==='numeric'?'abc':'123'}</button><span class="note" style="margin:0">đổi bàn phím chữ / số</span></div><label>Mã hiện tại</label>${pf('p-old')}<label>Mã mới (4–20 ký tự${adm()?', chủ nhà ≥ 8 ký tự':''})</label>${pf('p-new')}<label>Nhập lại mã mới</label>${pf('p-new2')}<div class="btns"><button class="pri" data-act="pin-save">Đổi mã</button><button data-act="close">Huỷ</button></div><details><summary>Thoát tài khoản</summary><p class="note">Thoát khỏi máy này. Lần sau mở app phải nhập lại mã.</p><div class="btns"><button class="dan" data-act="logout">Thoát</button></div></details>`);
+    sheet(`<div class="ph">${av(S.me,72)}<div><h2 style="margin:0">${esc(S.me.name)}</h2><div class="btns" style="margin:6px 0 0"><button data-act="pic" data-k="user" data-id="">📷 Ảnh đại diện</button>${adm()?'<button data-act="pic" data-k="house" data-id="">🏠 Ảnh ngôi nhà</button>':''}</div></div></div><h3>Quét tem bằng Camera / Safari</h3><button data-act="xfer">🔗 Lấy liên kết đăng nhập cho Safari</button><h3>Đổi mã đăng nhập</h3><div class="btns" style="margin:4px 0 0"><button type="button" class="chip" data-act="kb">${km==='numeric'?'abc':'123'}</button><span class="note" style="margin:0">đổi bàn phím chữ / số</span></div><label>Mã hiện tại</label>${pf('p-old')}<label>Mã mới (4–20 ký tự${adm()?', chủ nhà ≥ 8 ký tự':''})</label>${pf('p-new')}<label>Nhập lại mã mới</label>${pf('p-new2')}<div class="btns"><button class="pri" data-act="pin-save">Đổi mã</button><button data-act="close">Huỷ</button></div><details><summary>Thoát tài khoản</summary><p class="note">Thoát khỏi máy này. Lần sau mở app phải nhập lại mã.</p><div class="btns"><button class="dan" data-act="logout">Thoát</button></div></details>`);
   }
+  else if(a==='xfer'){el.disabled=true;try{const r=await call('xfer'),u=QR_BASE+'?x='+r.code;
+    sheet(`<h2>🔗 Đăng nhập cho Safari</h2><div class="note">Liên kết dùng 1 lần, hết hạn sau 10 phút. Bấm <b>Sao chép</b>, mở <b>Safari</b>, dán vào thanh địa chỉ rồi Go. Safari sẽ nhớ đăng nhập; từ đó quét tem bằng Camera là vào thẳng.</div><textarea readonly rows="3" id="xf-u" style="width:100%">${esc(u)}</textarea><div class="btns"><button class="pri" data-act="xfer-copy">Sao chép</button><button data-act="close">Đóng</button></div>`)}catch(er){fail(er)}finally{el.disabled=false}}
+  else if(a==='xfer-copy'){const t=$('xf-u').value;try{await navigator.clipboard.writeText(t);toast('Đã sao chép. Mở Safari và dán.')}catch(er){$('xf-u').select();toast('Hãy chọn và sao chép liên kết.')}}
   else if(a==='pin-save'){
     const o=$('p-old').value.trim(),n=$('p-new').value.trim(),n2=$('p-new2').value.trim();
     const ce=codeErr(n,adm());if(ce){toast(ce);return}
@@ -1076,6 +1083,7 @@ $('mcode').addEventListener('keydown',e=>{if(e.key==='Enter')openCode(e.target.v
 $('l-user').addEventListener('change',()=>{$('l-msg').textContent='';loginMode()});
 $('l-pin2').addEventListener('keydown',e=>{if(e.key==='Enter')$('l-btn').click()});
 $('l-pin').addEventListener('keydown',e=>{if(e.key==='Enter')document.querySelector('[data-act=login]').click()});
+setInterval(async()=>{if(document.hidden||!S.me||!S.me.id||$('ovl').classList.contains('on')||busyN>0)return;try{const r=await callOnce('ver',{});if(r&&r.ver&&S.ver&&r.ver!==S.ver)act('load')}catch(e){}},12000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.me&&S.me.id&&Date.now()-S.at>60000&&!$('ovl').classList.contains('on'))act('load')});
 init();
 if(!GAS&&'serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
