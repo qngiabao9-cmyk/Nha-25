@@ -594,6 +594,7 @@ function renderLoc(){
   h+='<div class="btns">';
   if(l&&!kid())h+='<button class="pri" data-act="quick">⚡ Thêm nhanh</button><button data-act="item-new">＋ Thêm đồ vật</button>';
   if(!kid())for(const k of CHILD[l?l.kind:''])if(k!=='P'||adm())h+=`<button data-act="loc-new" data-k="${k}">＋ ${KINDS[k]}</button>`;
+  if(l&&!kid()&&l.kind==='H')h+='<button class="pri" data-act="loc-move">🚚 Chuyển hộp</button>';
   if(l&&!kid()&&(l.kind!=='P'||adm()))h+='<button data-act="loc-edit">✏️ Sửa</button>';
   if(l&&!kid())h+='<button data-act="loc-print">🏷️ In tem</button><button data-act="bulk">📋 Nhập danh sách</button>'+(itemsAt(c).length?'<button data-act="kk">✅ Kiểm kê</button>':'');
   h+='</div>';
@@ -673,18 +674,52 @@ function openLoc(code){if(code&&loc(code)&&loc(code).locked){toast('Phòng riên
 function sheet(html){$('sheet').innerHTML=html;$('ovl').classList.add('on');updBack();const f=$('sheet').querySelector('input[type=text]');if(f&&!f.value)f.focus()}
 function closeSheet(){S.mv=null;$('ovl').classList.remove('on');$('sheet').innerHTML='';updBack()}
 /* ---------- chọn vị trí kiểu cây thư mục: đi từng cấp, có ô tìm, nhớ 5 chỗ gần đây ---------- */
-const LPF={};let LP=null;
+const LPF={},LPX={};let LP=null;
 const nrm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').toLowerCase();
 const lpLabel=c=>`📍 <b>${esc(pathOf(c).map(x=>loc(x).name).join(' › '))}</b> <span class="code">${esc(short(c))}</span>`;
-function locField(id,sel,filter,ph){LPF[id]=filter||(()=>true);return `<input type="hidden" id="${id}" value="${esc(sel||'')}"><button type="button" class="lpb" id="${id}-b" data-act="lp-open" data-f="${id}" data-ph="${esc(ph||'Bấm để chọn vị trí')}">${sel&&S.locs.has(sel)?lpLabel(sel):'📍 '+esc(ph||'Bấm để chọn vị trí')}</button>`}
+function locField(id,sel,filter,ph,ctx){LPF[id]=filter||(()=>true);LPX[id]=ctx||null;return `<input type="hidden" id="${id}" value="${esc(sel||'')}"><button type="button" class="lpb" id="${id}-b" data-act="lp-open" data-f="${id}" data-ph="${esc(ph||'Bấm để chọn vị trí')}">${sel&&S.locs.has(sel)?lpLabel(sel):'📍 '+esc(ph||'Bấm để chọn vị trí')}</button>`}
 function lpSet(id,c){const h=$(id);if(!h)return;h.value=c;const b=$(id+'-b');if(b)b.innerHTML=c&&S.locs.has(c)?lpLabel(c):'📍 '+esc(b.dataset.ph||'Bấm để chọn vị trí')}
 const lpRecent=()=>{try{return JSON.parse(localStorage.getItem('n25lp')||'[]')}catch(e){return[]}};
 function lpRemember(c){try{localStorage.setItem('n25lp',JSON.stringify([c,...lpRecent().filter(x=>x!==c)].slice(0,5)))}catch(e){}}
-function lpOpen(f){
-  const v=$(f).value;LP={f,q:'',cur:v&&S.locs.has(v)?(loc(v).parent||''):''};
+function lpOpen(f,cb,start){
+  const v=($(f)||{}).value;LP={f,cb,q:'',cur:start!==undefined?start:v&&S.locs.has(v)?(loc(v).parent||''):''};
   $('lp').innerHTML=`<div class="lh"><h2>Chọn vị trí</h2><button type="button" data-act="lp-close">✕ Đóng</button></div><div class="lq"><input type="text" id="lp-q" placeholder="🔍 Gõ để tìm: tủ lạnh, kệ sắt, ngăn 2…" autocomplete="off" autocapitalize="off"></div><div class="lb" id="lp-b"></div><div class="lf" id="lp-f"></div>`;
   $('lp').classList.add('on');lpList()}
 function lpClose(){$('lp').classList.remove('on');$('lp').innerHTML='';LP=null}
+const LPSTOP=new Set('bo cai hop chiec tui goi mieng nho lon vua the va cua co loai cho may'.split(' '));
+const lpTok=s=>nrm(s).replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(t=>t.length>=3&&!LPSTOP.has(t));
+function lpTip(cat,box){
+  const c=nrm(cat);
+  if(/dong lanh|thuc pham|tuoi/.test(c))return 'Đồ đông lạnh để ngăn đông, đồ tươi ngăn mát. Hạn gần hết để phía trước, mới mua xếp phía sau (dùng cái cũ trước).';
+  if(/thuoc|y te/.test(c))return 'Thuốc để nơi khô, mát, tránh nắng, tầm cao khỏi trẻ nhỏ; để chung một hộp riêng.';
+  if(/dung cu|dien|cong cu|sua chua/.test(c)||box)return 'Đồ nặng để thấp; dụng cụ hay dùng để tầm tay; gom theo công việc trong cùng một hộp, tem dán ngoài hộp.';
+  return 'Cùng loại để chung một chỗ; đồ nặng để thấp; đồ hay dùng để tầm tay, ít dùng để cao hoặc sâu.';
+}
+/* 💡 đề xuất chỗ: món → theo nhóm + tên; hộp → theo nhóm và tên các món bên trong hộp */
+function lpSuggest(ok){
+  const cx=LPX[LP.f]?LPX[LP.f]():null;if(!cx)return{list:[],tip:''};
+  const under=c=>!!cx.code&&pathOf(c).includes(cx.code),inner=cx.code?[...S.items.values()].filter(i=>under(i.loc)):[];
+  const cats=new Set(cx.cat?[cx.cat]:inner.map(i=>i.cat).filter(Boolean));
+  const cc={};inner.forEach(i=>{if(i.cat)cc[i.cat]=(cc[i.cat]||0)+1});
+  const main=cx.cat||Object.keys(cc).sort((a,b)=>cc[b]-cc[a])[0]||'';
+  const toks=[...new Set(lpTok(cx.name||''))],ctoks=[...new Set(lpTok([...cats].join(' ')+' '+inner.map(i=>i.name).join(' ')))].filter(t=>!toks.includes(t)),by={};
+  S.items.forEach(i=>{if(i.id===cx.id||under(i.loc)||!i.loc||!S.locs.has(i.loc)||isLost(i))return;(by[i.loc]=by[i.loc]||[]).push(i)});
+  const out=[];
+  S.locs.forEach((l,c)=>{
+    if(!ok(c)||under(c)||pathOf(c)[0]===HOUSE+'-P20')return;
+    const its=by[c]||[];let sc=0,why=[];
+    const same=its.filter(i=>cats.has(i.cat)).length;
+    if(same){sc+=3*same;why.push(`${same} món cùng nhóm “${main||[...cats][0]}” đang ở đây`)}
+    let best=0,sim=null;its.forEach(i=>{const t=lpTok(i.name),m=toks.filter(x=>t.includes(x)).length;if(m>best){best=m;sim=i}});
+    if(best){sc+=4*best;why.push('đang có món giống: '+sim.name)}
+    const nt=lpTok(pathName(c)+' '+(l.note||'')),nm=toks.filter(x=>nt.includes(x)).length,nc=ctoks.filter(x=>nt.includes(x)).length;
+    if(nm)sc+=6*nm;if(nc)sc+=2*nc;
+    if(nm||nc>=2)why.push('tên chỗ này hợp với '+(cx.code?'đồ trong hộp':'tên món'));
+    if(sc>=(cx.code?4:1))out.push({c,sc,why:why.join('; ')});
+  });
+  out.sort((a,b)=>b.sc-a.sc);
+  return{list:out.slice(0,3),tip:lpTip(main,cx.box)};
+}
 function lpList(){
   if(!LP)return;const f=LPF[LP.f],ok=c=>S.locs.has(c)&&!loc(c).locked&&f(c);
   const kids=new Map();[...S.locs.keys()].filter(c=>!loc(c).locked).sort(byCode).forEach(c=>{const p=loc(c).parent||'';if(!kids.has(p))kids.set(p,[]);kids.get(p).push(c)});
@@ -694,6 +729,10 @@ function lpList(){
     const r=[...S.locs.keys()].filter(c=>ok(c)&&q.every(t=>nrm(pathName(c)+' '+short(c)).includes(t))).sort(byCode).slice(0,40);
     h=r.length?r.map(c=>`<div class="lr"><div class="ln" data-act="lp-pick" data-c="${esc(c)}"><b>${esc(loc(c).name)}</b><span class="s">${esc(pathOf(c).slice(0,-1).map(x=>loc(x).name).join(' › '))} · ${esc(short(c))}</span></div><button class="pri" data-act="lp-pick" data-c="${esc(c)}">Chọn</button></div>`).join(''):'<p class="note">Không tìm thấy. Thử gõ ít chữ hơn.</p>';
     $('lp-b').innerHTML=h;$('lp-f').innerHTML=`<div class="note" style="margin:0">Tìm thấy ${r.length} chỗ. Bấm <b>Chọn</b> ở đúng dòng.</div>`;return}
+  const sg=lpSuggest(ok);
+  if(sg.list.length)h+=`<div class="note" style="margin:8px 0 2px">💡 Đề xuất (xếp cùng loại với đồ đã có)</div>`+sg.list.map(x=>`<div class="lr" style="background:#fff7e0;border-radius:10px;padding:10px;margin-bottom:6px;border:0"><div class="ln" data-act="lp-pick" data-c="${esc(x.c)}"><b>${esc(pathOf(x.c).map(y=>loc(y).name).join(' › '))}</b><span class="s">${esc(x.why)}</span></div><button class="pri" data-act="lp-pick" data-c="${esc(x.c)}">Chọn</button></div>`).join('');
+  else if(LPX[LP.f])h+=`<div class="note" style="margin:8px 0 2px">💡 Chưa có đề xuất: chưa có chỗ nào chứa đồ cùng loại. Xếp vài món trước, app sẽ học theo.</div>`;
+  if(sg.tip)h+=`<div class="note" style="margin:2px 0 8px">📐 ${esc(sg.tip)}</div>`;
   const rc=lpRecent().filter(ok);
   if(rc.length)h+=`<div class="note" style="margin:8px 0 2px">Gần đây</div><div class="rc">${rc.map(c=>`<button type="button" data-act="lp-pick" data-c="${esc(c)}">${esc(pathOf(c).slice(-2).map(x=>loc(x).name).join(' › '))}</button>`).join('')}</div>`;
   const path=LP.cur?pathOf(LP.cur):[];
@@ -720,7 +759,7 @@ function formLoc(code,kind){
     const mem=String(l.members||'').split(',').map(x=>x.trim());
     h+=`<label>Phòng riêng: ai được xem đồ bên trong (chủ nhà luôn xem được)</label><div class="list">${S.users.map(u=>`<label class="row" style="margin:0;color:inherit;font-size:inherit"><input type="checkbox" class="ck" data-mem="${esc(u.id)}" ${mem.includes(u.id)?'checked':''}><div class="t">${esc(u.name)}</div></label>`).join('')}</div>`;
   }
-  if(ed&&l.kind==='H')h+=`<label>Hộp đang đặt ở</label>${locField('f-parent',l.parent,c=>loc(c).kind!=='H','Chọn nơi đặt hộp')}`;
+  if(ed&&l.kind==='H')h+=`<label>Hộp đang đặt ở</label>${locField('f-parent',l.parent,c=>loc(c).kind!=='H','Chọn nơi đặt hộp',()=>({name:(($('f-name')||{}).value||l.name)+' '+(($('f-note')||{}).value||l.note||''),box:true,id:'',code}))}`;
   h+=`<label>Ghi chú</label><textarea id="f-note">${esc(l.note||'')}</textarea>`;
   h+=`<div class="btns"><button class="pri" data-act="loc-save" data-c="${esc(newCode)}" data-k="${l.kind}" data-ed="${ed?1:''}">Lưu</button><button data-act="close">Huỷ</button>${ed?'<button class="dan" data-act="loc-del" data-c="'+esc(code)+'">Xoá</button>':''}</div>`;
   sheet(h);
@@ -734,7 +773,7 @@ function formItem(id){
     if(isLost(i))h+=`<div class="note warn">❓ ${esc(i.lostBy||'')} báo KHÔNG THẤY lúc ${i.lostAt?when(i.lostAt):''}</div>${camWindow(i)}<button class="pri big" data-act="mv" data-m="thay" data-id="${esc(id)}">✅ Đã thấy, vẫn ở chỗ cũ</button>${kid()?'':`<button class="big" data-act="mvscan" data-m="thay" data-id="${esc(id)}">📍 Thấy ở chỗ khác (quét tem chỗ đó)</button>`}`;
     else{
       h+=i.holder?`<div class="note warn">${esc(i.holder)} đang giữ từ ${fmtD(i.heldSince)}${overdue(i)?' – quá '+HOLD_DAYS+' ngày':''}</div><button class="pri big" data-act="mv" data-m="tra" data-id="${esc(id)}">↩️ Đã trả về chỗ cũ</button>`:`<button class="pri big" data-act="mv" data-m="lay" data-id="${esc(id)}">🤲 Tôi lấy dùng</button>`;
-      h+=`<div class="btns"><button data-act="mv" data-m="mat" data-id="${esc(id)}">❓ Không thấy</button>${kid()?'':`<button data-act="mvscan" data-m="chuyen" data-id="${esc(id)}">🚚 Chuyển chỗ (quét tem)</button>`}</div>`;
+      h+=`<div class="btns"><button data-act="mv" data-m="mat" data-id="${esc(id)}">❓ Không thấy</button>${kid()?'':`<button data-act="item-move" data-id="${esc(id)}">🚚 Chuyển (chọn chỗ)</button><button data-act="mvscan" data-m="chuyen" data-id="${esc(id)}">📷 Chuyển (quét tem)</button>`}</div>`;
     }
     if(i.exp)h+=`<div class="note">Hạn dùng: <b>${fmtD(i.exp)}</b> · gia hạn:</div><div class="btns" style="margin-top:4px">${extBtns(id)}</div>`;
     h+=`<h3>Lịch sử</h3><div id="hist" class="note">Đang tải lịch sử…</div>`;
@@ -746,7 +785,7 @@ function formItem(id){
   h+=`<label>Tên đồ vật</label><input type="text" id="f-name" value="${esc(i.name)}" placeholder="Máy khoan, hộ chiếu, dây HDMI…">`;
   h+=`<label>Nhóm</label><select id="f-cat"><option value="">— chọn nhóm —</option>${CATS.map(c=>`<option ${c===i.cat?'selected':''}>${esc(c)}</option>`).join('')}</select>`;
   h+=`<div class="two"><div><label>Số lượng</label><input type="text" id="f-qty" inputmode="decimal" value="${esc(i.qty||'')}"></div><div><label>Đơn vị</label><input type="text" id="f-unit" value="${esc(i.unit||'')}" placeholder="cái, hộp, m…"></div><div><label>Báo khi còn ≤</label><input type="text" id="f-min" inputmode="decimal" value="${esc(i.min??'')}" placeholder="vật tư"></div></div>`;
-  h+=`<label>Nằm ở</label>${locField('f-loc',i.loc,null,'Chọn vị trí')}`;
+  h+=`<label>Nằm ở</label>${locField('f-loc',i.loc,null,'Chọn vị trí',()=>({name:($('f-name')||{}).value||i.name,cat:($('f-cat')||{}).value||i.cat,id:i.id}))}`;
   h+=`<div class="two"><div><label>Hạn sử dụng (nếu có)</label><input type="text" class="dt" id="f-exp" inputmode="numeric" maxlength="10" placeholder="dd/mm/yyyy" value="${fmtD(i.exp||'')}"></div><div><label>Ngày cho vào</label><input type="text" class="dt" id="f-put" inputmode="numeric" maxlength="10" placeholder="dd/mm/yyyy" value="${fmtD(i.putAt||'')}"></div></div>`;
   h+=`<label>Ghi chú</label><textarea id="f-note">${esc(i.note||'')}</textarea>`;
   h+=`<details ${i.model||i.bought||i.shop||i.price||i.wty||i.wnote?'open':''}><summary>Thông tin mua hàng & bảo hành</summary>`;
@@ -896,12 +935,25 @@ document.addEventListener('click',async e=>{
   else if(a==='more'){S['more_'+d.k]=!S['more_'+d.k];renderTim()}
   else if(a==='lp-open')lpOpen(d.f);
   else if(a==='lp-go'){if(LP){LP.cur=d.c;LP.q='';const q=$('lp-q');if(q)q.value='';lpList()}}
-  else if(a==='lp-pick'){if(LP){lpSet(LP.f,d.c);lpRemember(d.c);lpClose()}}
+  else if(a==='lp-pick'){if(LP){const cb=LP.cb;if(!cb)lpSet(LP.f,d.c);lpRemember(d.c);lpClose();if(cb)cb(d.c)}}
   else if(a==='lp-close')lpClose();
   else if(a==='close')closeSheet();
   else if(a==='mv-cancel'){S.mv=null;closeSheet()}
   else if(a==='loc-new')formLoc(null,d.k);
   else if(a==='loc-edit')formLoc(S.cur);
+  else if(a==='loc-move'){
+    const code=S.cur,l=loc(code);if(!l||l.kind!=='H')return;
+    LPF['mv-to']=c=>c!==l.parent&&c!==code&&(CHILD[loc(c).kind]||[]).includes(l.kind)&&!pathOf(c).includes(code);
+    LPX['mv-to']=()=>({name:l.name+' '+(l.note||''),box:l.kind==='H',id:'',code});
+    lpOpen('mv-to',async c=>{const from=pathName(l.parent);
+      if(await actU('saveLoc',{code,loc:{...l,parent:c}},'Đã chuyển “'+l.name+'” đến '+pathName(c)+'.')){openLoc(code);toast('🚚 '+l.name+': '+from+' → '+pathName(c))}},'')}
+  else if(a==='item-move'){
+    const id=d.id,i=S.items.get(id);if(!i)return;
+    LPF['mv-to']=c=>c!==i.loc;
+    LPX['mv-to']=()=>({name:i.name,cat:i.cat,id});
+    lpOpen('mv-to',async c=>{const it=S.items.get(id);if(!it)return;closeSheet();
+      S.items.set(id,{...it,loc:c});render();
+      if(!(await actU('saveItem',{id,item:{...it,loc:c}},'Đã chuyển “'+it.name+'” đến '+pathName(c)+'.')))act('load')},'')}
   else if(a==='loc-print'){S.sel.add(S.cur);go('in-tem')}
   else if(a==='item-tem'){
     const i=S.items.get(d.id);if(!i)return;
@@ -910,7 +962,7 @@ document.addEventListener('click',async e=>{
     <label>Số tem giống nhau cho món này</label><select id="it-n">${[1,2,3,4,5,6].map(n=>`<option value="${n}">${n} tem</option>`).join('')}</select>
     <button class="pri big" data-act="item-tem-add" data-id="${esc(d.id)}">➕ Thêm vào danh sách in (gom nhiều món, in 1 lần)</button>
     <button class="big" data-act="item-tem-go" data-id="${esc(d.id)}">✅ In ngay tem này – đúng chỗ đang để</button>
-    <label>Hoặc chuyển món sang chỗ khác rồi in ngay</label>${locField('it-loc','',c=>c!==i.loc,'Chọn chỗ mới')}
+    <label>Hoặc chuyển món sang chỗ khác rồi in ngay</label>${locField('it-loc','',c=>c!==i.loc,'Chọn chỗ mới',()=>({name:i.name,cat:i.cat,id:i.id}))}
     <button class="big" data-act="item-tem-move" data-id="${esc(d.id)}">🚚 Chuyển sang chỗ này & in tem</button>
     <div class="note">Tem chỉ ghi tên món; chỗ để luôn lấy từ app nên đổi chỗ sau này không phải in lại. Máy in ra 2 tem giống nhau: dán 1, giữ 1 dự phòng.</div>
     <div class="btns"><button data-act="close">Huỷ</button></div>`)}
