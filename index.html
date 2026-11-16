@@ -430,7 +430,7 @@ const ERR={NOAI:'Nút gợi ý chưa được cài khoá API Claude (xem HUONG-D
 function fail(e){const m=String((e&&e.message)||e);console.error(e);if(m==='AUTH')logout();toast(ERR[m]||('Không thực hiện được: '+m))}
 function apply(d){
   if(d.token){token=d.token;try{localStorage.setItem('n25tok',token)}catch(e){}}
-  S.me=d.me;S.users=d.users||[];S.logs=d.logs||[];S.camChk=d.camChk||'';if(d.me&&d.locs&&d.items){try{const q=Object.assign({},d);delete q.token;localStorage.setItem('n25snap',JSON.stringify(q))}catch(e){try{localStorage.removeItem('n25snap')}catch(_){}}}
+  S.pq=d.pq||[];S.me=d.me;S.users=d.users||[];S.logs=d.logs||[];S.camChk=d.camChk||'';if(d.me&&d.locs&&d.items){try{const q=Object.assign({},d);delete q.token;localStorage.setItem('n25snap',JSON.stringify(q))}catch(e){try{localStorage.removeItem('n25snap')}catch(_){}}}
   S.locs=new Map(d.locs.map(l=>[l.code,l]));S.items=new Map(d.items.map(i=>[i.id,i]));
   S.ready=true;S.at=Date.now();banner('');render();hideSplash();fetchThumbs();
   if($('expl'))expSheet(true);else if(!S.expShown&&S.me&&!kid()){S.expShown=true;let t='';try{t=localStorage.getItem('n25exp_'+S.me.id)||''}catch(e){}if(t!==today()&&dueList().length){try{localStorage.setItem('n25exp_'+S.me.id,today())}catch(e){}setTimeout(()=>expSheet(false),500)}}
@@ -536,8 +536,9 @@ function renderTim(){
   }
   const cams=[...new Set([...S.locs.values()].flatMap(l=>String(l.cam||'').split(',').map(x=>x.trim()).filter(Boolean)))];
   const camBar=cams.length&&!q&&!S.ff?`<div class="btns" style="align-items:center"><button class="chip" data-act="yoosee">📹 Camera</button><span class="note" style="margin:0">${cams.map(esc).join(' · ')}</span></div>`:'';
+  const pqn=adm()&&!q?pqVis().length:0,pqBar=pqn?`<button class="big" data-act="pq-go">📨 ${pqn} tem người nhà nhờ in – bấm để mở</button>`:'';
   const due=kid()?0:dueList().length,dueBar=due&&!q?`<button class="big pri" data-act="exp-open">⏰ ${due} món hết hạn trong 1 ngày – bấm để gia hạn / bỏ</button>`:'';
-  $('tim-out').innerHTML=dueBar+(S.locs.size?tiles:'')+camBar+h;
+  $('tim-out').innerHTML=pqBar+dueBar+(S.locs.size?tiles:'')+camBar+h;
 }
 /* 📋 danh mục tổng thể + chi tiết theo từng ngăn / hộp */
 let catTxt='';
@@ -598,6 +599,11 @@ function labelList(){
   if(out.length%2&&S.fill)out.push(out[out.length-1]);
   return out;
 }
+const pqVis=()=>(S.pq||[]).filter(e=>itemOfCode(e.code)||S.locs.has(e.code));
+function pqBlock(){
+  const pq=pqVis();if(!pq.length)return '';
+  return `<h3>📨 Yêu cầu in từ người nhà (${pq.length})</h3><div class="list">`+pq.map(e=>{const iid=itemOfCode(e.code),i=iid&&S.items.get(iid),n=i?i.name:loc(e.code).name,w=i?pathName(i.loc):pathName(loc(e.code).parent||'');return `<div class="row" style="cursor:default">${i?itile(iid,i):lbdg(e.code)}<div class="t"><div class="n">${esc(n)} × ${e.n} tem</div><div class="s">${esc(e.by)} nhờ · ${when(e.at)}${w?' · '+esc(w):''}</div></div>${adm()||e.by===S.me.name?`<button class="chip dan" data-act="pq-del" data-c="${esc(e.code)}">✕</button>`:''}</div>`}).join('')+'</div>'+(adm()?'<div class="btns"><button class="chip on" data-act="pq-all">➕ Thêm tất cả vào danh sách in</button></div>':'<div class="note">Đã gửi, chờ chủ nhà in.</div>');
+}
 function renderIn(){
   document.querySelectorAll('[data-act=pf]').forEach(b=>b.classList.toggle('on',b.dataset.v===S.pf));
   for(const c of [...S.sel])if(!S.locs.has(c)&&!itemOfCode(c))S.sel.delete(c);
@@ -605,7 +611,7 @@ function renderIn(){
   const inF=c=>S.pf==='tat'||(S.pf==='cho'?loc(c).printed==='1':!loc(c).printed);
   const all=[...S.locs.keys()].sort(byCode).filter(c=>!loc(c).locked&&(inF(c)||S.sel.has(c)));
   const st=l=>l.printed==='2'?' · đã dán':l.printed?` · <span class="warn">chờ dán</span> · ${esc(l.printedBy||'')} in ${l.printedAt?when(l.printedAt):''}`:'';
-  $('in-out').innerHTML=(selIt.length?'<h3>Tem cho đồ vật</h3><div class="list">'+selIt.map(c=>{const i=S.items.get(itemOfCode(c));return `<label class="row" style="margin:0;color:inherit;font-size:inherit"><input type="checkbox" class="ck" data-ck="${esc(c)}" checked>${itile(itemOfCode(c),i)}<div class="t"><div class="n">${esc(i.name)}</div><div class="s">${esc(pathName(i.loc))}</div></div>${cntSel(c)}</label>`}).join('')+'</div><h3>Tem vị trí</h3>':'')+(all.length?'<div class="list">'+all.map(c=>`<label class="row" style="margin:0;color:inherit;font-size:inherit"><input type="checkbox" class="ck" data-ck="${esc(c)}" ${S.sel.has(c)?'checked':''}>${lbdg(c)}<div class="t"><div class="n">${esc(loc(c).name)}</div><div class="s"><span class="code">${esc(short(c))}</span>${st(loc(c))}</div>${cntSel(c)}</div></label>`).join('')+'</div>':'<div class="empty">'+(S.pf==='cho'?'Không có tem nào đang chờ dán.':S.locs.size?'Tất cả vị trí đã in tem. Chọn “Tất cả” để in lại.':'Chưa có vị trí nào để in tem.')+'</div>');
+  $('in-out').innerHTML=pqBlock()+(selIt.length?'<h3>Tem cho đồ vật</h3><div class="list">'+selIt.map(c=>{const i=S.items.get(itemOfCode(c));return `<label class="row" style="margin:0;color:inherit;font-size:inherit"><input type="checkbox" class="ck" data-ck="${esc(c)}" checked>${itile(itemOfCode(c),i)}<div class="t"><div class="n">${esc(i.name)}</div><div class="s">${esc(pathName(i.loc))}</div></div>${cntSel(c)}</label>`}).join('')+'</div><h3>Tem vị trí</h3>':'')+(all.length?'<div class="list">'+all.map(c=>`<label class="row" style="margin:0;color:inherit;font-size:inherit"><input type="checkbox" class="ck" data-ck="${esc(c)}" ${S.sel.has(c)?'checked':''}>${lbdg(c)}<div class="t"><div class="n">${esc(loc(c).name)}</div><div class="s"><span class="code">${esc(short(c))}</span>${st(loc(c))}</div>${cntSel(c)}</div></label>`).join('')+'</div>':'<div class="empty">'+(S.pf==='cho'?'Không có tem nào đang chờ dán.':S.locs.size?'Tất cả vị trí đã in tem. Chọn “Tất cả” để in lại.':'Chưa có vị trí nào để in tem.')+'</div>');
   const pv=$('prev'),ls=labelList();pv.innerHTML='';
   if(window.qrcode)ls.slice(0,4).forEach(c=>pv.appendChild(drawLabel(c,10)));
   const b=$('pdf-btn');b.disabled=!ls.length;b.textContent=ls.length?`Tải PDF (${ls.length} tem)`:'Tải PDF';const pb=$('print-btn');pb.disabled=!ls.length;pb.textContent=ls.length?`🖨️ In ngay (${ls.length} tem, ${Math.ceil(ls.length/2)} hàng)`:'Chọn tem cần in';
@@ -619,7 +625,7 @@ function render(){
   updBack();
   if(!S.me)return;
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===S.tab));
-  {const t=document.querySelector('[data-tab=in-tem]');let b=t.querySelector('.nb');if(!b){b=document.createElement('span');b.className='nb';b.style.cssText='position:absolute;top:4px;margin-left:22px;background:#d33;color:#fff;border-radius:999px;font-size:11px;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 4px';t.style.position='relative';t.appendChild(b)}b.textContent=S.sel.size||'';b.style.display=S.sel.size?'':'none'}
+  {const t=document.querySelector('[data-tab=in-tem]');let b=t.querySelector('.nb');if(!b){b=document.createElement('span');b.className='nb';b.style.cssText='position:absolute;top:4px;margin-left:22px;background:#d33;color:#fff;border-radius:999px;font-size:11px;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 4px';t.style.position='relative';t.appendChild(b)}const bn=S.sel.size||(adm()?pqVis().length:0);b.textContent=bn||'';b.style.display=bn?'':'none'}
   $('stat').textContent=S.ready?`${S.locs.size} vị trí · ${S.items.size} đồ vật`:'';
   if(S.tab==='tim')renderTim();
   else if(S.tab==='vi-tri')renderLoc();
@@ -687,7 +693,7 @@ function formItem(id){
     h+=`<h3>Lịch sử</h3><div id="hist" class="note">Đang tải lịch sử…</div>`;
     if(kid()){sheet(h+'<div class="btns"><button data-act="close">Đóng</button></div>');loadHist(id);return}
     h+=`<div class="two" style="align-items:flex-end"><div><label>Vật tư: số lượng</label><input type="text" id="mv-n" inputmode="decimal" value="1"></div><div><button data-act="mv" data-m="dung" data-id="${esc(id)}" style="width:100%">Dùng bớt</button></div><div><button data-act="mv" data-m="nhap" data-id="${esc(id)}" style="width:100%">Nhập thêm</button></div></div>`;
-    h+=`<div class="btns"><button class="big" data-act="item-tem" data-id="${esc(id)}">🏷️ In tem dán lên món này</button></div>`;
+    h+=`<div class="btns"><button class="big" data-act="item-tem" data-id="${esc(id)}">${adm()?'🏷️ In tem dán lên món này':'📨 Nhờ chủ nhà in tem món này'}</button></div>`;
     h+='<details><summary>Sửa thông tin</summary>';
   }else h+=phBox('item','','',true)+(window.N25_AI?'<button class="big" data-act="ai">🤖 Gợi ý chỗ cất (chụp ảnh hoặc nhập tên trước)</button><div id="ai-out" class="note"></div>':'');
   h+=`<label>Tên đồ vật</label><input type="text" id="f-name" value="${esc(i.name)}" placeholder="Máy khoan, hộ chiếu, dây HDMI…">`;
@@ -768,7 +774,7 @@ async function makePdf(arg,print){
   if(print){try{doc.autoPrint();opened=!!window.open(doc.output('bloburl'),'_blank')}catch(e){}if(!opened)toast('Trình duyệt chặn cửa sổ in, đang tải PDF để anh mở in.')}
   if(!opened){try{doc.save(name)}catch(e){toast('Không tải được PDF trên trình duyệt này, hãy mở bằng Chrome trên laptop.');return}}
   toast(opened?'Đã mở hộp thoại in. Chọn máy in tem, tỉ lệ 100%.':'Đã tạo PDF. In ở tỉ lệ 100%.');
-  const uniq=[...new Set(codes)].filter(c=>S.locs.has(c));if(arg){toast('Đã tạo PDF '+codes.length+' tem. In ở tỉ lệ 100%.');return}S.sel.clear();S.cnt={};if(await act('printed',{codes:uniq})){S.pf='cho';render();toast('Đã tạo PDF. In ở tỉ lệ 100%, dán tem rồi quét tem để xác nhận.')}
+  const uniq=[...new Set(codes)].filter(c=>S.locs.has(c));if(arg){toast('Đã tạo PDF '+codes.length+' tem. In ở tỉ lệ 100%.');return}S.sel.clear();S.cnt={};if(await act('printed',{codes:uniq,done:[...new Set(codes)]})){S.pf='cho';render();toast('Đã tạo PDF. In ở tỉ lệ 100%, dán tem rồi quét tem để xác nhận.')}
 }
 
 /* ---------- quét ---------- */
@@ -835,6 +841,10 @@ document.addEventListener('click',async e=>{
   if(a==='open'){e.stopPropagation();closeSheet();openLoc(d.c)}
   else if(a==='grp'){S.cur=d.c;try{S.grp=JSON.parse(d.g)}catch(er){S.grp=[]}go('vi-tri')}
   else if(a==='back')goBack();
+  else if(a==='pq-add'){el.disabled=true;if(await act('pqAdd',{list:[{code:itemCode(d.id),n:+($('it-n').value||1)}]})){closeSheet();toast('Đã gửi cho chủ nhà in tem.')}else el.disabled=false}
+  else if(a==='pq-del'){el.disabled=true;await act('pqDel',{codes:[d.c]})}
+  else if(a==='pq-all'){pqVis().forEach(e=>{S.sel.add(e.code);S.cnt[e.code]=e.n});render();toast('Đã thêm vào danh sách in. Bấm 🖨️ In ngay.')}
+  else if(a==='pq-go')go('in-tem');
   else if(a==='more'){S['more_'+d.k]=!S['more_'+d.k];renderTim()}
   else if(a==='close')closeSheet();
   else if(a==='mv-cancel'){S.mv=null;closeSheet()}
@@ -843,6 +853,7 @@ document.addEventListener('click',async e=>{
   else if(a==='loc-print'){S.sel.add(S.cur);go('in-tem')}
   else if(a==='item-tem'){
     const i=S.items.get(d.id);if(!i)return;
+    if(!adm()){sheet(`<h2>📨 Nhờ chủ nhà in tem</h2><p><b>${esc(i.name)}</b></p><div class="note">Máy in tem chỉ kết nối với máy của chủ nhà. Yêu cầu của bạn sẽ hiện ở tab In tem của chủ nhà.</div><label>Số tem giống nhau</label><select id="it-n">${[1,2,3,4,5,6].map(n=>`<option value="${n}">${n} tem</option>`).join('')}</select><button class="pri big" data-act="pq-add" data-id="${esc(d.id)}">📨 Gửi yêu cầu in</button><div class="btns"><button data-act="close">Huỷ</button></div>`);return}
     sheet(`<h2>🏷️ In tem cho món</h2><p><b>${esc(i.name)}</b></p><div class="note">Đang để ở: <b>${esc(pathName(i.loc))}</b></div>
     <label>Số tem giống nhau cho món này</label><select id="it-n">${[1,2,3,4,5,6].map(n=>`<option value="${n}">${n} tem</option>`).join('')}</select>
     <button class="pri big" data-act="item-tem-add" data-id="${esc(d.id)}">➕ Thêm vào danh sách in (gom nhiều món, in 1 lần)</button>
