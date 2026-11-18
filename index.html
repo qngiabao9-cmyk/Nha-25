@@ -29,9 +29,13 @@
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
-header{background:linear-gradient(135deg,#8e2433,#4a0f18);background-size:cover;background-position:center;color:#fff;min-height:92px;display:flex;align-items:flex-end}
+header{background:linear-gradient(135deg,#8e2433,#4a0f18);position:relative;overflow:hidden;color:#fff;min-height:92px;display:flex;align-items:flex-end}
+#hbg{position:absolute;inset:0;display:grid;gap:2px;background:#fff}#hbg i{background-size:cover;background-position:center;display:block;min-height:0}
+#hbg.n1{grid-template-columns:1fr}#hbg.n2{grid-template-columns:1fr 1fr}#hbg.n3{grid-template-columns:1fr 1fr 1fr}
+#hbg.n4{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}#hbg.n5,#hbg.n6{grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr}#hbg.n5 i:last-child{grid-column:span 2}
+.hm{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}.hm div{position:relative;aspect-ratio:4/3;border-radius:10px;overflow:hidden;background-size:cover;background-position:center;box-shadow:var(--sh)}.hm button{position:absolute;top:4px;right:4px;padding:3px 9px;font-size:13px;background:rgba(0,0,0,.65);color:#fff;border:0}
 header.pic{min-height:170px}
-header .hz{width:100%;padding:calc(26px + env(safe-area-inset-top)) 16px 12px;background:linear-gradient(transparent,rgba(0,0,0,.6))}
+header .hz{position:relative;z-index:1;width:100%;padding:calc(26px + env(safe-area-inset-top)) 16px 12px;background:linear-gradient(transparent,rgba(0,0,0,.6))}
 header .hi{max-width:680px;margin:0 auto;display:flex;align-items:flex-end;gap:8px}
 header h1{font-size:28px;line-height:1.1;margin:0;letter-spacing:.3px;text-shadow:0 1px 6px rgba(0,0,0,.5)}
 header #stat{color:rgba(255,255,255,.9);font-size:13px}
@@ -122,7 +126,7 @@ details{margin-top:14px;border-top:1px solid var(--line);padding-top:10px} summa
 <body>
 <button id="bk" data-act="back">← Quay lại</button>
 <div id="splash"><div><h1>Nhà 25</h1><p>Đang mở cửa…</p></div></div>
-<header id="hero"><div class="hz"><div class="hi"><div><h1>Nhà 25</h1><span id="stat"></span><div id="onl" data-act="onl" style="cursor:pointer;margin-top:4px;display:flex;gap:4px;align-items:center;min-height:24px"></div></div><span style="flex:1"></span><button class="chip" id="reload" data-act="reload" title="Tải lại">↻</button><button class="chip" id="me" data-act="me-menu"></button></div></div></header>
+<header id="hero"><div id="hbg"></div><div class="hz"><div class="hi"><div><h1>Nhà 25</h1><span id="stat"></span><div id="onl" data-act="onl" style="cursor:pointer;margin-top:4px;display:flex;gap:4px;align-items:center;min-height:24px"></div></div><span style="flex:1"></span><button class="chip" id="reload" data-act="reload" title="Tải lại">↻</button><button class="chip" id="me" data-act="me-menu"></button></div></div></header>
 <main>
   <div class="banner" id="banner"></div>
 
@@ -208,7 +212,7 @@ let thSaveT;const thSave=()=>{clearTimeout(thSaveT);thSaveT=setTimeout(()=>{try{
 thLoad();let pend=null,picT=null;
 const S={cnt:{},mv:null,camChk:'',cp:1,fill:true,ff:'',locs:new Map(),items:new Map(),tab:'tim',cur:'',q:'',sel:new Set(),pf:'chua',ready:false,fc:'',fs:'',me:null,users:[],logs:[],at:0};
 let token='';try{token=localStorage.getItem('n25tok')||''}catch(e){}
-try{const c=JSON.parse(localStorage.getItem('n25ban')||'null');if(c&&c.url)document.getElementById('splash').style.backgroundImage=`url(${c.url})`}catch(e){}
+try{const c=JSON.parse(localStorage.getItem('n25ban')||'null');if(c&&c.urls&&c.urls[0])document.getElementById('splash').style.backgroundImage=`url(${c.urls[0]})`}catch(e){}
 setTimeout(()=>{const p=document.querySelector('#splash p');if(p&&!document.getElementById('splash').classList.contains('off'))p.textContent='Máy chủ đang chậm, chạm vào màn hình để vào…'},4000);setTimeout(()=>{hideSplash()},8000);document.getElementById('splash').addEventListener('click',()=>{const sp=document.getElementById('splash');if(Date.now()-spT>3000)sp.classList.add('off')});
 let spT=Date.now();function hideSplash(){const sp=document.getElementById('splash');if(!sp||sp.classList.contains('off'))return;setTimeout(()=>sp.classList.add('off'),Math.max(0,900-(Date.now()-spT)))}
 const adm=()=>!!S.me&&S.me.role==='chu';
@@ -246,12 +250,19 @@ async function fetchThumbs(){
   }catch(e){thBusy=false;if(++thTry<4)setTimeout(fetchThumbs,3000*thTry)}
 }
 async function setBanner(id){
-  const h=$('hero');
-  if(!id){h.style.backgroundImage='';h.classList.remove('pic');return}
-  let url='';
-  try{const c=JSON.parse(localStorage.getItem('n25ban')||'null');if(c&&c.id===id)url=c.url}catch(e){}
-  if(!url){try{url=await call('banner');try{localStorage.setItem('n25ban',JSON.stringify({id,url}))}catch(e){}}catch(e){}}
-  if(url){h.style.backgroundImage=`url(${url})`;h.classList.add('pic')}
+  const h=$('hero'),bg=$('hbg');
+  if(!id){bg.innerHTML='';bg.className='';h.classList.remove('pic');S.houseUrls=[];if($('hm'))houseMgr();return}
+  let urls=null;
+  try{const c=JSON.parse(localStorage.getItem('n25ban')||'null');if(c&&c.id===id&&Array.isArray(c.urls))urls=c.urls}catch(e){}
+  if(!urls){try{const r=await call('banner');urls=(Array.isArray(r)?r:[r]).filter(Boolean);try{localStorage.setItem('n25ban',JSON.stringify({id,urls}))}catch(e){try{localStorage.removeItem('n25ban')}catch(_){}}}catch(e){urls=[]}}
+  S.houseUrls=urls;
+  if(urls.length){const n=Math.min(6,urls.length);bg.className='n'+n;bg.innerHTML=urls.slice(0,6).map(u=>`<i style="background-image:url(${u})"></i>`).join('');h.classList.add('pic')}
+  else{bg.innerHTML='';bg.className='';h.classList.remove('pic')}
+  if($('hm'))houseMgr();
+}
+function houseMgr(){
+  const u=S.houseUrls||[];
+  sheet(`<div id="hm"><h2>🏠 Ảnh ngôi nhà (${u.length}/6)</h2><div class="note">Các ảnh được ghép thành một băng ngang ở đầu trang, mỗi ảnh tự cắt vừa ô. Nên chụp ngang, mỗi ảnh một góc nhà.</div><div class="hm">${u.map((x,i)=>`<div style="background-image:url(${x})"><button data-act="house-del" data-i="${i}">✕</button></div>`).join('')}</div><div class="btns">${u.length<6?'<button class="pri" data-act="pic" data-k="house" data-id="">＋ Thêm ảnh</button>':''}<button data-act="close">Đóng</button></div></div>`);
 }
 async function loadImg(file){try{return await createImageBitmap(file)}catch(e){return await new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=URL.createObjectURL(file)})}}
 function shrink(img,max,q,sq){
@@ -937,11 +948,13 @@ document.addEventListener('click',async e=>{
   if(e.target===$('ovl')){closeSheet();return}
   const el=e.target.closest('[data-act]');if(!el)return;
   const a=el.dataset.act,d=el.dataset;
-  if(a!=='loc-del'&&a!=='item-del'&&a!=='exp-del')armed=null;
+  if(a!=='loc-del'&&a!=='item-del'&&a!=='exp-del'&&a!=='house-del')armed=null;
   if(a==='open'){e.stopPropagation();closeSheet();openLoc(d.c)}
   else if(a==='grp'){S.cur=d.c;try{S.grp=JSON.parse(d.g)}catch(er){S.grp=[]}go('vi-tri')}
   else if(a==='back')goBack();
   else if(a==='onl'){if(S.me&&S.me.id)onlSheet()}
+  else if(a==='house-mgr')houseMgr();
+  else if(a==='house-del'){if(armed!==el){armed=el;el.textContent='Xoá?';return}el.disabled=true;await act('setPhoto',{kind:'house',del:+d.i})}
   else if(a==='pq-add'){el.disabled=true;if(await act('pqAdd',{list:[{code:itemCode(d.id),n:+($('it-n').value||1)}]})){closeSheet();toast('Đã gửi cho chủ nhà in tem.')}else el.disabled=false}
   else if(a==='pq-del'){el.disabled=true;await act('pqDel',{codes:[d.c]})}
   else if(a==='pq-all'){pqVis().forEach(e=>{S.sel.add(e.code);S.cnt[e.code]=e.n});render();toast('Đã thêm vào danh sách in. Bấm 🖨️ In ngay.')}
@@ -1132,7 +1145,7 @@ document.addEventListener('click',async e=>{
   else if(a==='logout')logout();
   else if(a==='me-menu'){
     const km=kbGet(S.me.id),pf=id=>`<input type="password" class="pw" id="${id}" inputmode="${km}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="20" style="-webkit-text-security:disc">`;
-    sheet(`<div class="ph">${av(S.me,72)}<div><h2 style="margin:0">${esc(S.me.name)}</h2><div class="btns" style="margin:6px 0 0"><button data-act="pic" data-k="user" data-id="">📷 Ảnh đại diện</button>${adm()?'<button data-act="pic" data-k="house" data-id="">🏠 Ảnh ngôi nhà</button>':''}</div></div></div><h3>Quét tem bằng Camera / Safari</h3><button data-act="xfer">🔗 Lấy liên kết đăng nhập cho Safari</button><h3>Đổi mã đăng nhập</h3><div class="btns" style="margin:4px 0 0"><button type="button" class="chip" data-act="kb">${km==='numeric'?'abc':'123'}</button><span class="note" style="margin:0">đổi bàn phím chữ / số</span></div><label>Mã hiện tại</label>${pf('p-old')}<label>Mã mới (4–20 ký tự${adm()?', chủ nhà ≥ 8 ký tự':''})</label>${pf('p-new')}<label>Nhập lại mã mới</label>${pf('p-new2')}<div class="btns"><button class="pri" data-act="pin-save">Đổi mã</button><button data-act="close">Huỷ</button></div><details><summary>Thoát tài khoản</summary><p class="note">Thoát khỏi máy này. Lần sau mở app phải nhập lại mã.</p><div class="btns"><button class="dan" data-act="logout">Thoát</button></div></details>`);
+    sheet(`<div class="ph">${av(S.me,72)}<div><h2 style="margin:0">${esc(S.me.name)}</h2><div class="btns" style="margin:6px 0 0"><button data-act="pic" data-k="user" data-id="">📷 Ảnh đại diện</button>${adm()?'<button data-act="house-mgr">🏠 Ảnh ngôi nhà</button>':''}</div></div></div><h3>Quét tem bằng Camera / Safari</h3><button data-act="xfer">🔗 Lấy liên kết đăng nhập cho Safari</button><h3>Đổi mã đăng nhập</h3><div class="btns" style="margin:4px 0 0"><button type="button" class="chip" data-act="kb">${km==='numeric'?'abc':'123'}</button><span class="note" style="margin:0">đổi bàn phím chữ / số</span></div><label>Mã hiện tại</label>${pf('p-old')}<label>Mã mới (4–20 ký tự${adm()?', chủ nhà ≥ 8 ký tự':''})</label>${pf('p-new')}<label>Nhập lại mã mới</label>${pf('p-new2')}<div class="btns"><button class="pri" data-act="pin-save">Đổi mã</button><button data-act="close">Huỷ</button></div><details><summary>Thoát tài khoản</summary><p class="note">Thoát khỏi máy này. Lần sau mở app phải nhập lại mã.</p><div class="btns"><button class="dan" data-act="logout">Thoát</button></div></details>`);
   }
   else if(a==='xfer'){el.disabled=true;try{const r=await call('xfer'),u=QR_BASE+'?x='+r.code;
     sheet(`<h2>🔗 Đăng nhập cho Safari</h2><div class="note">Liên kết dùng 1 lần, hết hạn sau 10 phút. Bấm <b>Sao chép</b>, mở <b>Safari</b>, dán vào thanh địa chỉ rồi Go. Safari sẽ nhớ đăng nhập; từ đó quét tem bằng Camera là vào thẳng.</div><textarea readonly rows="3" id="xf-u" style="width:100%">${esc(u)}</textarea><div class="btns"><button class="pri" data-act="xfer-copy">Sao chép</button><button data-act="close">Đóng</button></div>`)}catch(er){fail(er)}finally{el.disabled=false}}
@@ -1173,7 +1186,7 @@ document.addEventListener('change',async e=>{
   if(e.target.id==='pic'&&e.target.files[0]&&picT){
     const f=e.target.files[0],t=picT;e.target.value='';picT=null;
     let img;try{img=await loadImg(f)}catch(err){toast('Không mở được ảnh.');return}
-    if(t.kind==='house'){toast('Đang lưu ảnh…');if(await act('setPhoto',{kind:'house',full:shrink(img,1400,.72)})){closeSheet();toast('Đã đổi ảnh ngôi nhà.')}return}
+    if(t.kind==='house'){toast('Đang lưu ảnh…');if(await act('setPhoto',{kind:'house',full:shrink(img,640,.72)})){toast('Đã thêm ảnh ngôi nhà.');if(!$('hm'))houseMgr()}return}
     if(t.kind==='user'){toast('Đang lưu ảnh…');if(await act('setPhoto',{kind:'user',thumb:shrink(img,120,.7,true)})){closeSheet();toast('Đã đổi ảnh đại diện.')}return}
     const thumb=shrink(img,140,.6,true),full=shrink(img,1100,.72);
     if(t.kind==='item'&&!t.id){pend={thumb,full,ai:shrink(img,512,.6)};const b=$('ph');if(b)b.innerHTML=`<img src="${thumb}" alt=""><button data-act="pic" data-k="item" data-id="">📷 Đổi ảnh</button>`;return}
