@@ -463,7 +463,7 @@ async function act(action,p){try{const r=await call(action,p);S.res=r&&r.res;app
   if(!READ_A[action]&&/kết nối/i.test(m)){toast('Mạng chập chờn, chưa chắc đã lưu. Đang kiểm tra lại…');setTimeout(()=>act('load').then(ok=>{if(ok)toast('Đã tải lại. Xem món vừa nhập đã có chưa rồi hãy nhập lại.')}),2000)}
   else fail(e);return false}}
 const kid=()=>!!S.me&&S.me.role==='tre';
-const AT={mat:'báo không thấy',thay:'đã thấy',kiemke:'kiểm kê',nhaplo:'nhập danh sách',lay:'lấy dùng',tra:'trả lại',dung:'dùng bớt',nhap:'nhập thêm',them:'thêm',sua:'sửa',chuyen:'chuyển chỗ',xoa:'xoá',themvt:'tạo vị trí',suavt:'sửa vị trí',chuyenvt:'chuyển hộp',xoavt:'xoá vị trí',hoantac:'hoàn tác',intem:'in tem',dantem:'xác nhận đã dán tem',anh:'đổi ảnh'};
+const AT={mat:'báo không thấy',thay:'đã thấy',kiemke:'kiểm kê',nhaplo:'nhập danh sách',lay:'lấy dùng',tra:'trả lại',dung:'dùng bớt',nhap:'nhập thêm',them:'thêm',sua:'sửa',chuyen:'chuyển chỗ',xoa:'xoá',het:'dùng hết (xoá khỏi danh sách)',themvt:'tạo vị trí',suavt:'sửa vị trí',chuyenvt:'chuyển hộp',xoavt:'xoá vị trí',hoantac:'hoàn tác',intem:'in tem',dantem:'xác nhận đã dán tem',anh:'đổi ảnh'};
 const when=ts=>{const d=new Date(+ts);return d.toLocaleDateString('vi-VN')+' '+d.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'})};
 const logLine=g=>`${esc(g.user)} ${AT[g.act]||esc(g.act)}${g.qty?' '+esc(g.qty):''}${g.note&&g.act!=='hoantac'?' · '+esc(g.note):''} · ${when(g.ts)}`;
 const undoChip=g=>g.canUndo?`<button class="chip u" data-act="undo" data-ts="${esc(g.ts)}" data-id="${esc(g.itemId)}">Hoàn tác</button>`:'';
@@ -785,7 +785,7 @@ function formItem(id){
   if(ed){
     if(isLost(i))h+=`<div class="note warn">❓ ${esc(i.lostBy||'')} báo KHÔNG THẤY lúc ${i.lostAt?when(i.lostAt):''}</div>${camWindow(i)}<button class="pri big" data-act="mv" data-m="thay" data-id="${esc(id)}">✅ Đã thấy, vẫn ở chỗ cũ</button>${kid()?'':`<button class="big" data-act="mvscan" data-m="thay" data-id="${esc(id)}">📍 Thấy ở chỗ khác (quét tem chỗ đó)</button>`}`;
     else{
-      h+=i.holder?`<div class="note warn">${esc(i.holder)} đang giữ từ ${fmtD(i.heldSince)}${overdue(i)?' – quá '+HOLD_DAYS+' ngày':''}</div><button class="pri big" data-act="mv" data-m="tra" data-id="${esc(id)}">↩️ Đã trả về chỗ cũ</button>`:`<button class="pri big" data-act="mv" data-m="lay" data-id="${esc(id)}">🤲 Tôi lấy dùng</button>`;
+      h+=i.holder?`<div class="note warn">${esc(i.holder)} đang giữ từ ${fmtD(i.heldSince)}${overdue(i)?' – quá '+HOLD_DAYS+' ngày':''}</div>${`<label>Còn dư bao nhiêu? (số lượng / trọng lượng)${i.unit?' – đơn vị: '+esc(i.unit):''}</label><input type="text" id="mv-rest" inputmode="decimal" value="${esc(i.qty||'')}" placeholder="vd: 1, 0,5, 300">`}<button class="pri big" data-act="mv" data-m="tra" data-id="${esc(id)}">↩️ Trả về chỗ cũ  (còn dư như trên)</button>${`<button class="big dan" data-act="mv" data-m="het" data-id="${esc(id)}">✅ Dùng hết – xoá khỏi danh sách</button>`}`:`<button class="pri big" data-act="mv" data-m="lay" data-id="${esc(id)}">🤲 Tôi lấy dùng</button>`;
       h+=`<div class="btns"><button data-act="mv" data-m="mat" data-id="${esc(id)}">❓ Không thấy</button>${kid()?'':`<button data-act="item-move" data-id="${esc(id)}">🚚 Chuyển (chọn chỗ)</button><button data-act="mvscan" data-m="chuyen" data-id="${esc(id)}">📷 Chuyển (quét tem)</button>`}</div>`;
     }
     if(i.exp)h+=`<div class="note">Hạn dùng: <b>${fmtD(i.exp)}</b> · gia hạn:</div><div class="btns" style="margin-top:4px">${extBtns(id)}</div>`;
@@ -1104,8 +1104,12 @@ document.addEventListener('click',async e=>{
   else if(a==='mv'){
     el.disabled=true;const nm=(S.items.get(d.id)||{}).name||'';
     const inSheet=!!el.closest('#sheet'),it0=S.items.get(d.id);
-    if(it0&&(d.m==='lay'||d.m==='tra')){S.items.set(d.id,{...it0,holder:d.m==='lay'?S.me.name:'',heldSince:d.m==='lay'?today():'',lost:''});render();if(inSheet)closeSheet()}
-    if(await actU('move',{id:d.id,act:d.m,qty:inSheet&&$('mv-n')?$('mv-n').value:''},{lay:'Đã ghi: bạn lấy “'+nm+'”.',tra:'Đã ghi: trả “'+nm+'”.',dung:'Đã trừ số lượng “'+nm+'”.',nhap:'Đã cộng số lượng “'+nm+'”.',mat:'Đã báo không thấy “'+nm+'”.',thay:'Đã ghi: thấy lại “'+nm+'”.'}[d.m])){if(inSheet)closeSheet()}else{el.disabled=false;if(it0)act('load')}
+    let rest=d.m==='tra'&&inSheet&&$('mv-rest')?$('mv-rest').value.trim():'';
+    if(rest&&!/^\d+([.,]\d+)?$/.test(rest)){toast('Số còn dư chưa đúng. Chỉ nhập số, ví dụ 1 hoặc 0,5.');el.disabled=false;return}
+    if(d.m==='tra'&&rest&&parseFloat(rest.replace(',','.'))===0){d.m='het';rest=''}
+    if(it0&&d.m==='het'){S.items.delete(d.id);render();if(inSheet)closeSheet()}
+    else if(it0&&(d.m==='lay'||d.m==='tra')){S.items.set(d.id,{...it0,holder:d.m==='lay'?S.me.name:'',heldSince:d.m==='lay'?today():'',lost:'',...(d.m==='tra'&&rest?{qty:rest}:{})});render();if(inSheet)closeSheet()}
+    if(await actU('move',{id:d.id,act:d.m,qty:inSheet&&$('mv-n')?$('mv-n').value:'',rest},{het:'Đã xoá “'+nm+'” (dùng hết).',lay:'Đã ghi: bạn lấy “'+nm+'”.',tra:'Đã ghi: trả “'+nm+'”.',dung:'Đã trừ số lượng “'+nm+'”.',nhap:'Đã cộng số lượng “'+nm+'”.',mat:'Đã báo không thấy “'+nm+'”.',thay:'Đã ghi: thấy lại “'+nm+'”.'}[d.m])){if(inSheet)closeSheet()}else{el.disabled=false;if(it0)act('load')}
   }
   else if(a==='undo'){e.stopPropagation();el.disabled=true;await doUndo(d.ts,d.id)}
   else if(a==='undo-bar'){if(undoG)await doUndo(undoG.ts,undoG.itemId)}
