@@ -310,6 +310,15 @@ function openYoosee(){
   else if(/Android/.test(navigator.userAgent))location.href='intent://#Intent;package=com.yoosee;S.browser_fallback_url='+encodeURIComponent('https://play.google.com/store/search?q=yoosee')+';end';
   else toast('Mở app Yoosee trên điện thoại để xem camera.');
 }
+/* 📹 3 camera Tapo xem online: cần máy chạy go2rtc; khai địa chỉ HTTPS trong config.js: window.N25_CAM='https://...'; (tên luồng: san, bep, bar) */
+const CAMS=[{k:'san',n:'Sân trước',ic:'🏠'},{k:'bep',n:'Bếp',ic:'🍳'},{k:'bar',n:'Quầy Bar',ic:'🍸'}];
+const CAM_BASE=String(window.N25_CAM||'').trim().replace(/\/+$/,'');
+function camView(k){
+  const list=k==='all'?CAMS:CAMS.filter(c=>c.k===k);if(!list.length)return;
+  const sw=CAMS.map(c=>`<button class="chip${k===c.k?' on':''}" data-act="cam" data-k="${c.k}">${c.ic} ${c.n}</button>`).join('')+`<button class="chip${k==='all'?' on':''}" data-act="cam" data-k="all">⊞ Xem cả 3</button>`;
+  if(!CAM_BASE){sheet(`<h2>📹 ${k==='all'?'3 camera':esc(list[0].n)}</h2><div class="note">Xem online chưa được bật. Cần cài máy chạy 24/24 trong nhà (đang chờ), sau đó nút này sẽ hiện hình trực tiếp ngay trong app.</div><div class="btns"><button class="pri" data-act="tapo">📹 Mở Tapo để xem tạm</button></div><div class="btns">${sw}</div><div class="btns"><button data-act="close">Đóng</button></div>`);return}
+  sheet(`<h2>📹 ${k==='all'?'3 camera':esc(list[0].n)}</h2><div class="btns" style="margin:4px 0">${sw}</div>`+list.map(c=>`<div class="note" style="margin:8px 0 2px"><b>${c.ic} ${esc(c.n)}</b></div><iframe src="${esc(CAM_BASE)}/stream.html?src=${c.k}&mode=webrtc" allow="autoplay; fullscreen" allowfullscreen style="width:100%;aspect-ratio:16/9;border:0;border-radius:10px;background:#000"></iframe>`).join('')+`<div class="btns"><button data-act="tapo">📹 Mở Tapo</button><button data-act="close">Đóng</button></div>`);
+}
 function openTapo(){
   if(isIOS())location.href='shortcuts://run-shortcut?name='+encodeURIComponent('Mở Tapo');
   else if(/Android/.test(navigator.userAgent))location.href='intent://#Intent;package=com.tplink.iot;S.browser_fallback_url='+encodeURIComponent('https://play.google.com/store/apps/details?id=com.tplink.iot')+';end';
@@ -579,7 +588,7 @@ function renderTim(){
     if(!h)h='<div class="empty">Không tìm thấy.</div>';
   }
   const cams=[...new Set([...S.locs.values()].flatMap(l=>String(l.cam||'').split(',').map(x=>x.trim()).filter(Boolean)))];
-  const camBar=!q&&!S.ff?`<div class="btns" style="align-items:center"><button class="chip" data-act="tapo">📹 Mở Tapo</button>${cams.length?'<button class="chip" data-act="yoosee">📹 Mở Yoosee</button><span class="note" style="margin:0">'+cams.map(esc).join(' · ')+'</span>':''}</div>`:'';
+  const camBar=!q&&!S.ff?`<div class="btns" style="align-items:center">${kid()?'':CAMS.map(c=>`<button class="chip on" data-act="cam" data-k="${c.k}">${c.ic} ${c.n}</button>`).join('')+'<button class="chip" data-act="cam" data-k="all">⊞ Xem cả 3</button>'}<button class="chip" data-act="tapo">📹 Mở Tapo</button>${cams.length?'<button class="chip" data-act="yoosee">📹 Mở Yoosee</button><span class="note" style="margin:0">'+cams.map(esc).join(' · ')+'</span>':''}</div>`:'';
   const pqn=adm()&&!q?pqVis().length:0,pqBar=pqn?`<button class="big" data-act="pq-go">📨 ${pqn} tem người nhà nhờ in – bấm để mở</button>`:'';
   const due=kid()?0:dueList().length,dueBar=due&&!q?`<button class="big pri" data-act="exp-open">⏰ ${due} món hết hạn trong 1 ngày – bấm để gia hạn / bỏ</button>`:'';
   $('tim-out').innerHTML=pqBar+dueBar+(S.locs.size?tiles:'')+camBar+h;
@@ -1021,6 +1030,7 @@ document.addEventListener('click',async e=>{
   else if(a==='quick')formQuick();
   else if(a==='yoosee')openYoosee();
   else if(a==='tapo')openTapo();
+  else if(a==='cam')camView(d.k);
   else if(a==='camchk'){el.disabled=true;if(await act('camcheck',{}))toast('Đã ghi: thẻ nhớ camera đã kiểm tra.');else el.disabled=false}
   else if(a==='mvscan'){closeSheet();S.mv={id:d.id,m:d.m};go('quet');$('scan-msg').textContent='Quét tem chỗ mới cho “'+((S.items.get(d.id)||{}).name||'')+'”.';live()}
   else if(a==='mv-ok'){
