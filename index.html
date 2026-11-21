@@ -256,13 +256,13 @@ async function setBanner(id){
   try{const c=JSON.parse(localStorage.getItem('n25ban')||'null');if(c&&c.id===id&&Array.isArray(c.urls))urls=c.urls}catch(e){}
   if(!urls){try{const r=await call('banner');urls=(Array.isArray(r)?r:[r]).filter(Boolean);try{localStorage.setItem('n25ban',JSON.stringify({id,urls}))}catch(e){try{localStorage.removeItem('n25ban')}catch(_){}}}catch(e){urls=[]}}
   S.houseUrls=urls;
-  if(urls.length){const n=Math.min(6,urls.length);bg.className='n'+n;bg.innerHTML=urls.slice(0,6).map(u=>`<i style="background-image:url(${u})"></i>`).join('');h.classList.add('pic')}
+  if(urls.length){const n=Math.min(3,urls.length);bg.className='n'+n;bg.innerHTML=urls.slice(0,3).map(u=>`<i style="background-image:url(${u})"></i>`).join('');h.classList.add('pic')}
   else{bg.innerHTML='';bg.className='';h.classList.remove('pic')}
   if($('hm'))houseMgr();
 }
 function houseMgr(){
   const u=S.houseUrls||[];
-  sheet(`<div id="hm"><h2>🏠 Ảnh ngôi nhà (${u.length}/6)</h2><div class="note">Các ảnh được ghép thành một băng ngang ở đầu trang, mỗi ảnh tự cắt vừa ô. Nên chụp ngang, mỗi ảnh một góc nhà.</div><div class="hm">${u.map((x,i)=>`<div style="background-image:url(${x})"><button data-act="house-del" data-i="${i}">✕</button></div>`).join('')}</div><div class="btns">${u.length<6?'<button class="pri" data-act="pic" data-k="house" data-id="">＋ Thêm ảnh</button>':''}<button data-act="close">Đóng</button></div></div>`);
+  sheet(`<div id="hm"><h2>🏠 Ảnh ngôi nhà (${u.length}/3)</h2><div class="note">Đầu trang hiện 3 ảnh xếp ngang, mỗi ảnh tự cắt vừa ô.${u.length>3?' <b>Chỉ 3 ảnh đầu được hiện – bấm ✕ xoá bớt ảnh thừa.</b>':''}</div><div class="hm">${u.map((x,i)=>`<div style="background-image:url(${x})"><button data-act="house-del" data-i="${i}">✕</button></div>`).join('')}</div><div class="btns">${u.length<3?'<button class="pri" data-act="pic" data-k="house" data-id="">＋ Thêm ảnh</button>':''}<button data-act="close">Đóng</button></div></div>`);
 }
 async function loadImg(file){try{return await createImageBitmap(file)}catch(e){return await new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=URL.createObjectURL(file)})}}
 function shrink(img,max,q,sq){
