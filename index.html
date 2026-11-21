@@ -310,6 +310,11 @@ function openYoosee(){
   else if(/Android/.test(navigator.userAgent))location.href='intent://#Intent;package=com.yoosee;S.browser_fallback_url='+encodeURIComponent('https://play.google.com/store/search?q=yoosee')+';end';
   else toast('Mở app Yoosee trên điện thoại để xem camera.');
 }
+function openTapo(){
+  if(isIOS())location.href='shortcuts://run-shortcut?name='+encodeURIComponent('Mở Tapo');
+  else if(/Android/.test(navigator.userAgent))location.href='intent://#Intent;package=com.tplink.iot;S.browser_fallback_url='+encodeURIComponent('https://play.google.com/store/apps/details?id=com.tplink.iot')+';end';
+  else toast('Mở app Tapo trên điện thoại để xem camera.');
+}
 function camWindow(i){
   const cam=camOf(i.loc),from=+(i.seenAt||i.ts||0),to=+(i.lostAt||Date.now());
   const rng=from?`từ <b>${when(from)}</b> đến <b>${when(to)}</b>`:`trước <b>${when(to)}</b>`;
@@ -574,7 +579,7 @@ function renderTim(){
     if(!h)h='<div class="empty">Không tìm thấy.</div>';
   }
   const cams=[...new Set([...S.locs.values()].flatMap(l=>String(l.cam||'').split(',').map(x=>x.trim()).filter(Boolean)))];
-  const camBar=cams.length&&!q&&!S.ff?`<div class="btns" style="align-items:center"><button class="chip" data-act="yoosee">📹 Camera</button><span class="note" style="margin:0">${cams.map(esc).join(' · ')}</span></div>`:'';
+  const camBar=!q&&!S.ff?`<div class="btns" style="align-items:center"><button class="chip" data-act="tapo">📹 Mở Tapo</button>${cams.length?'<button class="chip" data-act="yoosee">📹 Mở Yoosee</button><span class="note" style="margin:0">'+cams.map(esc).join(' · ')+'</span>':''}</div>`:'';
   const pqn=adm()&&!q?pqVis().length:0,pqBar=pqn?`<button class="big" data-act="pq-go">📨 ${pqn} tem người nhà nhờ in – bấm để mở</button>`:'';
   const due=kid()?0:dueList().length,dueBar=due&&!q?`<button class="big pri" data-act="exp-open">⏰ ${due} món hết hạn trong 1 ngày – bấm để gia hạn / bỏ</button>`:'';
   $('tim-out').innerHTML=pqBar+dueBar+(S.locs.size?tiles:'')+camBar+h;
@@ -1015,6 +1020,7 @@ document.addEventListener('click',async e=>{
   else if(a==='item-new')formItem(null);
   else if(a==='quick')formQuick();
   else if(a==='yoosee')openYoosee();
+  else if(a==='tapo')openTapo();
   else if(a==='camchk'){el.disabled=true;if(await act('camcheck',{}))toast('Đã ghi: thẻ nhớ camera đã kiểm tra.');else el.disabled=false}
   else if(a==='mvscan'){closeSheet();S.mv={id:d.id,m:d.m};go('quet');$('scan-msg').textContent='Quét tem chỗ mới cho “'+((S.items.get(d.id)||{}).name||'')+'”.';live()}
   else if(a==='mv-ok'){
