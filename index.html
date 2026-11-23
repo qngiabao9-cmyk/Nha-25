@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Nhà 25 – index.html v10 (23/11/2026): 🎨 nút Cổng & Camera dạng ô lớn, icon + màu khác nhau; v9: 🏠 khung Nhà (3 nút cổng chạm 2 lần + camera + 🛒 đi chợ), danh sách đi chợ, hỏi "Mua lại?" khi Dùng hết, "Không mua lại nữa", nhắc đồ đang giữ quá hạn. Cần Code.gs v6. -->
 <html lang="vi">
 <head>
 <meta charset="utf-8">
@@ -80,6 +81,18 @@ button:disabled{opacity:.45;cursor:default}
 .code{font:600 12.5px ui-monospace,Menlo,Consolas,monospace;color:var(--mut);letter-spacing:.3px}
 .chip{font-size:12.5px;border:1px solid var(--line);border-radius:999px;padding:3px 9px;color:var(--mut);background:transparent;white-space:nowrap}
 .chip.on{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
+.chip.dan{border-color:#c0392b;color:#c0392b}
+.homebox{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:10px 0;background:var(--soft)}
+.homebox .hb-t{font-weight:700;margin-bottom:6px}
+.homebox .hb-r{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0}
+.homebox .hb-r .chip{font-size:14px;padding:6px 11px}
+.tiles3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}
+.tl3{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:10px 4px;border-radius:14px;border:2px solid var(--c);color:var(--c);background:transparent;font-weight:700;font-size:13px;line-height:1.2;cursor:pointer;min-height:68px;text-align:center}
+.tl3 .ti{font-size:28px;line-height:1}
+.tl3:active,.tl3.on{background:var(--c);color:#fff}
+.tl3.arm{background:var(--c);color:#fff;animation:pl .8s infinite alternate}
+@keyframes pl{to{opacity:.65}}
+.homebox .hb-l{font-size:12.5px;color:var(--mut);min-width:56px}
 h2{font-size:20px;margin:6px 0 2px}
 h3{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--acc);margin:18px 0 0;font-weight:800}
 .crumb{font-size:13.5px;color:var(--mut);display:flex;flex-wrap:wrap;gap:4px;align-items:center}
@@ -293,7 +306,8 @@ function dv(id){const t=$(id).value.trim();if(!t)return '';const m=/^(\d{1,2})\/
   if(m){const y=m[3].length===2?'20'+m[3]:m[3],o=y+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0'),x=new Date(o+'T00:00:00');
     if(!isNaN(x)&&x.getDate()===+m[1]&&x.getMonth()+1===+m[2])return o}
   $(id).focus();throw new Error('Ngày “'+t+'” không đúng. Gõ theo dạng ngày/tháng/năm, ví dụ 18/12/2026.')}
-const low=i=>i.min!=null&&i.min!==''&&!isNaN(parseFloat(i.min))&&(parseFloat(i.qty)||0)<=parseFloat(i.min);
+const noBuy=i=>(S.nobuy||[]).includes(i.id);
+const low=i=>!noBuy(i)&&i.min!=null&&i.min!==''&&!isNaN(parseFloat(i.min))&&(parseFloat(i.qty)||0)<=parseFloat(i.min);
 const wtyDays=i=>i.wty?Math.round((new Date(i.wty)-new Date(today()))/864e5):null;
 const FRESH='Thực phẩm tươi – đông lạnh';
 const expDays=i=>i.exp?Math.round((new Date(i.exp)-new Date(today()))/864e5):null;
@@ -311,7 +325,7 @@ function openYoosee(){
   else toast('Mở app Yoosee trên điện thoại để xem camera.');
 }
 /* 📹 3 camera Tapo xem online: cần máy chạy go2rtc; khai địa chỉ HTTPS trong config.js: window.N25_CAM='https://...'; (tên luồng: san, bep, bar) */
-const CAMS=[{k:'san',n:'Sân trước',ic:'🏠'},{k:'bep',n:'Bếp',ic:'🍳'},{k:'bar',n:'Quầy Bar',ic:'🍸'}];
+const CAMS=[{k:'san',n:'Sân trước',ic:'🏡',c:'#1a73e8'},{k:'bep',n:'Bếp',ic:'🍳',c:'#e8710a'},{k:'bar',n:'Quầy Bar',ic:'🍸',c:'#8e24aa'}];
 const CAM_BASE=String(window.N25_CAM||'').trim().replace(/\/+$/,'');
 function camView(k){
   const list=k==='all'?CAMS:CAMS.filter(c=>c.k===k);if(!list.length)return;
@@ -323,6 +337,34 @@ function openTapo(){
   if(isIOS())location.href='shortcuts://run-shortcut?name='+encodeURIComponent('Mở Tapo');
   else if(/Android/.test(navigator.userAgent))location.href='intent://#Intent;package=com.tplink.iot;S.browser_fallback_url='+encodeURIComponent('https://play.google.com/store/apps/details?id=com.tplink.iot')+';end';
   else toast('Mở app Tapo trên điện thoại để xem camera.');
+}
+/* 🚪 cổng: chạy Phím tắt iPhone "Mở cổng" / "Đóng cổng" / "Dừng cổng" (Smart Life); Android mở app Smart Life */
+const GATE={mo:{n:'Mở cổng',ic:'⬆️',c:'#1e8e3e'},dung:{n:'Dừng cổng',ic:'✋',c:'#e08a00'},dong:{n:'Đóng cổng',ic:'⬇️',c:'#c0392b'}};
+const tl3=g=>`<span class="ti">${g.ic}</span><span>${g.n}</span>`;
+let gateT=null;
+function gateBtns(){return '<div class="tiles3">'+Object.entries(GATE).map(([k,g])=>`<button class="tl3" style="--c:${g.c}" data-act="gate" data-k="${k}">${tl3(g)}</button>`).join('')+'</div>'}
+function runGate(k){
+  const g=GATE[k];if(!g)return;
+  call('gate',{k}).catch(()=>{});
+  if(isIOS())location.href='shortcuts://run-shortcut?name='+encodeURIComponent(g.n);
+  else if(/Android/.test(navigator.userAgent))location.href='intent://#Intent;package=com.tuya.smartlife;S.browser_fallback_url='+encodeURIComponent('https://play.google.com/store/apps/details?id=com.tuya.smartlife')+';end';
+  else toast('Nút cổng chỉ chạy trên điện thoại (iPhone đã tạo Phím tắt “'+g.n+'”).');
+}
+/* 🛒 danh sách đi chợ = món sắp hết (theo ngưỡng “Báo khi còn ≤”) + món đã dùng hết chọn “Mua lại” + món ghi tay */
+const shopLow=()=>[...S.items].filter(([,i])=>low(i)&&!isLost(i)).sort((a,b)=>norm(a[1].name).localeCompare(norm(b[1].name)));
+const shopCount=()=>shopLow().length+(S.shop||[]).length;
+function shopView(){
+  const L=shopLow(),M=S.shop||[];
+  let h=`<h2>🛒 Đi chợ (${L.length+M.length})</h2><div class="two" style="grid-template-columns:1fr auto"><div><input type="text" id="sh-n" placeholder="Thêm món cần mua, vd: Nước rửa chén"></div><div><button class="pri" data-act="shop-add">＋ Thêm</button></div></div>`;
+  if(M.length)h+=`<h3>Cần mua (${M.length})</h3><div class="list">`+M.map(e=>`<div class="row" style="cursor:default"><div class="t"><div class="n">${esc(e.name)}${e.unit?' ('+esc(e.unit)+')':''}</div><div class="s">${esc(e.by||'')} · ${e.at?when(e.at):''}${e.loc?' · chỗ cũ: '+esc(e.loc):''}</div></div><button class="chip on" data-act="shop-done" data-id="${esc(e.id)}">✓ Đã mua</button></div>`).join('')+'</div>';
+  if(L.length)h+=`<h3>Sắp hết (${L.length})</h3><div class="note">Mua xong bấm vào món → <b>Nhập thêm</b> số lượng. Không cần nữa → <b>Không mua lại</b>.</div><div class="list">`+L.map(([id,i])=>`<div class="row" style="cursor:default;flex-wrap:wrap">${itile(id,i)}<div class="t"><div class="n">${esc(i.name)}</div><div class="s">còn ${esc(i.qty||'0')}${i.unit?' '+esc(i.unit):''} (báo khi ≤ ${esc(i.min)}) · ${esc(pathName(i.loc))}</div></div><div class="btns" style="width:100%;margin:4px 0 0"><button class="chip on" data-act="item-edit" data-id="${esc(id)}">✓ Đã mua → nhập thêm</button><button class="chip" data-act="nobuy" data-id="${esc(id)}" data-on="1">🚫 Không mua lại</button></div></div>`).join('')+'</div>';
+  if(!L.length&&!M.length)h+='<div class="empty">Không có gì cần mua. 🎉</div>';
+  h+=`<div class="btns">${L.length+M.length?'<button data-act="shop-copy">📋 Sao chép gửi Zalo</button>':''}<button data-act="close">Đóng</button></div>`;
+  sheet(h);
+}
+function hetAsk(id){
+  const i=S.items.get(id);if(!i)return;
+  sheet(`<h2>✅ Dùng hết “${esc(i.name)}”</h2><div class="note">Món này sẽ được xoá khỏi danh sách. <b>Có cần mua lại không?</b></div><button class="pri big" data-act="mv" data-m="het" data-rb="1" data-id="${esc(id)}">🛒 Có – thêm vào danh sách đi chợ</button><button class="big" data-act="mv" data-m="het" data-rb="0" data-id="${esc(id)}">Không mua lại</button><div class="btns"><button data-act="close">Huỷ</button></div>`);
 }
 function camWindow(i){
   const cam=camOf(i.loc),from=+(i.seenAt||i.ts||0),to=+(i.lostAt||Date.now());
@@ -462,7 +504,7 @@ function codeErr(c,chu){if(!CODE_RE.test(c))return 'Mã gồm 4–20 ký tự: c
 const kbGet=id=>{try{return localStorage.getItem('n25kb_'+id)||'numeric'}catch(e){return 'numeric'}};
 const kbSet=(id,m)=>{try{localStorage.setItem('n25kb_'+id,m)}catch(e){}};
 function kbApply(m){document.querySelectorAll('.pw').forEach(x=>x.setAttribute('inputmode',m));document.querySelectorAll('[data-act=kb]').forEach(b=>b.textContent=m==='numeric'?'abc':'123')}
-const ERR={XFER:'Liên kết đăng nhập đã hết hạn hoặc đã dùng. Hãy lấy liên kết mới trong app đã cài.',NOAI:'Nút gợi ý chưa được cài khoá API Claude (xem HUONG-DAN).',AILIMIT:'Hôm nay đã dùng hết số lượt gợi ý, mai thử lại.',KID:'Tài khoản trẻ em chỉ được ghi lấy / trả đồ.',NOUNDO:'Không hoàn tác được: đã quá 10 phút, hoặc sau đó đã có thay đổi khác.',NEWPIN:'Bạn chưa có mã, hãy đặt mã lần đầu.',HASPIN:'Tài khoản này đã có mã. Nếu chưa tự đặt, báo ngay Mr. Gia Bảo.',AUTH:'Phiên đăng nhập đã hết, hãy đăng nhập lại.',PIN:'Sai mã đăng nhập.',LOCK:'Nhập sai quá 5 lần, máy chủ khoá tài khoản này 10 phút. Thử lại sau.',DENY:'Bạn không có quyền với mục này.',BUSY:'Máy chủ đang bận, thử lại.',NOTEMPTY:'Còn đồ vật hoặc vị trí bên trong, hãy chuyển hoặc xoá trước.',GONE:'Mục này không còn tồn tại, bấm Tải lại.'};
+const ERR={XFER:'Liên kết đăng nhập đã hết hạn hoặc đã dùng. Hãy lấy liên kết mới trong app đã cài.',NOAI:'Nút gợi ý chưa được cài khoá API Claude (xem HUONG-DAN).',AILIMIT:'Hôm nay đã dùng hết số lượt gợi ý, mai thử lại.',KID:'Tài khoản trẻ em chỉ được ghi lấy / trả / dùng hết đồ.',NOUNDO:'Không hoàn tác được: đã quá 10 phút, hoặc sau đó đã có thay đổi khác.',NEWPIN:'Bạn chưa có mã, hãy đặt mã lần đầu.',HASPIN:'Tài khoản này đã có mã. Nếu chưa tự đặt, báo ngay Mr. Gia Bảo.',AUTH:'Phiên đăng nhập đã hết, hãy đăng nhập lại.',PIN:'Sai mã đăng nhập.',LOCK:'Nhập sai quá 5 lần, máy chủ khoá tài khoản này 10 phút. Thử lại sau.',DENY:'Bạn không có quyền với mục này.',BUSY:'Máy chủ đang bận, thử lại.',NOTEMPTY:'Còn đồ vật hoặc vị trí bên trong, hãy chuyển hoặc xoá trước.',GONE:'Mục này không còn tồn tại, bấm Tải lại.'};
 function fail(e){const m=String((e&&e.message)||e);console.error(e);if(m==='AUTH')logout();toast(ERR[m]||('Không thực hiện được: '+m))}
 function renderOn(){
   const e=$('onl');if(!e)return;if(!S.me||!S.me.id){e.innerHTML='';return}
@@ -477,7 +519,7 @@ function apply(d){
   if(d.on){S.on=d.on;S.seen=d.seen||S.seen||{}}
   S.ver=d.ver||S.ver||'';
   if(d.token){token=d.token;try{localStorage.setItem('n25tok',token)}catch(e){}}
-  S.pq=d.pq||[];S.me=d.me;S.users=d.users||[];S.logs=d.logs||[];S.camChk=d.camChk||'';if(d.me&&d.locs&&d.items){try{const q=Object.assign({},d);delete q.token;localStorage.setItem('n25snap',JSON.stringify(q))}catch(e){try{localStorage.removeItem('n25snap')}catch(_){}}}
+  S.pq=d.pq||[];S.shop=d.shop||[];S.nobuy=d.nobuy||[];S.me=d.me;S.users=d.users||[];S.logs=d.logs||[];S.camChk=d.camChk||'';if(d.me&&d.locs&&d.items){try{const q=Object.assign({},d);delete q.token;localStorage.setItem('n25snap',JSON.stringify(q))}catch(e){try{localStorage.removeItem('n25snap')}catch(_){}}}
   S.locs=new Map(d.locs.map(l=>[l.code,l]));S.items=new Map(d.items.map(i=>[i.id,i]));
   S.ready=true;S.at=Date.now();banner('');render();hideSplash();fetchThumbs();
   if($('expl'))expSheet(true);else if(!S.expShown&&S.me&&!kid()){S.expShown=true;let t='';try{t=localStorage.getItem('n25exp_'+S.me.id)||''}catch(e){}if(t!==today()&&dueList().length){try{localStorage.setItem('n25exp_'+S.me.id,today())}catch(e){}setTimeout(()=>expSheet(false),500)}}
@@ -488,7 +530,7 @@ async function act(action,p){try{const r=await call(action,p);S.res=r&&r.res;app
   if(!READ_A[action]&&/kết nối/i.test(m)){toast('Mạng chập chờn, chưa chắc đã lưu. Đang kiểm tra lại…');setTimeout(()=>act('load').then(ok=>{if(ok)toast('Đã tải lại. Xem món vừa nhập đã có chưa rồi hãy nhập lại.')}),2000)}
   else fail(e);return false}}
 const kid=()=>!!S.me&&S.me.role==='tre';
-const AT={mat:'báo không thấy',thay:'đã thấy',kiemke:'kiểm kê',nhaplo:'nhập danh sách',lay:'lấy dùng',tra:'trả lại',dung:'dùng bớt',nhap:'nhập thêm',them:'thêm',sua:'sửa',chuyen:'chuyển chỗ',xoa:'xoá',het:'dùng hết (xoá khỏi danh sách)',themvt:'tạo vị trí',suavt:'sửa vị trí',chuyenvt:'chuyển hộp',xoavt:'xoá vị trí',hoantac:'hoàn tác',intem:'in tem',dantem:'xác nhận đã dán tem',anh:'đổi ảnh'};
+const AT={mat:'báo không thấy',thay:'đã thấy',kiemke:'kiểm kê',nhaplo:'nhập danh sách',lay:'lấy dùng',tra:'trả lại',dung:'dùng bớt',nhap:'nhập thêm',them:'thêm',sua:'sửa',chuyen:'chuyển chỗ',xoa:'xoá',het:'dùng hết (xoá khỏi danh sách)',themvt:'tạo vị trí',suavt:'sửa vị trí',chuyenvt:'chuyển hộp',xoavt:'xoá vị trí',hoantac:'hoàn tác',intem:'in tem',dantem:'xác nhận đã dán tem',anh:'đổi ảnh',cong:'điều khiển cổng'};
 const when=ts=>{const d=new Date(+ts);return d.toLocaleDateString('vi-VN')+' '+d.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'})};
 const logLine=g=>`${esc(g.user)} ${AT[g.act]||esc(g.act)}${g.qty?' '+esc(g.qty):''}${g.note&&g.act!=='hoantac'?' · '+esc(g.note):''} · ${when(g.ts)}`;
 const undoChip=g=>g.canUndo?`<button class="chip u" data-act="undo" data-ts="${esc(g.ts)}" data-id="${esc(g.itemId)}">Hoàn tác</button>`:'';
@@ -588,10 +630,13 @@ function renderTim(){
     if(!h)h='<div class="empty">Không tìm thấy.</div>';
   }
   const cams=[...new Set([...S.locs.values()].flatMap(l=>String(l.cam||'').split(',').map(x=>x.trim()).filter(Boolean)))];
-  const camBar=!q&&!S.ff?`<div class="btns" style="align-items:center">${kid()?'':CAMS.map(c=>`<button class="chip on" data-act="cam" data-k="${c.k}">${c.ic} ${c.n}</button>`).join('')+'<button class="chip" data-act="cam" data-k="all">⊞ Xem cả 3</button>'}<button class="chip" data-act="tapo">📹 Mở Tapo</button>${cams.length?'<button class="chip" data-act="yoosee">📹 Mở Yoosee</button><span class="note" style="margin:0">'+cams.map(esc).join(' · ')+'</span>':''}</div>`:'';
+  const yo=cams.length?'<button class="chip" data-act="yoosee">📹 Mở Yoosee</button>':'';
+  const sc=kid()?0:shopCount();
+  const camBar=!q&&!S.ff?(kid()?`<div class="btns" style="align-items:center"><button class="chip" data-act="tapo">📹 Mở Tapo</button>${yo}</div>`:`<div class="homebox"><div class="hb-t">🏠 Nhà</div><div class="hb-r"><span class="hb-l">Cổng</span>${gateBtns()}</div><div class="hb-r"><span class="hb-l">Camera</span>${'<div class="tiles3">'+CAMS.map(c=>`<button class="tl3" style="--c:${c.c}" data-act="cam" data-k="${c.k}">${tl3(c)}</button>`).join('')+'</div>'}<button class="chip" data-act="cam" data-k="all">⊞ Cả 3</button><button class="chip" data-act="tapo">📹 Tapo</button>${yo}</div><div class="hb-r"><button class="chip${sc?' on':''}" data-act="shop">🛒 Đi chợ${sc?' ('+sc+')':''}</button></div></div>`):'';
+  const myOd=S.me?[...S.items.values()].filter(i=>i.holder===S.me.name&&overdue(i)).length:0,odBar=myOd&&!q?`<button class="big" data-act="ff" data-v="qh">🤲 Bạn đang giữ ${myOd} món quá ${HOLD_DAYS} ngày – nhớ trả về chỗ cũ</button>`:'';
   const pqn=adm()&&!q?pqVis().length:0,pqBar=pqn?`<button class="big" data-act="pq-go">📨 ${pqn} tem người nhà nhờ in – bấm để mở</button>`:'';
   const due=kid()?0:dueList().length,dueBar=due&&!q?`<button class="big pri" data-act="exp-open">⏰ ${due} món hết hạn trong 1 ngày – bấm để gia hạn / bỏ</button>`:'';
-  $('tim-out').innerHTML=pqBar+dueBar+(S.locs.size?tiles:'')+camBar+h;
+  $('tim-out').innerHTML=pqBar+dueBar+odBar+(S.locs.size?tiles:'')+camBar+h;
 }
 /* 📋 danh mục tổng thể + chi tiết theo từng ngăn / hộp */
 let catTxt='';
@@ -810,10 +855,11 @@ function formItem(id){
   if(ed){
     if(isLost(i))h+=`<div class="note warn">❓ ${esc(i.lostBy||'')} báo KHÔNG THẤY lúc ${i.lostAt?when(i.lostAt):''}</div>${camWindow(i)}<button class="pri big" data-act="mv" data-m="thay" data-id="${esc(id)}">✅ Đã thấy, vẫn ở chỗ cũ</button>${kid()?'':`<button class="big" data-act="mvscan" data-m="thay" data-id="${esc(id)}">📍 Thấy ở chỗ khác (quét tem chỗ đó)</button>`}`;
     else{
-      h+=i.holder?`<div class="note warn">${esc(i.holder)} đang giữ từ ${fmtD(i.heldSince)}${overdue(i)?' – quá '+HOLD_DAYS+' ngày':''}</div>${`<label>Còn dư bao nhiêu? (số lượng / trọng lượng)${i.unit?' – đơn vị: '+esc(i.unit):''}</label><input type="text" id="mv-rest" inputmode="decimal" value="${esc(i.qty||'')}" placeholder="vd: 1, 0,5, 300">`}<button class="pri big" data-act="mv" data-m="tra" data-id="${esc(id)}">↩️ Trả về chỗ cũ  (còn dư như trên)</button>${`<button class="big dan" data-act="mv" data-m="het" data-id="${esc(id)}">✅ Dùng hết – xoá khỏi danh sách</button>`}`:`<button class="pri big" data-act="mv" data-m="lay" data-id="${esc(id)}">🤲 Tôi lấy dùng</button>`;
+      h+=i.holder?`<div class="note warn">${esc(i.holder)} đang giữ từ ${fmtD(i.heldSince)}${overdue(i)?' – quá '+HOLD_DAYS+' ngày':''}</div>${`<label>Còn dư bao nhiêu? (số lượng / trọng lượng)${i.unit?' – đơn vị: '+esc(i.unit):''}</label><input type="text" id="mv-rest" inputmode="decimal" value="${esc(i.qty||'')}" placeholder="vd: 1, 0,5, 300">`}<button class="pri big" data-act="mv" data-m="tra" data-id="${esc(id)}">↩️ Trả về chỗ cũ  (còn dư như trên)</button>${`<button class="big dan" data-act="het-ask" data-id="${esc(id)}">✅ Dùng hết – xoá khỏi danh sách</button>`}`:`<button class="pri big" data-act="mv" data-m="lay" data-id="${esc(id)}">🤲 Tôi lấy dùng</button>`;
       h+=`<div class="btns"><button data-act="mv" data-m="mat" data-id="${esc(id)}">❓ Không thấy</button>${kid()?'':`<button data-act="item-move" data-id="${esc(id)}">🚚 Chuyển (chọn chỗ)</button><button data-act="mvscan" data-m="chuyen" data-id="${esc(id)}">📷 Chuyển (quét tem)</button>`}</div>`;
     }
     if(i.exp)h+=`<div class="note">Hạn dùng: <b>${fmtD(i.exp)}</b> · gia hạn:</div><div class="btns" style="margin-top:4px">${extBtns(id)}</div>`;
+    if(!kid()&&(i.min||noBuy(i)))h+=noBuy(i)?`<div class="note">🚫 Đã chọn <b>không mua lại</b> món này (không báo sắp hết, không vào danh sách đi chợ).</div><div class="btns"><button data-act="nobuy" data-id="${esc(id)}" data-on="0">🛒 Mua lại bình thường</button></div>`:`<div class="btns"><button data-act="nobuy" data-id="${esc(id)}" data-on="1">🚫 Không mua lại nữa</button></div>`;
     h+=`<h3>Lịch sử</h3><div id="hist" class="note">Đang tải lịch sử…</div>`;
     if(kid()){sheet(h+'<div class="btns"><button data-act="close">Đóng</button></div>');loadHist(id);return}
     h+=`<div class="two" style="align-items:flex-end"><div><label>Vật tư: số lượng</label><input type="text" id="mv-n" inputmode="decimal" value="1"></div><div><button data-act="mv" data-m="dung" data-id="${esc(id)}" style="width:100%">Dùng bớt</button></div><div><button data-act="mv" data-m="nhap" data-id="${esc(id)}" style="width:100%">Nhập thêm</button></div></div>`;
@@ -962,12 +1008,26 @@ document.addEventListener('click',async e=>{
   if(e.target===$('ovl')){closeSheet();return}
   const el=e.target.closest('[data-act]');if(!el)return;
   const a=el.dataset.act,d=el.dataset;
-  if(a!=='loc-del'&&a!=='item-del'&&a!=='exp-del'&&a!=='house-del')armed=null;
+  if(a!=='loc-del'&&a!=='item-del'&&a!=='exp-del'&&a!=='house-del'&&a!=='gate')armed=null;
   if(a==='open'){e.stopPropagation();closeSheet();openLoc(d.c)}
   else if(a==='grp'){S.cur=d.c;try{S.grp=JSON.parse(d.g)}catch(er){S.grp=[]}go('vi-tri')}
   else if(a==='back')goBack();
   else if(a==='onl'){if(S.me&&S.me.id)onlSheet()}
   else if(a==='house-mgr')houseMgr();
+  else if(a==='gate'){
+    const g=GATE[d.k];if(!g)return;
+    if(armed!==el){if(armed&&armed.dataset.act==='gate'){armed.innerHTML=tl3(GATE[armed.dataset.k]);armed.classList.remove('arm')}armed=el;el.innerHTML='<span class="ti">❓</span><span>Bấm lần nữa</span>';el.classList.add('arm');clearTimeout(gateT);gateT=setTimeout(()=>{if(armed===el){armed=null;el.innerHTML=tl3(g);el.classList.remove('arm')}},4000);return}
+    armed=null;clearTimeout(gateT);el.innerHTML=tl3(g);el.classList.remove('arm');runGate(d.k);
+  }
+  else if(a==='shop')shopView();
+  else if(a==='shop-add'){const n=$('sh-n').value.trim();if(!n){toast('Nhập tên món cần mua.');return}el.disabled=true;if(await act('shopAdd',{name:n}))shopView();else el.disabled=false}
+  else if(a==='shop-done'){el.disabled=true;if(await act('shopDel',{id:d.id})){toast('Đã gạch khỏi danh sách.');shopView()}else el.disabled=false}
+  else if(a==='nobuy'){el.disabled=true;const inShop=!!$('sh-n');if(await act('nobuy',{id:d.id,on:d.on})){toast(d.on==='1'?'Đã chọn không mua lại – không báo sắp hết nữa.':'Đã bật lại báo sắp hết.');if(inShop)shopView();else closeSheet()}else el.disabled=false}
+  else if(a==='shop-copy'){
+    const t='🛒 Cần mua ('+fmtD(today())+'):\n'+[...(S.shop||[]).map(e=>'• '+e.name+(e.unit?' ('+e.unit+')':'')),...shopLow().map(([,i])=>'• '+i.name+' (còn '+(i.qty||0)+(i.unit?' '+i.unit:'')+')')].join('\n');
+    try{await navigator.clipboard.writeText(t);toast('Đã sao chép. Mở Zalo và dán vào.')}catch(er){sheet(`<h2>📋 Danh sách</h2><textarea readonly rows="10" style="width:100%">${esc(t)}</textarea><div class="btns"><button data-act="shop">Quay lại</button></div>`)}
+  }
+  else if(a==='het-ask')hetAsk(d.id);
   else if(a==='house-del'){if(armed!==el){armed=el;el.textContent='Xoá?';return}el.disabled=true;await act('setPhoto',{kind:'house',del:+d.i})}
   else if(a==='pq-add'){el.disabled=true;if(await act('pqAdd',{list:[{code:itemCode(d.id),n:+($('it-n').value||1)}]})){closeSheet();toast('Đã gửi cho chủ nhà in tem.')}else el.disabled=false}
   else if(a==='pq-del'){el.disabled=true;await act('pqDel',{codes:[d.c]})}
@@ -1135,10 +1195,10 @@ document.addEventListener('click',async e=>{
     const inSheet=!!el.closest('#sheet'),it0=S.items.get(d.id);
     let rest=d.m==='tra'&&inSheet&&$('mv-rest')?$('mv-rest').value.trim():'';
     if(rest&&!/^\d+([.,]\d+)?$/.test(rest)){toast('Số còn dư chưa đúng. Chỉ nhập số, ví dụ 1 hoặc 0,5.');el.disabled=false;return}
-    if(d.m==='tra'&&rest&&parseFloat(rest.replace(',','.'))===0){d.m='het';rest=''}
+    if(d.m==='tra'&&rest&&parseFloat(rest.replace(',','.'))===0){el.disabled=false;hetAsk(d.id);return}
     if(it0&&d.m==='het'){S.items.delete(d.id);render();if(inSheet)closeSheet()}
     else if(it0&&(d.m==='lay'||d.m==='tra')){S.items.set(d.id,{...it0,holder:d.m==='lay'?S.me.name:'',heldSince:d.m==='lay'?today():'',lost:'',...(d.m==='tra'&&rest?{qty:rest}:{})});render();if(inSheet)closeSheet()}
-    if(await actU('move',{id:d.id,act:d.m,qty:inSheet&&$('mv-n')?$('mv-n').value:'',rest},{het:'Đã xoá “'+nm+'” (dùng hết).',lay:'Đã ghi: bạn lấy “'+nm+'”.',tra:'Đã ghi: trả “'+nm+'”.',dung:'Đã trừ số lượng “'+nm+'”.',nhap:'Đã cộng số lượng “'+nm+'”.',mat:'Đã báo không thấy “'+nm+'”.',thay:'Đã ghi: thấy lại “'+nm+'”.'}[d.m])){if(inSheet)closeSheet()}else{el.disabled=false;if(it0)act('load')}
+    if(await actU('move',{id:d.id,act:d.m,qty:inSheet&&$('mv-n')?$('mv-n').value:'',rest,rebuy:d.rb||''},{het:'Đã xoá “'+nm+'” (dùng hết)'+(d.rb==='1'?' · đã thêm vào danh sách đi chợ.':'.'),lay:'Đã ghi: bạn lấy “'+nm+'”.',tra:'Đã ghi: trả “'+nm+'”.',dung:'Đã trừ số lượng “'+nm+'”.',nhap:'Đã cộng số lượng “'+nm+'”.',mat:'Đã báo không thấy “'+nm+'”.',thay:'Đã ghi: thấy lại “'+nm+'”.'}[d.m])){if(inSheet)closeSheet()}else{el.disabled=false;if(it0)act('load')}
   }
   else if(a==='undo'){e.stopPropagation();el.disabled=true;await doUndo(d.ts,d.id)}
   else if(a==='undo-bar'){if(undoG)await doUndo(undoG.ts,undoG.itemId)}
