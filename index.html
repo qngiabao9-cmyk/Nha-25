@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Nhà 25 – index.html v14 (25/11/2026): 🔑 chủ nhà đặt lại mã cho thành viên (trong menu tên mình; cần Code.gs v8); v13 (25/11/2026): 💬 chat nhóm theo phòng + “Cả nhà” (chỉ chữ, chấm đỏ tin mới; cần Code.gs v7 + chạy caiChat() 1 lần); v12 (23/11/2026): ✋ Dừng cổng chạm 1 lần, Mở/Đóng chạm 2 lần; 🔙 chạy xong tự quay về Nhà 25 (x-callback); v11: 📹 bấm Mở/Đóng/Dừng cổng thì tự mở camera Sân trước (khi đã bật xem online); v10: 🎨 nút Cổng & Camera dạng ô lớn, icon + màu khác nhau; v9: 🏠 khung Nhà (3 nút cổng chạm 2 lần + camera + 🛒 đi chợ), danh sách đi chợ, hỏi "Mua lại?" khi Dùng hết, "Không mua lại nữa", nhắc đồ đang giữ quá hạn. Cần Code.gs v6. -->
+<!-- Nhà 25 – index.html v16 (25/11/2026): 👧 trẻ em được 📨 nhờ chủ nhà in tem (món và vị trí; cần Code.gs v11); v15 (25/11/2026): 👧 trẻ em được thêm đồ mới / thêm nhanh / nhập danh sách (cần Code.gs v9); v14 (25/11/2026): 🔑 chủ nhà đặt lại mã cho thành viên (trong menu tên mình; cần Code.gs v8); v13 (25/11/2026): 💬 chat nhóm theo phòng + “Cả nhà” (chỉ chữ, chấm đỏ tin mới; cần Code.gs v7 + chạy caiChat() 1 lần); v12 (23/11/2026): ✋ Dừng cổng chạm 1 lần, Mở/Đóng chạm 2 lần; 🔙 chạy xong tự quay về Nhà 25 (x-callback); v11: 📹 bấm Mở/Đóng/Dừng cổng thì tự mở camera Sân trước (khi đã bật xem online); v10: 🎨 nút Cổng & Camera dạng ô lớn, icon + màu khác nhau; v9: 🏠 khung Nhà (3 nút cổng chạm 2 lần + camera + 🛒 đi chợ), danh sách đi chợ, hỏi "Mua lại?" khi Dùng hết, "Không mua lại nữa", nhắc đồ đang giữ quá hạn. Cần Code.gs v6. -->
 <html lang="vi">
 <head>
 <meta charset="utf-8">
@@ -509,7 +509,7 @@ function codeErr(c,chu){if(!CODE_RE.test(c))return 'Mã gồm 4–20 ký tự: c
 const kbGet=id=>{try{return localStorage.getItem('n25kb_'+id)||'numeric'}catch(e){return 'numeric'}};
 const kbSet=(id,m)=>{try{localStorage.setItem('n25kb_'+id,m)}catch(e){}};
 function kbApply(m){document.querySelectorAll('.pw').forEach(x=>x.setAttribute('inputmode',m));document.querySelectorAll('[data-act=kb]').forEach(b=>b.textContent=m==='numeric'?'abc':'123')}
-const ERR={XFER:'Liên kết đăng nhập đã hết hạn hoặc đã dùng. Hãy lấy liên kết mới trong app đã cài.',NOAI:'Nút gợi ý chưa được cài khoá API Claude (xem HUONG-DAN).',AILIMIT:'Hôm nay đã dùng hết số lượt gợi ý, mai thử lại.',KID:'Tài khoản trẻ em chỉ được ghi lấy / trả / dùng hết đồ.',NOUNDO:'Không hoàn tác được: đã quá 10 phút, hoặc sau đó đã có thay đổi khác.',NEWPIN:'Bạn chưa có mã, hãy đặt mã lần đầu.',HASPIN:'Tài khoản này đã có mã. Nếu chưa tự đặt, báo ngay Mr. Gia Bảo.',AUTH:'Phiên đăng nhập đã hết, hãy đăng nhập lại.',PIN:'Sai mã đăng nhập.',LOCK:'Nhập sai quá 5 lần, máy chủ khoá tài khoản này 10 phút. Thử lại sau.',DENY:'Bạn không có quyền với mục này.',BUSY:'Máy chủ đang bận, thử lại.',NOTEMPTY:'Còn đồ vật hoặc vị trí bên trong, hãy chuyển hoặc xoá trước.',GONE:'Mục này không còn tồn tại, bấm Tải lại.'};
+const ERR={XFER:'Liên kết đăng nhập đã hết hạn hoặc đã dùng. Hãy lấy liên kết mới trong app đã cài.',NOAI:'Nút gợi ý chưa được cài khoá API Claude (xem HUONG-DAN).',AILIMIT:'Hôm nay đã dùng hết số lượt gợi ý, mai thử lại.',KID:'Tài khoản trẻ em chỉ được thêm đồ mới, lấy / trả / dùng hết đồ và nhờ in tem; không sửa hay xoá.',NOUNDO:'Không hoàn tác được: đã quá 10 phút, hoặc sau đó đã có thay đổi khác.',NEWPIN:'Bạn chưa có mã, hãy đặt mã lần đầu.',HASPIN:'Tài khoản này đã có mã. Nếu chưa tự đặt, báo ngay Mr. Gia Bảo.',AUTH:'Phiên đăng nhập đã hết, hãy đăng nhập lại.',PIN:'Sai mã đăng nhập.',LOCK:'Nhập sai quá 5 lần, máy chủ khoá tài khoản này 10 phút. Thử lại sau.',DENY:'Bạn không có quyền với mục này.',BUSY:'Máy chủ đang bận, thử lại.',NOTEMPTY:'Còn đồ vật hoặc vị trí bên trong, hãy chuyển hoặc xoá trước.',GONE:'Mục này không còn tồn tại, bấm Tải lại.'};
 function fail(e){const m=String((e&&e.message)||e);console.error(e);if(m==='AUTH')logout();toast(ERR[m]||('Không thực hiện được: '+m))}
 function renderOn(){
   const e=$('onl');if(!e)return;if(!S.me||!S.me.id){e.innerHTML='';return}
@@ -681,10 +681,11 @@ function renderLoc(){
     const cm=camOf(c);if(cm)h+=`<div class="note">📹 Camera: ${esc(cm)} <button class="chip" data-act="yoosee">Mở Yoosee</button></div>`;
   }
   h+='<div class="btns">';
-  if(l&&!kid())h+='<button class="pri" data-act="quick">⚡ Thêm nhanh</button><button data-act="item-new">＋ Thêm đồ vật</button>';
+  if(l)h+='<button class="pri" data-act="quick">⚡ Thêm nhanh</button><button data-act="item-new">＋ Thêm đồ vật</button>';
   if(!kid())for(const k of CHILD[l?l.kind:''])if(k!=='P'||adm())h+=`<button data-act="loc-new" data-k="${k}">＋ ${KINDS[k]}</button>`;
   if(l&&!kid()&&l.kind==='H')h+='<button class="pri" data-act="loc-move">🚚 Chuyển hộp</button>';
   if(l&&!kid()&&(l.kind!=='P'||adm()))h+='<button data-act="loc-edit">✏️ Sửa</button>';
+  if(l&&kid())h+='<button data-act="bulk">📋 Nhập danh sách</button><button data-act="loc-req">📨 Nhờ in tem chỗ này</button>';
   if(l&&!kid())h+='<button data-act="loc-print">🏷️ In tem</button><button data-act="bulk">📋 Nhập danh sách</button>'+(itemsAt(c).length?'<button data-act="kk">✅ Kiểm kê</button>':'');
   h+='</div>';
   const ks=kids(c);
@@ -724,7 +725,7 @@ function renderIn(){
 function render(){
   document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id===(S.me?'v-'+S.tab:'v-login')));
   document.querySelector('nav').style.display=S.me?'':'none';
-  document.querySelector('[data-tab=in-tem]').style.display=kid()?'none':'';$('tim-add').style.display=kid()?'none':'';
+  document.querySelector('[data-tab=in-tem]').style.display=kid()?'none':'';$('tim-add').style.display='';
   if(kid()&&S.tab==='in-tem')S.tab='tim';
   $('fmic').style.display=S.me?'block':'none';$('me').style.display=$('reload').style.display=S.me?'':'none';$('me').innerHTML=S.me?av(S.me,22)+esc(S.me.name)+' ▾':'';if(!S.me)$('stat').textContent='';
   updBack();renderOn();
@@ -869,11 +870,11 @@ function formItem(id){
     if(i.exp)h+=`<div class="note">Hạn dùng: <b>${fmtD(i.exp)}</b> · gia hạn:</div><div class="btns" style="margin-top:4px">${extBtns(id)}</div>`;
     if(!kid()&&(i.min||noBuy(i)))h+=noBuy(i)?`<div class="note">🚫 Đã chọn <b>không mua lại</b> món này (không báo sắp hết, không vào danh sách đi chợ).</div><div class="btns"><button data-act="nobuy" data-id="${esc(id)}" data-on="0">🛒 Mua lại bình thường</button></div>`:`<div class="btns"><button data-act="nobuy" data-id="${esc(id)}" data-on="1">🚫 Không mua lại nữa</button></div>`;
     h+=`<h3>Lịch sử</h3><div id="hist" class="note">Đang tải lịch sử…</div>`;
-    if(kid()){sheet(h+'<div class="btns"><button data-act="close">Đóng</button></div>');loadHist(id);return}
+    if(kid()){sheet(h+`<div class="btns"><button class="big" data-act="item-tem" data-id="${esc(id)}">📨 Nhờ chủ nhà in tem món này</button></div><div class="btns"><button data-act="close">Đóng</button></div>`);loadHist(id);return}
     h+=`<div class="two" style="align-items:flex-end"><div><label>Vật tư: số lượng</label><input type="text" id="mv-n" inputmode="decimal" value="1"></div><div><button data-act="mv" data-m="dung" data-id="${esc(id)}" style="width:100%">Dùng bớt</button></div><div><button data-act="mv" data-m="nhap" data-id="${esc(id)}" style="width:100%">Nhập thêm</button></div></div>`;
     h+=`<div class="btns"><button class="big" data-act="item-tem" data-id="${esc(id)}">${adm()?'🏷️ In tem dán lên món này':'📨 Nhờ chủ nhà in tem món này'}</button></div>`;
     h+='<details><summary>Sửa thông tin</summary>';
-  }else h+=phBox('item','','',true)+(window.N25_AI?'<button class="big" data-act="ai">🤖 Gợi ý chỗ cất (chụp ảnh hoặc nhập tên trước)</button><div id="ai-out" class="note"></div>':'');
+  }else h+=kid()?'':phBox('item','','',true)+(window.N25_AI?'<button class="big" data-act="ai">🤖 Gợi ý chỗ cất (chụp ảnh hoặc nhập tên trước)</button><div id="ai-out" class="note"></div>':'');
   h+=`<label>Tên đồ vật</label><input type="text" id="f-name" value="${esc(i.name)}" placeholder="Máy khoan, hộ chiếu, dây HDMI…">`;
   h+=`<label>Nhóm</label><select id="f-cat"><option value="">— chọn nhóm —</option>${CATS.map(c=>`<option ${c===i.cat?'selected':''}>${esc(c)}</option>`).join('')}</select>`;
   h+=`<div class="two"><div><label>Số lượng</label><input type="text" id="f-qty" inputmode="decimal" value="${esc(i.qty||'')}"></div><div><label>Đơn vị</label><input type="text" id="f-unit" value="${esc(i.unit||'')}" placeholder="cái, hộp, m…"></div><div><label>Báo khi còn ≤</label><input type="text" id="f-min" inputmode="decimal" value="${esc(i.min??'')}" placeholder="vật tư"></div></div>`;
@@ -1040,6 +1041,8 @@ document.addEventListener('click',async e=>{
   else if(a==='het-ask')hetAsk(d.id);
   else if(a==='house-del'){if(armed!==el){armed=el;el.textContent='Xoá?';return}el.disabled=true;await act('setPhoto',{kind:'house',del:+d.i})}
   else if(a==='pq-add'){el.disabled=true;if(await act('pqAdd',{list:[{code:itemCode(d.id),n:+($('it-n').value||1)}]})){closeSheet();toast('Đã gửi cho chủ nhà in tem.')}else el.disabled=false}
+  else if(a==='loc-req'){const l=loc(S.cur);if(!l)return;sheet(`<h2>📨 Nhờ chủ nhà in tem</h2><p><b>${esc(pathName(S.cur))}</b></p><div class="note">Máy in tem chỉ kết nối với máy của chủ nhà. Yêu cầu của bạn sẽ hiện ở tab In tem của chủ nhà.</div><label>Số tem giống nhau</label><select id="it-n">${[1,2,3,4,5,6].map(n=>`<option value="${n}">${n} tem</option>`).join('')}</select><button class="pri big" data-act="pq-add-loc" data-c="${esc(S.cur)}">📨 Gửi yêu cầu in</button><div class="btns"><button data-act="close">Huỷ</button></div>`)}
+  else if(a==='pq-add-loc'){el.disabled=true;if(await act('pqAdd',{list:[{code:d.c,n:+($('it-n').value||1)}]})){closeSheet();toast('Đã gửi cho chủ nhà in tem.')}else el.disabled=false}
   else if(a==='pq-del'){el.disabled=true;await act('pqDel',{codes:[d.c]})}
   else if(a==='pq-all'){pqVis().forEach(e=>{S.sel.add(e.code);S.cnt[e.code]=e.n});render();toast('Đã thêm vào danh sách in. Bấm 🖨️ In ngay.')}
   else if(a==='pq-go')go('in-tem');
@@ -1163,7 +1166,7 @@ document.addEventListener('click',async e=>{
     const lc=$('k-loc')?$('k-loc').value:S.cur,food=inFridge(lc);
     if(!kx&&food)kx=plusDays(DEF_EXP);
     const qty=$('k-qty').value.trim()||'1',unit=$('k-unit').value.trim();
-    const same=itemsAt(lc).find(([,i])=>norm(i.name)===norm(name)&&(i.exp||'')===kx&&!isLost(i));
+    const same=kid()?null:itemsAt(lc).find(([,i])=>norm(i.name)===norm(name)&&(i.exp||'')===kx&&!isLost(i));
     $('k-log').textContent=($('k-log').textContent?$('k-log').textContent+', ':'Đã thêm: ')+name;
     $('k-name').value='';$('k-qty').value='1';$('k-unit').value='';$('k-exp').value='';$('k-name').focus();
     if(same){const q=(parseFloat(same[1].qty)||0)+(parseFloat(String(qty).replace(',','.'))||0);S.items.set(same[0],{...same[1],qty:String(q)})}
