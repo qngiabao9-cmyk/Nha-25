@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Nhà 25 – index.html v12 (23/11/2026): ✋ Dừng cổng chạm 1 lần, Mở/Đóng chạm 2 lần; 🔙 chạy xong tự quay về Nhà 25 (x-callback); v11: 📹 bấm Mở/Đóng/Dừng cổng thì tự mở camera Sân trước (khi đã bật xem online); v10: 🎨 nút Cổng & Camera dạng ô lớn, icon + màu khác nhau; v9: 🏠 khung Nhà (3 nút cổng chạm 2 lần + camera + 🛒 đi chợ), danh sách đi chợ, hỏi "Mua lại?" khi Dùng hết, "Không mua lại nữa", nhắc đồ đang giữ quá hạn. Cần Code.gs v6. -->
+<!-- Nhà 25 – index.html v14 (25/11/2026): 🔑 chủ nhà đặt lại mã cho thành viên (trong menu tên mình; cần Code.gs v8); v13 (25/11/2026): 💬 chat nhóm theo phòng + “Cả nhà” (chỉ chữ, chấm đỏ tin mới; cần Code.gs v7 + chạy caiChat() 1 lần); v12 (23/11/2026): ✋ Dừng cổng chạm 1 lần, Mở/Đóng chạm 2 lần; 🔙 chạy xong tự quay về Nhà 25 (x-callback); v11: 📹 bấm Mở/Đóng/Dừng cổng thì tự mở camera Sân trước (khi đã bật xem online); v10: 🎨 nút Cổng & Camera dạng ô lớn, icon + màu khác nhau; v9: 🏠 khung Nhà (3 nút cổng chạm 2 lần + camera + 🛒 đi chợ), danh sách đi chợ, hỏi "Mua lại?" khi Dùng hết, "Không mua lại nữa", nhắc đồ đang giữ quá hạn. Cần Code.gs v6. -->
 <html lang="vi">
 <head>
 <meta charset="utf-8">
@@ -134,6 +134,7 @@ details{margin-top:14px;border-top:1px solid var(--line);padding-top:10px} summa
 .ck{width:22px;height:22px;flex:none;accent-color:var(--acc)}
 .sticky{position:sticky;bottom:76px;background:var(--bg);padding:8px 0 10px;border-top:1px solid var(--line)}
 .sticky button{width:100%}
+nav button{position:relative}
 </style>
 </head>
 <body>
@@ -178,6 +179,8 @@ details{margin-top:14px;border-top:1px solid var(--line);padding-top:10px} summa
     <datalist id="codes"></datalist>
   </section>
 
+  <section id="v-chat"><div id="chat-out"></div></section>
+
   <section id="v-in-tem">
     <p class="note">Tem 35×22 mm, 2 tem/hàng, trang PDF 72×22 mm. Khi in chọn tỉ lệ 100% (Actual size).</p>
     <div class="btns">
@@ -198,6 +201,7 @@ details{margin-top:14px;border-top:1px solid var(--line);padding-top:10px} summa
   <button data-tab="tim"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>Tìm đồ</button>
   <button data-tab="vi-tri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/></svg>Vị trí</button>
   <button data-tab="quet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4"/><path d="M8 12h8"/></svg>Quét</button>
+  <button data-tab="chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>Chat</button>
   <button data-tab="in-tem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 8V4h10v4"/><rect x="3" y="8" width="18" height="8" rx="2"/><path d="M7 14h10v6H7z"/></svg>In tem</button>
 </nav>
 
@@ -214,7 +218,7 @@ const HOUSE='N25';
 const QR_BASE=window.N25_PUB||'https://qngiabao9-cmyk.github.io/Nha-25/';
 const KINDS={P:'Phòng',T:'Tủ / Kệ',N:'Ngăn',H:'Hộp'};
 const CHILD={'':['P'],P:['T','H'],T:['N','H'],N:['H'],H:[]};
-const TABS=['tim','vi-tri','quet','in-tem'];
+const TABS=['tim','vi-tri','quet','chat','in-tem'];
 const FLOORS=['Ngoài trời','Trệt','Lầu 1','Lầu 2','Lầu 3','Tầng thượng'];
 const CATS=['Dụng cụ cầm tay','Dụng cụ điện – máy cầm tay','Dụng cụ đo – kiểm tra','Vật tư điện','Vật tư nước','Vật tư cơ khí (ốc vít, bu lông, vòng bi)','Phụ tùng máy móc thiết bị','Dầu mỡ – keo – hoá chất','Bảo hộ lao động','Thiết bị điện – điện tử','Dụng cụ nấu nướng','Chén bát – ly – dao kéo','Thực phẩm khô – gia vị','Thực phẩm tươi – đông lạnh','Đồ điện bếp','Nội thất – trang trí','Giấy tờ – hồ sơ','Quần áo – chăn màn','Đồ thờ cúng','Y tế – thuốc','Vệ sinh – tẩy rửa','Khác'];
 const CATI=['🔧','🛠️','📏','⚡','🚰','🔩','⚙️','🧴','🧤','📺','🍳','🍽️','🧂','🥩','🔌','🛋️','📄','👕','🕯️','💊','🧽','📦'];
@@ -223,7 +227,7 @@ const TH=new Map();
 const thLoad=()=>{try{const o=JSON.parse(localStorage.getItem('n25th')||'{}');for(const k in o)TH.set(k,o[k])}catch(e){}};
 let thSaveT;const thSave=()=>{clearTimeout(thSaveT);thSaveT=setTimeout(()=>{try{const o={};for(const [k,v] of TH)if(v)o[k]=v;localStorage.setItem('n25th',JSON.stringify(o))}catch(e){try{localStorage.removeItem('n25th')}catch(x){}}},1500)};
 thLoad();let pend=null,picT=null;
-const S={cnt:{},mv:null,camChk:'',cp:1,fill:true,ff:'',locs:new Map(),items:new Map(),tab:'tim',cur:'',q:'',sel:new Set(),pf:'chua',ready:false,fc:'',fs:'',me:null,users:[],logs:[],at:0};
+const S={chatRoom:'',cnt:{},mv:null,camChk:'',cp:1,fill:true,ff:'',locs:new Map(),items:new Map(),tab:'tim',cur:'',q:'',sel:new Set(),pf:'chua',ready:false,fc:'',fs:'',me:null,users:[],logs:[],at:0};
 let token='';try{token=localStorage.getItem('n25tok')||''}catch(e){}
 try{const c=JSON.parse(localStorage.getItem('n25ban')||'null');if(c&&c.urls&&c.urls[0])document.getElementById('splash').style.backgroundImage=`url(${c.urls[0]})`}catch(e){}
 setTimeout(()=>{const p=document.querySelector('#splash p');if(p&&!document.getElementById('splash').classList.contains('off'))p.textContent='Máy chủ đang chậm, chạm vào màn hình để vào…'},4000);setTimeout(()=>{hideSplash()},8000);document.getElementById('splash').addEventListener('click',()=>{const sp=document.getElementById('splash');if(Date.now()-spT>3000)sp.classList.add('off')});
@@ -483,7 +487,7 @@ function nextCode(parent,kind){
 }
 const API=String(window.N25_API||'').trim(),GAS=!!(window.google&&google.script&&google.script.run);
 let busyN=0;function busy(d){busyN=Math.max(0,busyN+d);const b=$('reload');if(b)b.textContent=busyN?'⏳':'↻'}
-const READ_A={ver:1,who:1,load:1,thumbs:1,banner:1,ping:1,history:1};
+const READ_A={ver:1,who:1,load:1,thumbs:1,banner:1,ping:1,history:1,chatSum:1,chatLoad:1};
 function callOnce(action,p){return new Promise((ok,no)=>{
   if(!GAS){
     if(!/^https:\/\/script\.google\.com\/.+\/exec$/.test(API)){no(new Error('Chưa khai báo địa chỉ máy chủ trong tệp config.js.'));return}
@@ -525,13 +529,14 @@ function apply(d){
   S.ready=true;S.at=Date.now();banner('');render();hideSplash();fetchThumbs();
   if($('expl'))expSheet(true);else if(!S.expShown&&S.me&&!kid()){S.expShown=true;let t='';try{t=localStorage.getItem('n25exp_'+S.me.id)||''}catch(e){}if(t!==today()&&dueList().length){try{localStorage.setItem('n25exp_'+S.me.id,today())}catch(e){}setTimeout(()=>expSheet(false),500)}}
   if(d.house!==S.house){S.house=d.house;setBanner(d.house)}
+  chSum();
 }
 async function act(action,p){try{const r=await call(action,p);S.res=r&&r.res;apply(r);return true}catch(e){
   const m=String((e&&e.message)||e);
   if(!READ_A[action]&&/kết nối/i.test(m)){toast('Mạng chập chờn, chưa chắc đã lưu. Đang kiểm tra lại…');setTimeout(()=>act('load').then(ok=>{if(ok)toast('Đã tải lại. Xem món vừa nhập đã có chưa rồi hãy nhập lại.')}),2000)}
   else fail(e);return false}}
 const kid=()=>!!S.me&&S.me.role==='tre';
-const AT={mat:'báo không thấy',thay:'đã thấy',kiemke:'kiểm kê',nhaplo:'nhập danh sách',lay:'lấy dùng',tra:'trả lại',dung:'dùng bớt',nhap:'nhập thêm',them:'thêm',sua:'sửa',chuyen:'chuyển chỗ',xoa:'xoá',het:'dùng hết (xoá khỏi danh sách)',themvt:'tạo vị trí',suavt:'sửa vị trí',chuyenvt:'chuyển hộp',xoavt:'xoá vị trí',hoantac:'hoàn tác',intem:'in tem',dantem:'xác nhận đã dán tem',anh:'đổi ảnh',cong:'điều khiển cổng'};
+const AT={mat:'báo không thấy',thay:'đã thấy',kiemke:'kiểm kê',nhaplo:'nhập danh sách',lay:'lấy dùng',tra:'trả lại',dung:'dùng bớt',nhap:'nhập thêm',them:'thêm',sua:'sửa',chuyen:'chuyển chỗ',xoa:'xoá',het:'dùng hết (xoá khỏi danh sách)',themvt:'tạo vị trí',suavt:'sửa vị trí',chuyenvt:'chuyển hộp',xoavt:'xoá vị trí',hoantac:'hoàn tác',intem:'in tem',dantem:'xác nhận đã dán tem',anh:'đổi ảnh',cong:'điều khiển cổng',resetma:'đặt lại mã cho'};
 const when=ts=>{const d=new Date(+ts);return d.toLocaleDateString('vi-VN')+' '+d.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'})};
 const logLine=g=>`${esc(g.user)} ${AT[g.act]||esc(g.act)}${g.qty?' '+esc(g.qty):''}${g.note&&g.act!=='hoantac'?' · '+esc(g.note):''} · ${when(g.ts)}`;
 const undoChip=g=>g.canUndo?`<button class="chip u" data-act="undo" data-ts="${esc(g.ts)}" data-id="${esc(g.itemId)}">Hoàn tác</button>`:'';
@@ -546,7 +551,7 @@ const putLoc=(code,data,isNew)=>actU('saveLoc',{code:isNew?'':code,loc:data},isN
 const delLoc=code=>actU('delLoc',{code},'Đã xoá “'+((loc(code)||{}).name||'')+'”.');
 const putItem=(id,data)=>actU('saveItem',{id:id||'',item:data},(id?'Đã lưu “':'Đã thêm “')+data.name+'”.');
 const delItem=id=>actU('delItem',{id},'Đã xoá “'+((S.items.get(id)||{}).name||'')+'”.');
-function logout(){S.expShown=false;token='';try{localStorage.removeItem('n25tok');localStorage.removeItem('n25snap')}catch(e){}S.me=null;S.ready=false;S.locs=new Map();S.items=new Map();S.sel.clear();closeSheet();render();loadWho()}
+function logout(){S.chatRoom='';CH.rooms=[];CH.cv=null;S.expShown=false;token='';try{localStorage.removeItem('n25tok');localStorage.removeItem('n25snap')}catch(e){}S.me=null;S.ready=false;S.locs=new Map();S.items=new Map();S.sel.clear();closeSheet();render();loadWho()}
 let whoTry=0;
 function whoShow(w,r){S.who=w;const cur=$('l-user').value;$('l-user').innerHTML=w.map(u=>`<option value="${esc(u.id)}">${esc(u.name)}</option>`).join('');if(w.some(u=>u.id===cur))$('l-user').value=cur;$('l-msg').textContent='';loginMode();hideSplash();if(r&&r.house!==undefined&&r.house!==S.house){S.house=r.house;setBanner(r.house)}}
 async function loadWho(){
@@ -729,6 +734,7 @@ function render(){
   $('stat').textContent=S.ready?`${S.locs.size} vị trí · ${S.items.size} đồ vật`:'';
   if(S.tab==='tim')renderTim();
   else if(S.tab==='vi-tri')renderLoc();
+  else if(S.tab==='chat')renderChat();
   else if(S.tab==='in-tem')renderIn();
   else $('codes').innerHTML=[...S.locs.keys()].sort().map(c=>`<option value="${esc(c)}">${esc(pathName(c))}</option>`).join('');
 }
@@ -747,11 +753,12 @@ function goBack(){
     if(S.cur){S.cur=(loc(S.cur)&&loc(S.cur).parent)||'';S.grp=[];render();window.scrollTo(0,0);return}
     go('tim');return
   }
+  if(S.tab==='chat'&&S.chatRoom){S.chatRoom='';render();window.scrollTo(0,0);return}
   if(S.tab!=='tim'){go('tim');return}
   S.q='';S.fc='';S.fs='';S.ff='';$('q').value='';$('fc').value='';$('fs').value='';renderTim();updBack();
 }
 try{history.replaceState({n:0},'');history.pushState({n:1},'');window.addEventListener('popstate',()=>{if(canBack()){goBack();try{history.pushState({n:1},'')}catch(e){}}})}catch(e){}
-function go(tab){stopLive();if(tab!=='quet'&&tab!=='vi-tri')S.mv=null;S.tab=tab;render();window.scrollTo(0,0)}
+function go(tab){stopLive();if(tab!=='chat')S.chatRoom='';else setTimeout(chSum,0);if(tab!=='quet'&&tab!=='vi-tri')S.mv=null;S.tab=tab;render();window.scrollTo(0,0)}
 function openLoc(code){if(code&&loc(code)&&loc(code).locked){toast('Phòng riêng, bạn không có quyền xem.');return}S.cur=code;S.grp=[];go('vi-tri')}
 
 /* ---------- biểu mẫu ---------- */
@@ -1009,9 +1016,11 @@ document.addEventListener('click',async e=>{
   if(e.target===$('ovl')){closeSheet();return}
   const el=e.target.closest('[data-act]');if(!el)return;
   const a=el.dataset.act,d=el.dataset;
-  if(a!=='loc-del'&&a!=='item-del'&&a!=='exp-del'&&a!=='house-del'&&a!=='gate')armed=null;
+  if(a!=='loc-del'&&a!=='item-del'&&a!=='exp-del'&&a!=='house-del'&&a!=='gate'&&a!=='reset-pin')armed=null;
   if(a==='open'){e.stopPropagation();closeSheet();openLoc(d.c)}
   else if(a==='grp'){S.cur=d.c;try{S.grp=JSON.parse(d.g)}catch(er){S.grp=[]}go('vi-tri')}
+  else if(a==='ch-room')chEnter(d.r);
+  else if(a==='ch-send')chSend();
   else if(a==='back')goBack();
   else if(a==='onl'){if(S.me&&S.me.id)onlSheet()}
   else if(a==='house-mgr')houseMgr();
@@ -1222,10 +1231,11 @@ document.addEventListener('click',async e=>{
   else if(a==='logout')logout();
   else if(a==='me-menu'){
     const km=kbGet(S.me.id),pf=id=>`<input type="password" class="pw" id="${id}" inputmode="${km}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="20" style="-webkit-text-security:disc">`;
-    sheet(`<div class="ph">${av(S.me,72)}<div><h2 style="margin:0">${esc(S.me.name)}</h2><div class="btns" style="margin:6px 0 0"><button data-act="pic" data-k="user" data-id="">📷 Ảnh đại diện</button>${adm()?'<button data-act="house-mgr">🏠 Ảnh ngôi nhà</button>':''}</div></div></div><h3>Quét tem bằng Camera / Safari</h3><button data-act="xfer">🔗 Lấy liên kết đăng nhập cho Safari</button><h3>Đổi mã đăng nhập</h3><div class="btns" style="margin:4px 0 0"><button type="button" class="chip" data-act="kb">${km==='numeric'?'abc':'123'}</button><span class="note" style="margin:0">đổi bàn phím chữ / số</span></div><label>Mã hiện tại</label>${pf('p-old')}<label>Mã mới (4–20 ký tự${adm()?', chủ nhà ≥ 8 ký tự':''})</label>${pf('p-new')}<label>Nhập lại mã mới</label>${pf('p-new2')}<div class="btns"><button class="pri" data-act="pin-save">Đổi mã</button><button data-act="close">Huỷ</button></div><details><summary>Thoát tài khoản</summary><p class="note">Thoát khỏi máy này. Lần sau mở app phải nhập lại mã.</p><div class="btns"><button class="dan" data-act="logout">Thoát</button></div></details>`);
+    sheet(`<div class="ph">${av(S.me,72)}<div><h2 style="margin:0">${esc(S.me.name)}</h2><div class="btns" style="margin:6px 0 0"><button data-act="pic" data-k="user" data-id="">📷 Ảnh đại diện</button>${adm()?'<button data-act="house-mgr">🏠 Ảnh ngôi nhà</button>':''}</div></div></div><h3>Quét tem bằng Camera / Safari</h3><button data-act="xfer">🔗 Lấy liên kết đăng nhập cho Safari</button><h3>Đổi mã đăng nhập</h3><div class="btns" style="margin:4px 0 0"><button type="button" class="chip" data-act="kb">${km==='numeric'?'abc':'123'}</button><span class="note" style="margin:0">đổi bàn phím chữ / số</span></div><label>Mã hiện tại</label>${pf('p-old')}<label>Mã mới (4–20 ký tự${adm()?', chủ nhà ≥ 8 ký tự':''})</label>${pf('p-new')}<label>Nhập lại mã mới</label>${pf('p-new2')}<div class="btns"><button class="pri" data-act="pin-save">Đổi mã</button><button data-act="close">Huỷ</button></div>${adm()?`<details><summary>🔑 Đặt lại mã cho thành viên</summary><p class="note">Bấm 2 lần để xoá mã của người đó. Người đó mở app, chọn tên mình và tự đặt mã mới.</p><div class="list">${S.users.filter(x=>x.id!==S.me.id).map(x=>`<div class="row" style="cursor:default">${av(x,34)}<div class="t"><div class="n">${esc(x.name)}</div></div><button class="chip dan" data-act="reset-pin" data-u="${esc(x.id)}" data-n="${esc(x.name)}">Đặt lại</button></div>`).join('')}</div></details>`:''}<details><summary>Thoát tài khoản</summary><p class="note">Thoát khỏi máy này. Lần sau mở app phải nhập lại mã.</p><div class="btns"><button class="dan" data-act="logout">Thoát</button></div></details>`);
   }
   else if(a==='xfer'){el.disabled=true;try{const r=await call('xfer'),u=QR_BASE+'?x='+r.code;
     sheet(`<h2>🔗 Đăng nhập cho Safari</h2><div class="note">Liên kết dùng 1 lần, hết hạn sau 10 phút. Bấm <b>Sao chép</b>, mở <b>Safari</b>, dán vào thanh địa chỉ rồi Go. Safari sẽ nhớ đăng nhập; từ đó quét tem bằng Camera là vào thẳng.</div><textarea readonly rows="3" id="xf-u" style="width:100%">${esc(u)}</textarea><div class="btns"><button class="pri" data-act="xfer-copy">Sao chép</button><button data-act="close">Đóng</button></div>`)}catch(er){fail(er)}finally{el.disabled=false}}
+  else if(a==='reset-pin'){if(armed!==el){if(armed&&armed.dataset.act==='reset-pin')armed.textContent='Đặt lại';armed=el;el.textContent='Bấm lần nữa';return}armed=null;el.disabled=true;try{await call('resetPin',{user:d.u});toast('Đã đặt lại mã của '+d.n+'. Báo bạn ấy mở app và tự đặt mã mới.');el.textContent='✓ Xong'}catch(er){fail(er);el.disabled=false;el.textContent='Đặt lại'}}
   else if(a==='xfer-copy'){const t=$('xf-u').value;try{await navigator.clipboard.writeText(t);toast('Đã sao chép. Mở Safari và dán.')}catch(er){$('xf-u').select();toast('Hãy chọn và sao chép liên kết.')}}
   else if(a==='pin-save'){
     const o=$('p-old').value.trim(),n=$('p-new').value.trim(),n2=$('p-new2').value.trim();
@@ -1292,9 +1302,66 @@ $('mcode').addEventListener('keydown',e=>{if(e.key==='Enter')openCode(e.target.v
 $('l-user').addEventListener('change',()=>{$('l-msg').textContent='';loginMode()});
 $('l-pin2').addEventListener('keydown',e=>{if(e.key==='Enter')$('l-btn').click()});
 $('l-pin').addEventListener('keydown',e=>{if(e.key==='Enter')document.querySelector('[data-act=login]').click()});
-setInterval(async()=>{if(document.hidden||!S.me||!S.me.id||busyN>0)return;try{const r=await callOnce('ver',{});if(r&&r.on){S.on=r.on;S.seen=r.seen||{};renderOn()}if(r&&r.ver&&S.ver&&r.ver!==S.ver&&!$('ovl').classList.contains('on'))act('load')}catch(e){}},12000);
+setInterval(async()=>{if(document.hidden||!S.me||!S.me.id||busyN>0)return;try{const r=await callOnce('ver',{});if(r&&r.on){S.on=r.on;S.seen=r.seen||{};renderOn()}if(r)chCv(r.cv);if(r&&r.ver&&S.ver&&r.ver!==S.ver&&!$('ovl').classList.contains('on'))act('load')}catch(e){}},12000);
 document.addEventListener('input',e=>{if(e.target&&e.target.id==='lp-q'&&LP){LP.q=e.target.value;lpList()}});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.me&&S.me.id&&Date.now()-S.at>60000&&!$('ovl').classList.contains('on'))act('load')});
+/* 💬 Chat nhóm theo phòng (v13): chỉ chữ, tự làm mới, chấm đỏ tin mới; cần Code.gs v7 */
+const CH={rooms:[],cv:null,t:0,busy:false,last:0};
+const chKey=()=>'n25cr_'+((S.me&&S.me.id)||'');
+const chRead=()=>{try{return JSON.parse(localStorage.getItem(chKey())||'{}')}catch(e){return{}}};
+function chMark(room,ts){const o=chRead();if(!(+ts>(+o[room]||0)))return;o[room]=+ts;try{localStorage.setItem(chKey(),JSON.stringify(o))}catch(e){}}
+const chUn=r=>!!r.last&&r.lastUid!==(S.me&&S.me.id)&&+r.last>(+chRead()[r.id]||0);
+const chT=ts=>{const d=new Date(+ts),n=new Date(),h=d.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});return d.toDateString()===n.toDateString()?h:d.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'})+' '+h};
+function chBadge(){
+  const t=document.querySelector('[data-tab=chat]');if(!t)return;
+  let b=t.querySelector('.nb');
+  if(!b){b=document.createElement('span');b.className='nb';b.style.cssText='position:absolute;top:6px;margin-left:16px;background:#d33;width:10px;height:10px;border-radius:50%';t.style.position='relative';t.appendChild(b)}
+  b.style.display=CH.rooms.some(chUn)?'':'none';
+}
+async function chSum(){
+  if(!S.me||!S.me.id||CH.busy)return;
+  CH.busy=true;
+  try{const r=await callOnce('chatSum',{});CH.rooms=r.rooms||[];CH.cv=r.cv;chBadge();if(S.tab==='chat'&&!S.chatRoom)renderChat()}
+  catch(e){}
+  CH.busy=false;
+}
+function chCv(cv){if(cv!==undefined&&cv!==CH.cv)chSum()}
+function renderChat(){
+  const el=$('chat-out');if(!el)return;
+  if(S.chatRoom){chOpenView();return}
+  el.innerHTML='<h2>💬 Trò chuyện</h2><div class="note">Mỗi phòng một nhóm; “Cả nhà” ai cũng thấy. Chỉ gõ chữ, không có thông báo đẩy: mở app sẽ thấy chấm đỏ khi có tin mới.</div>'+
+    (CH.rooms.length?'<div class="list">'+CH.rooms.map(r=>`<div class="row" data-act="ch-room" data-r="${esc(r.id)}"><div class="bdg" style="background:${(FCOL[r.floor])||'#7b1e2b'}">💬</div><div class="t"><div class="n">${esc(r.name)}</div><div class="s">${r.last?esc(r.lastUser)+': '+esc(r.lastText):'Chưa có tin nhắn'}</div></div>${chUn(r)?'<span style="width:12px;height:12px;border-radius:50%;background:#d33;flex:none"></span>':''}<div class="q">${r.last?chT(r.last):''}</div></div>`).join('')+'</div>':'<div class="empty">Đang tải…</div>');
+}
+function chOpenView(){
+  const r=CH.rooms.find(x=>x.id===S.chatRoom)||{name:S.chatRoom};
+  $('chat-out').innerHTML=`<h2>${esc(r.name)}</h2><div id="ch-list" style="display:flex;flex-direction:column;gap:6px;margin:10px 0;min-height:120px"><div class="note">Đang tải…</div></div><div style="display:flex;gap:8px;position:sticky;bottom:76px;background:var(--bg);padding:8px 0"><input type="text" id="ch-in" maxlength="500" placeholder="Nhắn tin…" autocomplete="off"><button class="pri" data-act="ch-send">Gửi</button></div>`;
+  chLoad(true);
+}
+function chMsgs(list){
+  const el=$('ch-list');if(!el)return;
+  const near=window.innerHeight+window.scrollY>=document.body.scrollHeight-160;
+  el.innerHTML=list.length?list.map(m=>{const me=m.uid===(S.me&&S.me.id),u=S.users.find(x=>x.id===m.uid)||{id:m.uid,name:m.user};
+    return `<div style="display:flex;gap:8px;align-items:flex-end;${me?'flex-direction:row-reverse':''}">${av(u,30)}<div style="max-width:78%;background:${me?'var(--acc)':'var(--card)'};color:${me?'var(--acc-ink)':'inherit'};border:1px solid var(--line);border-radius:14px;padding:7px 11px;overflow-wrap:anywhere"><div style="font-size:11.5px;opacity:.75">${me?'':esc(m.user)+' · '}${chT(m.ts)}</div><div style="white-space:pre-wrap">${esc(m.text)}</div></div></div>`}).join(''):'<div class="note">Chưa có tin nhắn. Gõ tin đầu tiên nhé.</div>';
+  if(list.length){const ts=+list[list.length-1].ts;chMark(S.chatRoom,ts);const r=CH.rooms.find(x=>x.id===S.chatRoom);if(r&&+r.last<=ts){r.last=ts}chBadge()}
+  if(near||CH.first){window.scrollTo(0,document.body.scrollHeight);CH.first=false}
+}
+async function chLoad(first){
+  if(!S.chatRoom)return;CH.first=!!first;
+  const room=S.chatRoom;
+  try{const r=await callOnce('chatLoad',{room});if(S.chatRoom===room&&S.tab==='chat')chMsgs(r.msgs||[])}
+  catch(e){if(first){const el=$('ch-list');if(el)el.innerHTML='<div class="note">Không tải được tin nhắn. Thử lại sau.</div>'}if(String(e&&e.message)==='AUTH')logout()}
+}
+async function chSend(){
+  const i=$('ch-in');if(!i||!S.chatRoom)return;
+  const text=i.value.trim();if(!text)return;
+  const btn=document.querySelector('[data-act=ch-send]');if(btn)btn.disabled=true;
+  try{const r=await call('chatSend',{room:S.chatRoom,text});i.value='';CH.first=true;chMsgs(r.msgs||[])}
+  catch(e){fail(e)}
+  if(btn)btn.disabled=false;i.focus();
+}
+function chEnter(room){S.chatRoom=room||'';render()}
+setInterval(()=>{if(document.hidden||!S.me||!S.me.id||S.tab!=='chat'||!S.chatRoom||busyN>0)return;chLoad(false)},4000);
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target&&e.target.id==='ch-in'){e.preventDefault();chSend()}});
 init();
 if(!GAS&&'serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
