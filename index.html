@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Nhà 25 – index.html v18 (26/11/2026): 🏠 trang chính kéo ngang: trang 1 = nút Cổng + Camera (thêm nút điều khiển mới trong CTRL), trang 2 = Tìm đồ; bỏ thông báo “chưa bật” và nút Tapo tạm; chạy nhanh hơn (nạp thư viện sau, mở nhanh); v17 (26/11/2026): 📹 3 camera mở link thẳng cam.nhagb.io.vn (Cloudflare Access, chế độ MSE); v16 (25/11/2026): 👧 trẻ em được 📨 nhờ chủ nhà in tem (món và vị trí; cần Code.gs v11); v15 (25/11/2026): 👧 trẻ em được thêm đồ mới / thêm nhanh / nhập danh sách (cần Code.gs v9); v14 (25/11/2026): 🔑 chủ nhà đặt lại mã cho thành viên (trong menu tên mình; cần Code.gs v8); v13 (25/11/2026): 💬 chat nhóm theo phòng + “Cả nhà” (chỉ chữ, chấm đỏ tin mới; cần Code.gs v7 + chạy caiChat() 1 lần); v12 (23/11/2026): ✋ Dừng cổng chạm 1 lần, Mở/Đóng chạm 2 lần; 🔙 chạy xong tự quay về Nhà 25 (x-callback); v11: 📹 bấm Mở/Đóng/Dừng cổng thì tự mở camera Sân trước (khi đã bật xem online); v10: 🎨 nút Cổng & Camera dạng ô lớn, icon + màu khác nhau; v9: 🏠 khung Nhà (3 nút cổng chạm 2 lần + camera + 🛒 đi chợ), danh sách đi chợ, hỏi "Mua lại?" khi Dùng hết, "Không mua lại nữa", nhắc đồ đang giữ quá hạn. Cần Code.gs v6. -->
+<!-- Nhà 25 – index.html v19 (26/11/2026): 🖼️ 3 ảnh đầu trang không bị đè chữ (chữ nằm dưới ảnh, ảnh lấy phần đầu người); 📜 Nhật ký tách thành trang 3; v18 (26/11/2026): 🏠 trang chính kéo ngang: trang 1 = nút Cổng + Camera (thêm nút điều khiển mới trong CTRL), trang 2 = Tìm đồ; bỏ thông báo “chưa bật” và nút Tapo tạm; chạy nhanh hơn (nạp thư viện sau, mở nhanh); v17 (26/11/2026): 📹 3 camera mở link thẳng cam.nhagb.io.vn (Cloudflare Access, chế độ MSE); v16 (25/11/2026): 👧 trẻ em được 📨 nhờ chủ nhà in tem (món và vị trí; cần Code.gs v11); v15 (25/11/2026): 👧 trẻ em được thêm đồ mới / thêm nhanh / nhập danh sách (cần Code.gs v9); v14 (25/11/2026): 🔑 chủ nhà đặt lại mã cho thành viên (trong menu tên mình; cần Code.gs v8); v13 (25/11/2026): 💬 chat nhóm theo phòng + “Cả nhà” (chỉ chữ, chấm đỏ tin mới; cần Code.gs v7 + chạy caiChat() 1 lần); v12 (23/11/2026): ✋ Dừng cổng chạm 1 lần, Mở/Đóng chạm 2 lần; 🔙 chạy xong tự quay về Nhà 25 (x-callback); v11: 📹 bấm Mở/Đóng/Dừng cổng thì tự mở camera Sân trước (khi đã bật xem online); v10: 🎨 nút Cổng & Camera dạng ô lớn, icon + màu khác nhau; v9: 🏠 khung Nhà (3 nút cổng chạm 2 lần + camera + 🛒 đi chợ), danh sách đi chợ, hỏi "Mua lại?" khi Dùng hết, "Không mua lại nữa", nhắc đồ đang giữ quá hạn. Cần Code.gs v6. -->
 <html lang="vi">
 <head>
 <meta charset="utf-8">
@@ -33,11 +33,13 @@
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 header{background:linear-gradient(135deg,#8e2433,#4a0f18);position:relative;overflow:hidden;color:#fff;min-height:92px;display:flex;align-items:flex-end}
-#hbg{position:absolute;inset:0;display:grid;gap:2px;background:#fff}#hbg i{background-size:cover;background-position:center;display:block;min-height:0}
+#hbg{position:absolute;inset:0;display:grid;gap:2px;background:#fff}#hbg i{background-size:cover;background-position:center 18%;display:block;min-height:0}
 #hbg.n1{grid-template-columns:1fr}#hbg.n2{grid-template-columns:1fr 1fr}#hbg.n3{grid-template-columns:1fr 1fr 1fr}
 #hbg.n4{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}#hbg.n5,#hbg.n6{grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr}#hbg.n5 i:last-child{grid-column:span 2}
 .hm{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}.hm div{position:relative;aspect-ratio:4/3;border-radius:10px;overflow:hidden;background-size:cover;background-position:center;box-shadow:var(--sh)}.hm button{position:absolute;top:4px;right:4px;padding:3px 9px;font-size:13px;background:rgba(0,0,0,.65);color:#fff;border:0}
-header.pic{min-height:170px}
+header.pic{display:block;min-height:0}
+header.pic #hbg{position:relative;inset:auto;height:calc(200px + env(safe-area-inset-top))}
+header.pic .hz{padding:12px 16px 14px;background:none}
 header .hz{position:relative;z-index:1;width:100%;padding:calc(26px + env(safe-area-inset-top)) 16px 12px;background:linear-gradient(transparent,rgba(0,0,0,.6))}
 header .hi{max-width:680px;margin:0 auto;display:flex;align-items:flex-end;gap:8px}
 header h1{font-size:28px;line-height:1.1;margin:0;letter-spacing:.3px;text-shadow:0 1px 6px rgba(0,0,0,.5)}
@@ -162,13 +164,13 @@ nav button{position:relative}
   </section>
 
   <section id="v-tim">
-    <div id="pgdots"><button class="chip" data-act="pg" data-i="0">🏠 Nhà</button><button class="chip" data-act="pg" data-i="1">🔍 Tìm đồ</button></div>
+    <div id="pgdots"><button class="chip" data-act="pg" data-i="0">🏠 Nhà</button><button class="chip" data-act="pg" data-i="1">🔍 Tìm đồ</button><button class="chip" data-act="pg" data-i="2">📜 Nhật ký</button></div>
     <div id="pager"><div class="pg" id="pg-home"></div><div class="pg" id="pg-tim">
     <div style="display:flex;gap:8px"><input type="search" id="q" placeholder="Tìm đồ vật, vị trí, mã…" autocomplete="off"><button class="mic" data-act="mic" data-t="q" title="Nói">🎤</button></div>
     <div class="two" style="margin-top:8px"><div><select id="fc"></select></div><div><select id="fs"><option value="">Chung + riêng</option><option value="chung">Khu vực chung</option><option value="rieng">Phòng riêng</option></select></div></div>
     <div class="btns" id="tim-add"><button class="pri" data-act="item-new">＋ Thêm đồ vật</button></div>
     <div id="tim-out"></div>
-    </div></div>
+    </div><div class="pg" id="pg-log"></div></div>
   </section>
 
   <section id="v-vi-tri"><div id="loc-out"></div></section>
@@ -632,8 +634,13 @@ function itemRow(id,i,withLoc){
   return `<div class="row" data-act="item-edit" data-id="${esc(id)}">${itile(id,i)}<div class="t"><div class="n">${esc(i.name)}</div><div class="s">${bits.join(' · ')}</div></div><div class="q">${i.qty?'× '+esc(i.qty)+(i.unit?' '+esc(i.unit):''):''}</div>${kid()?'':`<button class="chip" data-act="item-qe" data-id="${esc(id)}" title="Sửa tên, số lượng">✏️</button>`}${withLoc&&S.locs.has(i.loc)?`<button class="chip" data-act="open" data-c="${esc(i.loc)}">Đến</button>`:isLost(i)?'':`<button class="chip" data-act="mv" data-m="${i.holder?'tra':'lay'}" data-id="${esc(id)}">${i.holder?'Trả':'Lấy'}</button>`}</div>`;
 }
 const moreBtn=(k,n)=>n>5?`<div class="btns" style="margin-top:-6px"><button class="chip" data-act="more" data-k="${k}">${S['more_'+k]?'Thu gọn ▴':'Xem thêm ('+(n-5)+') ▾'}</button></div>`:'';
+function renderLog(){
+  const el=$('pg-log');if(!el)return;
+  if(!S.ready){el.innerHTML='<div class="empty">Đang tải…</div>';return}
+  el.innerHTML='<h3 style="margin-top:0">Nhật ký hoạt động</h3>'+(S.logs.length?'<div class="list">'+S.logs.map(g=>`<div class="row" ${S.items.has(g.itemId)?`data-act="item-edit" data-id="${esc(g.itemId)}"`:S.locs.has(g.itemId)?`data-act="open" data-c="${esc(g.itemId)}"`:'style="cursor:default"'}>${av(S.users.find(u=>u.id===g.uid)||{name:g.user,id:g.uid||g.user},34)}<div class="t"><div class="n">${esc(g.itemName)}</div><div class="s">${logLine(g)}</div></div>${undoChip(g)}</div>`).join('')+'</div>':'<div class="empty">Chưa có hoạt động nào.</div>');
+}
 function renderTim(){
-  renderHome();
+  renderHome();renderLog();
   const q=norm(S.q.trim());let h='';
   if(!S.ready){$('tim-out').innerHTML='<div class="empty">Đang tải…</div>';return}
   const list=l=>'<div class="list">'+l.map(([id,i])=>itemRow(id,i,true)).join('')+'</div>';
@@ -654,7 +661,6 @@ function renderTim(){
       const cnt=new Map();for(const [,i] of base){const c=CATS.includes(i.cat)?i.cat:'Khác';cnt.set(c,(cnt.get(c)||0)+1)}
       h+='<h3>Theo nhóm</h3><div class="list">'+CATS.filter(c=>cnt.has(c)).map(c=>`<div class="row" data-act="cat" data-v="${esc(c)}"><span class="th" style="background:hsl(${catIdx(c)*47%360},45%,90%)">${CATI[catIdx(c)]}</span><div class="t"><div class="n">${esc(c)}</div></div><div class="q">${cnt.get(c)}</div></div>`).join('')+'</div>';
       const rc=[...S.items].sort((x,y)=>(y[1].ts||0)-(x[1].ts||0)).slice(0,30);h+='<h3>Mới thêm gần đây</h3>'+list(S.more_rec?rc:rc.slice(0,5))+moreBtn('rec',rc.length);
-      if(S.logs.length)h+='<h3>Nhật ký</h3><div class="list">'+(S.more_log?S.logs:S.logs.slice(0,5)).map(g=>`<div class="row" ${S.items.has(g.itemId)?`data-act="item-edit" data-id="${esc(g.itemId)}"`:S.locs.has(g.itemId)?`data-act="open" data-c="${esc(g.itemId)}"`:'style="cursor:default"'}>${av(S.users.find(u=>u.id===g.uid)||{name:g.user,id:g.uid||g.user},34)}<div class="t"><div class="n">${esc(g.itemName)}</div><div class="s">${logLine(g)}</div></div>${undoChip(g)}</div>`).join('')+'</div>'+moreBtn('log',S.logs.length);
     }
   }else{
     const words=q?q.split(/\s+/):[];
