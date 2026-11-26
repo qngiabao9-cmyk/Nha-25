@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Nhà 25 – index.html v19 (26/11/2026): 🖼️ 3 ảnh đầu trang không bị đè chữ (chữ nằm dưới ảnh, ảnh lấy phần đầu người); 📜 Nhật ký tách thành trang 3; v18 (26/11/2026): 🏠 trang chính kéo ngang: trang 1 = nút Cổng + Camera (thêm nút điều khiển mới trong CTRL), trang 2 = Tìm đồ; bỏ thông báo “chưa bật” và nút Tapo tạm; chạy nhanh hơn (nạp thư viện sau, mở nhanh); v17 (26/11/2026): 📹 3 camera mở link thẳng cam.nhagb.io.vn (Cloudflare Access, chế độ MSE); v16 (25/11/2026): 👧 trẻ em được 📨 nhờ chủ nhà in tem (món và vị trí; cần Code.gs v11); v15 (25/11/2026): 👧 trẻ em được thêm đồ mới / thêm nhanh / nhập danh sách (cần Code.gs v9); v14 (25/11/2026): 🔑 chủ nhà đặt lại mã cho thành viên (trong menu tên mình; cần Code.gs v8); v13 (25/11/2026): 💬 chat nhóm theo phòng + “Cả nhà” (chỉ chữ, chấm đỏ tin mới; cần Code.gs v7 + chạy caiChat() 1 lần); v12 (23/11/2026): ✋ Dừng cổng chạm 1 lần, Mở/Đóng chạm 2 lần; 🔙 chạy xong tự quay về Nhà 25 (x-callback); v11: 📹 bấm Mở/Đóng/Dừng cổng thì tự mở camera Sân trước (khi đã bật xem online); v10: 🎨 nút Cổng & Camera dạng ô lớn, icon + màu khác nhau; v9: 🏠 khung Nhà (3 nút cổng chạm 2 lần + camera + 🛒 đi chợ), danh sách đi chợ, hỏi "Mua lại?" khi Dùng hết, "Không mua lại nữa", nhắc đồ đang giữ quá hạn. Cần Code.gs v6. -->
+<!-- Nhà 25 – index.html v20 (26/11/2026): 🖼️ ảnh đầu trang hiện trọn và căn giữa (nền mờ cùng ảnh); 📹 camera mở trang xem có nút điều hướng (cần nha25cam.py trên máy Bàn), “Xem cả 3” mở thẳng 3 cam; cần Code.gs v16 cho tốc độ; v19 (26/11/2026): 🖼️ 3 ảnh đầu trang không bị đè chữ (chữ nằm dưới ảnh, ảnh lấy phần đầu người); 📜 Nhật ký tách thành trang 3; v18 (26/11/2026): 🏠 trang chính kéo ngang: trang 1 = nút Cổng + Camera (thêm nút điều khiển mới trong CTRL), trang 2 = Tìm đồ; bỏ thông báo “chưa bật” và nút Tapo tạm; chạy nhanh hơn (nạp thư viện sau, mở nhanh); v17 (26/11/2026): 📹 3 camera mở link thẳng cam.nhagb.io.vn (Cloudflare Access, chế độ MSE); v16 (25/11/2026): 👧 trẻ em được 📨 nhờ chủ nhà in tem (món và vị trí; cần Code.gs v11); v15 (25/11/2026): 👧 trẻ em được thêm đồ mới / thêm nhanh / nhập danh sách (cần Code.gs v9); v14 (25/11/2026): 🔑 chủ nhà đặt lại mã cho thành viên (trong menu tên mình; cần Code.gs v8); v13 (25/11/2026): 💬 chat nhóm theo phòng + “Cả nhà” (chỉ chữ, chấm đỏ tin mới; cần Code.gs v7 + chạy caiChat() 1 lần); v12 (23/11/2026): ✋ Dừng cổng chạm 1 lần, Mở/Đóng chạm 2 lần; 🔙 chạy xong tự quay về Nhà 25 (x-callback); v11: 📹 bấm Mở/Đóng/Dừng cổng thì tự mở camera Sân trước (khi đã bật xem online); v10: 🎨 nút Cổng & Camera dạng ô lớn, icon + màu khác nhau; v9: 🏠 khung Nhà (3 nút cổng chạm 2 lần + camera + 🛒 đi chợ), danh sách đi chợ, hỏi "Mua lại?" khi Dùng hết, "Không mua lại nữa", nhắc đồ đang giữ quá hạn. Cần Code.gs v6. -->
 <html lang="vi">
 <head>
 <meta charset="utf-8">
@@ -33,7 +33,9 @@
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 header{background:linear-gradient(135deg,#8e2433,#4a0f18);position:relative;overflow:hidden;color:#fff;min-height:92px;display:flex;align-items:flex-end}
-#hbg{position:absolute;inset:0;display:grid;gap:2px;background:#fff}#hbg i{background-size:cover;background-position:center 18%;display:block;min-height:0}
+#hbg{position:absolute;inset:0;display:grid;gap:2px;background:#fff}#hbg i{display:block;min-height:0;position:relative;overflow:hidden;background:#2a1f21}
+#hbg i::before{content:'';position:absolute;inset:-14px;background:var(--u) center/cover no-repeat;filter:blur(10px) brightness(.7)}
+#hbg i::after{content:'';position:absolute;inset:0;background:var(--u) center/contain no-repeat}
 #hbg.n1{grid-template-columns:1fr}#hbg.n2{grid-template-columns:1fr 1fr}#hbg.n3{grid-template-columns:1fr 1fr 1fr}
 #hbg.n4{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}#hbg.n5,#hbg.n6{grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr}#hbg.n5 i:last-child{grid-column:span 2}
 .hm{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}.hm div{position:relative;aspect-ratio:4/3;border-radius:10px;overflow:hidden;background-size:cover;background-position:center;box-shadow:var(--sh)}.hm button{position:absolute;top:4px;right:4px;padding:3px 9px;font-size:13px;background:rgba(0,0,0,.65);color:#fff;border:0}
@@ -285,7 +287,7 @@ async function setBanner(id){
   try{const c=JSON.parse(localStorage.getItem('n25ban')||'null');if(c&&c.id===id&&Array.isArray(c.urls))urls=c.urls}catch(e){}
   if(!urls){try{const r=await call('banner');urls=(Array.isArray(r)?r:[r]).filter(Boolean);try{localStorage.setItem('n25ban',JSON.stringify({id,urls}))}catch(e){try{localStorage.removeItem('n25ban')}catch(_){}}}catch(e){urls=[]}}
   S.houseUrls=urls;
-  if(urls.length){const n=Math.min(3,urls.length);bg.className='n'+n;bg.innerHTML=urls.slice(0,3).map(u=>`<i style="background-image:url(${u})"></i>`).join('');h.classList.add('pic')}
+  if(urls.length){const n=Math.min(3,urls.length);bg.className='n'+n;bg.innerHTML=urls.slice(0,3).map(u=>`<i style="--u:url('${u}')"></i>`).join('');h.classList.add('pic')}
   else{bg.innerHTML='';bg.className='';h.classList.remove('pic')}
   if($('hm'))houseMgr();
 }
@@ -343,7 +345,7 @@ function openYoosee(){
 /* 📹 3 camera Tapo xem online: cần máy chạy go2rtc; khai địa chỉ HTTPS trong config.js: window.N25_CAM='https://...'; (tên luồng: san, bep, bar) */
 const CAMS=[{k:'san',n:'Sân trước',ic:'🏡',c:'#1a73e8'},{k:'bep',n:'Bếp',ic:'🍳',c:'#e8710a'},{k:'bar',n:'Quầy Bar',ic:'🍸',c:'#8e24aa'}];
 const CAM_BASE=String(window.N25_CAM||'https://cam.nhagb.io.vn').trim().replace(/\/+$/,'');
-const camUrl=k=>CAM_BASE+'/stream.html?src='+k+'&mode=mse';
+const camUrl=k=>CAM_BASE+'/xem?cam='+encodeURIComponent(k);
 function camView(k){
   const list=k==='all'?CAMS:CAMS.filter(c=>c.k===k);if(!list.length)return;
   const sw=CAMS.map(c=>`<button class="chip${k===c.k?' on':''}" data-act="cam" data-k="${c.k}">${c.ic} ${c.n}</button>`).join('')+`<button class="chip${k==='all'?' on':''}" data-act="cam" data-k="all">⊞ Xem cả ${CAMS.length}</button>`;
@@ -1137,7 +1139,7 @@ document.addEventListener('click',async e=>{
   else if(a==='yoosee')openYoosee();
   else if(a==='tapo')openTapo();
   else if(a==='pg')pgTo(+d.i);
-  else if(a==='cam'){if(d.k!=='all'&&el.closest('.tiles3'))window.open(camUrl(d.k),'_blank','noopener');else camView(d.k)}
+  else if(a==='cam')window.open(camUrl(d.k),'_blank','noopener');
   else if(a==='camchk'){el.disabled=true;if(await act('camcheck',{}))toast('Đã ghi: thẻ nhớ camera đã kiểm tra.');else el.disabled=false}
   else if(a==='mvscan'){closeSheet();S.mv={id:d.id,m:d.m};go('quet');$('scan-msg').textContent='Quét tem chỗ mới cho “'+((S.items.get(d.id)||{}).name||'')+'”.';live()}
   else if(a==='mv-ok'){
