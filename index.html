@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Nhà 25 – index.html v16 (25/11/2026): 👧 trẻ em được 📨 nhờ chủ nhà in tem (món và vị trí; cần Code.gs v11); v15 (25/11/2026): 👧 trẻ em được thêm đồ mới / thêm nhanh / nhập danh sách (cần Code.gs v9); v14 (25/11/2026): 🔑 chủ nhà đặt lại mã cho thành viên (trong menu tên mình; cần Code.gs v8); v13 (25/11/2026): 💬 chat nhóm theo phòng + “Cả nhà” (chỉ chữ, chấm đỏ tin mới; cần Code.gs v7 + chạy caiChat() 1 lần); v12 (23/11/2026): ✋ Dừng cổng chạm 1 lần, Mở/Đóng chạm 2 lần; 🔙 chạy xong tự quay về Nhà 25 (x-callback); v11: 📹 bấm Mở/Đóng/Dừng cổng thì tự mở camera Sân trước (khi đã bật xem online); v10: 🎨 nút Cổng & Camera dạng ô lớn, icon + màu khác nhau; v9: 🏠 khung Nhà (3 nút cổng chạm 2 lần + camera + 🛒 đi chợ), danh sách đi chợ, hỏi "Mua lại?" khi Dùng hết, "Không mua lại nữa", nhắc đồ đang giữ quá hạn. Cần Code.gs v6. -->
+<!-- Nhà 25 – index.html v17 (26/11/2026): 📹 3 camera mở link thẳng cam.nhagb.io.vn (Cloudflare Access, chế độ MSE); v16 (25/11/2026): 👧 trẻ em được 📨 nhờ chủ nhà in tem (món và vị trí; cần Code.gs v11); v15 (25/11/2026): 👧 trẻ em được thêm đồ mới / thêm nhanh / nhập danh sách (cần Code.gs v9); v14 (25/11/2026): 🔑 chủ nhà đặt lại mã cho thành viên (trong menu tên mình; cần Code.gs v8); v13 (25/11/2026): 💬 chat nhóm theo phòng + “Cả nhà” (chỉ chữ, chấm đỏ tin mới; cần Code.gs v7 + chạy caiChat() 1 lần); v12 (23/11/2026): ✋ Dừng cổng chạm 1 lần, Mở/Đóng chạm 2 lần; 🔙 chạy xong tự quay về Nhà 25 (x-callback); v11: 📹 bấm Mở/Đóng/Dừng cổng thì tự mở camera Sân trước (khi đã bật xem online); v10: 🎨 nút Cổng & Camera dạng ô lớn, icon + màu khác nhau; v9: 🏠 khung Nhà (3 nút cổng chạm 2 lần + camera + 🛒 đi chợ), danh sách đi chợ, hỏi "Mua lại?" khi Dùng hết, "Không mua lại nữa", nhắc đồ đang giữ quá hạn. Cần Code.gs v6. -->
 <html lang="vi">
 <head>
 <meta charset="utf-8">
@@ -330,12 +330,13 @@ function openYoosee(){
 }
 /* 📹 3 camera Tapo xem online: cần máy chạy go2rtc; khai địa chỉ HTTPS trong config.js: window.N25_CAM='https://...'; (tên luồng: san, bep, bar) */
 const CAMS=[{k:'san',n:'Sân trước',ic:'🏡',c:'#1a73e8'},{k:'bep',n:'Bếp',ic:'🍳',c:'#e8710a'},{k:'bar',n:'Quầy Bar',ic:'🍸',c:'#8e24aa'}];
-const CAM_BASE=String(window.N25_CAM||'').trim().replace(/\/+$/,'');
+const CAM_BASE=String(window.N25_CAM||'https://cam.nhagb.io.vn').trim().replace(/\/+$/,'');
+const camUrl=k=>CAM_BASE+'/stream.html?src='+k+'&mode=mse';
 function camView(k){
   const list=k==='all'?CAMS:CAMS.filter(c=>c.k===k);if(!list.length)return;
   const sw=CAMS.map(c=>`<button class="chip${k===c.k?' on':''}" data-act="cam" data-k="${c.k}">${c.ic} ${c.n}</button>`).join('')+`<button class="chip${k==='all'?' on':''}" data-act="cam" data-k="all">⊞ Xem cả 3</button>`;
   if(!CAM_BASE){sheet(`<h2>📹 ${k==='all'?'3 camera':esc(list[0].n)}</h2><div class="note">Xem online chưa được bật. Cần cài máy chạy 24/24 trong nhà (đang chờ), sau đó nút này sẽ hiện hình trực tiếp ngay trong app.</div><div class="btns"><button class="pri" data-act="tapo">📹 Mở Tapo để xem tạm</button></div><div class="btns">${sw}</div><div class="btns"><button data-act="close">Đóng</button></div>`);return}
-  sheet(`<h2>📹 ${k==='all'?'3 camera':esc(list[0].n)}</h2><div class="btns" style="margin:4px 0">${sw}</div>`+list.map(c=>`<div class="note" style="margin:8px 0 2px"><b>${c.ic} ${esc(c.n)}</b></div><iframe src="${esc(CAM_BASE)}/stream.html?src=${c.k}&mode=webrtc" allow="autoplay; fullscreen" allowfullscreen style="width:100%;aspect-ratio:16/9;border:0;border-radius:10px;background:#000"></iframe>`).join('')+`<div class="btns"><button data-act="tapo">📹 Mở Tapo</button><button data-act="close">Đóng</button></div>`);
+  sheet(`<h2>📹 ${k==='all'?'3 camera':esc(list[0].n)}</h2><div class="note">Bấm để xem trực tiếp. Lần đầu mỗi máy sẽ hỏi email → nhập mã 6 số gửi về email.</div>`+list.map(c=>`<a class="big pri" style="display:block;text-align:center;text-decoration:none;margin:8px 0" href="${esc(camUrl(c.k))}" target="_blank" rel="noopener">${c.ic} Xem ${esc(c.n)}</a>`).join('')+`<div class="btns" style="margin:4px 0">${sw}</div><div class="btns"><button data-act="tapo">📹 Mở Tapo</button><button data-act="close">Đóng</button></div>`);
 }
 function openTapo(){
   if(isIOS())location.href='shortcuts://run-shortcut?name='+encodeURIComponent('Mở Tapo');
@@ -1103,7 +1104,7 @@ document.addEventListener('click',async e=>{
   else if(a==='quick')formQuick();
   else if(a==='yoosee')openYoosee();
   else if(a==='tapo')openTapo();
-  else if(a==='cam')camView(d.k);
+  else if(a==='cam'){if(d.k!=='all'&&CAM_BASE&&el.closest('.tiles3'))window.open(camUrl(d.k),'_blank','noopener');else camView(d.k)}
   else if(a==='camchk'){el.disabled=true;if(await act('camcheck',{}))toast('Đã ghi: thẻ nhớ camera đã kiểm tra.');else el.disabled=false}
   else if(a==='mvscan'){closeSheet();S.mv={id:d.id,m:d.m};go('quet');$('scan-msg').textContent='Quét tem chỗ mới cho “'+((S.items.get(d.id)||{}).name||'')+'”.';live()}
   else if(a==='mv-ok'){
