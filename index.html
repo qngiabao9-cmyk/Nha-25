@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Nhà 25 – index.html v17 (26/11/2026): 📹 3 camera mở link thẳng cam.nhagb.io.vn (Cloudflare Access, chế độ MSE); v16 (25/11/2026): 👧 trẻ em được 📨 nhờ chủ nhà in tem (món và vị trí; cần Code.gs v11); v15 (25/11/2026): 👧 trẻ em được thêm đồ mới / thêm nhanh / nhập danh sách (cần Code.gs v9); v14 (25/11/2026): 🔑 chủ nhà đặt lại mã cho thành viên (trong menu tên mình; cần Code.gs v8); v13 (25/11/2026): 💬 chat nhóm theo phòng + “Cả nhà” (chỉ chữ, chấm đỏ tin mới; cần Code.gs v7 + chạy caiChat() 1 lần); v12 (23/11/2026): ✋ Dừng cổng chạm 1 lần, Mở/Đóng chạm 2 lần; 🔙 chạy xong tự quay về Nhà 25 (x-callback); v11: 📹 bấm Mở/Đóng/Dừng cổng thì tự mở camera Sân trước (khi đã bật xem online); v10: 🎨 nút Cổng & Camera dạng ô lớn, icon + màu khác nhau; v9: 🏠 khung Nhà (3 nút cổng chạm 2 lần + camera + 🛒 đi chợ), danh sách đi chợ, hỏi "Mua lại?" khi Dùng hết, "Không mua lại nữa", nhắc đồ đang giữ quá hạn. Cần Code.gs v6. -->
+<!-- Nhà 25 – index.html v18 (26/11/2026): 🏠 trang chính kéo ngang: trang 1 = nút Cổng + Camera (thêm nút điều khiển mới trong CTRL), trang 2 = Tìm đồ; bỏ thông báo “chưa bật” và nút Tapo tạm; chạy nhanh hơn (nạp thư viện sau, mở nhanh); v17 (26/11/2026): 📹 3 camera mở link thẳng cam.nhagb.io.vn (Cloudflare Access, chế độ MSE); v16 (25/11/2026): 👧 trẻ em được 📨 nhờ chủ nhà in tem (món và vị trí; cần Code.gs v11); v15 (25/11/2026): 👧 trẻ em được thêm đồ mới / thêm nhanh / nhập danh sách (cần Code.gs v9); v14 (25/11/2026): 🔑 chủ nhà đặt lại mã cho thành viên (trong menu tên mình; cần Code.gs v8); v13 (25/11/2026): 💬 chat nhóm theo phòng + “Cả nhà” (chỉ chữ, chấm đỏ tin mới; cần Code.gs v7 + chạy caiChat() 1 lần); v12 (23/11/2026): ✋ Dừng cổng chạm 1 lần, Mở/Đóng chạm 2 lần; 🔙 chạy xong tự quay về Nhà 25 (x-callback); v11: 📹 bấm Mở/Đóng/Dừng cổng thì tự mở camera Sân trước (khi đã bật xem online); v10: 🎨 nút Cổng & Camera dạng ô lớn, icon + màu khác nhau; v9: 🏠 khung Nhà (3 nút cổng chạm 2 lần + camera + 🛒 đi chợ), danh sách đi chợ, hỏi "Mua lại?" khi Dùng hết, "Không mua lại nữa", nhắc đồ đang giữ quá hạn. Cần Code.gs v6. -->
 <html lang="vi">
 <head>
 <meta charset="utf-8">
@@ -13,10 +13,12 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
 <script src="config.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 :root{
   --bg:#f7f3f0; --card:#fff; --ink:#2a1f21; --mut:#7a6d6f; --line:#e9dedb;
@@ -135,6 +137,11 @@ details{margin-top:14px;border-top:1px solid var(--line);padding-top:10px} summa
 .sticky{position:sticky;bottom:76px;background:var(--bg);padding:8px 0 10px;border-top:1px solid var(--line)}
 .sticky button{width:100%}
 nav button{position:relative}
+#pager{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;align-items:flex-start;margin:0 -14px}
+#pager::-webkit-scrollbar{display:none}
+#pager .pg{flex:0 0 100%;min-width:0;scroll-snap-align:start;scroll-snap-stop:always;padding:0 14px;box-sizing:border-box}
+#pgdots{display:flex;gap:8px;justify-content:center;margin:0 0 10px}
+#pgdots .chip{font-size:14px;padding:6px 14px}
 </style>
 </head>
 <body>
@@ -155,10 +162,13 @@ nav button{position:relative}
   </section>
 
   <section id="v-tim">
+    <div id="pgdots"><button class="chip" data-act="pg" data-i="0">🏠 Nhà</button><button class="chip" data-act="pg" data-i="1">🔍 Tìm đồ</button></div>
+    <div id="pager"><div class="pg" id="pg-home"></div><div class="pg" id="pg-tim">
     <div style="display:flex;gap:8px"><input type="search" id="q" placeholder="Tìm đồ vật, vị trí, mã…" autocomplete="off"><button class="mic" data-act="mic" data-t="q" title="Nói">🎤</button></div>
     <div class="two" style="margin-top:8px"><div><select id="fc"></select></div><div><select id="fs"><option value="">Chung + riêng</option><option value="chung">Khu vực chung</option><option value="rieng">Phòng riêng</option></select></div></div>
     <div class="btns" id="tim-add"><button class="pri" data-act="item-new">＋ Thêm đồ vật</button></div>
     <div id="tim-out"></div>
+    </div></div>
   </section>
 
   <section id="v-vi-tri"><div id="loc-out"></div></section>
@@ -198,7 +208,7 @@ nav button{position:relative}
 </main>
 
 <nav>
-  <button data-tab="tim"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>Tìm đồ</button>
+  <button data-tab="tim"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg>Nhà</button>
   <button data-tab="vi-tri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/></svg>Vị trí</button>
   <button data-tab="quet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4"/><path d="M8 12h8"/></svg>Quét</button>
   <button data-tab="chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>Chat</button>
@@ -227,11 +237,11 @@ const TH=new Map();
 const thLoad=()=>{try{const o=JSON.parse(localStorage.getItem('n25th')||'{}');for(const k in o)TH.set(k,o[k])}catch(e){}};
 let thSaveT;const thSave=()=>{clearTimeout(thSaveT);thSaveT=setTimeout(()=>{try{const o={};for(const [k,v] of TH)if(v)o[k]=v;localStorage.setItem('n25th',JSON.stringify(o))}catch(e){try{localStorage.removeItem('n25th')}catch(x){}}},1500)};
 thLoad();let pend=null,picT=null;
-const S={chatRoom:'',cnt:{},mv:null,camChk:'',cp:1,fill:true,ff:'',locs:new Map(),items:new Map(),tab:'tim',cur:'',q:'',sel:new Set(),pf:'chua',ready:false,fc:'',fs:'',me:null,users:[],logs:[],at:0};
+const S={pg:0,chatRoom:'',cnt:{},mv:null,camChk:'',cp:1,fill:true,ff:'',locs:new Map(),items:new Map(),tab:'tim',cur:'',q:'',sel:new Set(),pf:'chua',ready:false,fc:'',fs:'',me:null,users:[],logs:[],at:0};
 let token='';try{token=localStorage.getItem('n25tok')||''}catch(e){}
 try{const c=JSON.parse(localStorage.getItem('n25ban')||'null');if(c&&c.urls&&c.urls[0])document.getElementById('splash').style.backgroundImage=`url(${c.urls[0]})`}catch(e){}
 setTimeout(()=>{const p=document.querySelector('#splash p');if(p&&!document.getElementById('splash').classList.contains('off'))p.textContent='Máy chủ đang chậm, chạm vào màn hình để vào…'},4000);setTimeout(()=>{hideSplash()},8000);document.getElementById('splash').addEventListener('click',()=>{const sp=document.getElementById('splash');if(Date.now()-spT>3000)sp.classList.add('off')});
-let spT=Date.now();function hideSplash(){const sp=document.getElementById('splash');if(!sp||sp.classList.contains('off'))return;setTimeout(()=>sp.classList.add('off'),Math.max(0,900-(Date.now()-spT)))}
+let spT=Date.now();function hideSplash(){const sp=document.getElementById('splash');if(!sp||sp.classList.contains('off'))return;setTimeout(()=>sp.classList.add('off'),Math.max(0,250-(Date.now()-spT)))}
 const adm=()=>!!S.me&&S.me.role==='chu';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -334,9 +344,8 @@ const CAM_BASE=String(window.N25_CAM||'https://cam.nhagb.io.vn').trim().replace(
 const camUrl=k=>CAM_BASE+'/stream.html?src='+k+'&mode=mse';
 function camView(k){
   const list=k==='all'?CAMS:CAMS.filter(c=>c.k===k);if(!list.length)return;
-  const sw=CAMS.map(c=>`<button class="chip${k===c.k?' on':''}" data-act="cam" data-k="${c.k}">${c.ic} ${c.n}</button>`).join('')+`<button class="chip${k==='all'?' on':''}" data-act="cam" data-k="all">⊞ Xem cả 3</button>`;
-  if(!CAM_BASE){sheet(`<h2>📹 ${k==='all'?'3 camera':esc(list[0].n)}</h2><div class="note">Xem online chưa được bật. Cần cài máy chạy 24/24 trong nhà (đang chờ), sau đó nút này sẽ hiện hình trực tiếp ngay trong app.</div><div class="btns"><button class="pri" data-act="tapo">📹 Mở Tapo để xem tạm</button></div><div class="btns">${sw}</div><div class="btns"><button data-act="close">Đóng</button></div>`);return}
-  sheet(`<h2>📹 ${k==='all'?'3 camera':esc(list[0].n)}</h2><div class="note">Bấm để xem trực tiếp. Lần đầu mỗi máy sẽ hỏi email → nhập mã 6 số gửi về email.</div>`+list.map(c=>`<a class="big pri" style="display:block;text-align:center;text-decoration:none;margin:8px 0" href="${esc(camUrl(c.k))}" target="_blank" rel="noopener">${c.ic} Xem ${esc(c.n)}</a>`).join('')+`<div class="btns" style="margin:4px 0">${sw}</div><div class="btns"><button data-act="tapo">📹 Mở Tapo</button><button data-act="close">Đóng</button></div>`);
+  const sw=CAMS.map(c=>`<button class="chip${k===c.k?' on':''}" data-act="cam" data-k="${c.k}">${c.ic} ${c.n}</button>`).join('')+`<button class="chip${k==='all'?' on':''}" data-act="cam" data-k="all">⊞ Xem cả ${CAMS.length}</button>`;
+  sheet(`<h2>📹 ${k==='all'?CAMS.length+' camera':esc(list[0].n)}</h2><div class="note">Bấm nút để xem trực tiếp. Lần đầu trên mỗi máy sẽ hỏi email, nhập mã 6 số gửi về email.</div>`+list.map(c=>`<a class="big pri" style="display:block;text-align:center;text-decoration:none;margin:8px 0;border-radius:10px;padding:14px;background:var(--acc);color:var(--acc-ink);font-weight:700" href="${esc(camUrl(c.k))}" target="_blank" rel="noopener">${c.ic} Xem ${esc(c.n)}</a>`).join('')+`<div class="btns" style="margin:4px 0">${sw}</div><div class="btns"><button data-act="close">Đóng</button></div>`);
 }
 function openTapo(){
   if(isIOS())location.href='shortcuts://run-shortcut?name='+encodeURIComponent('Mở Tapo');
@@ -347,6 +356,25 @@ function openTapo(){
 const GATE={mo:{n:'Mở cổng',ic:'⬆️',c:'#1e8e3e'},dung:{n:'Dừng cổng',ic:'✋',c:'#e08a00'},dong:{n:'Đóng cổng',ic:'⬇️',c:'#c0392b'}};
 const tl3=g=>`<span class="ti">${g.ic}</span><span>${g.n}</span>`;
 let gateT=null;
+/* 🏠 Trang chính (trang 1): mỗi nhóm nút điều khiển là 1 dòng trong CTRL. Muốn thêm nút mới (đèn, giếng trời, rèm…) thì thêm 1 nhóm {t:'Đèn',h:()=>'<div class="tiles3">…</div>'} */
+const CTRL=[
+  {t:'Cổng',h:()=>gateBtns()},
+  {t:'Camera',h:()=>'<div class="tiles3">'+CAMS.map(c=>`<button class="tl3" style="--c:${c.c}" data-act="cam" data-k="${c.k}">${tl3(c)}</button>`).join('')+'</div>'}
+];
+function fitPager(){const p=$('pager');if(!p)return;const g=p.children[S.pg||0],h=g?g.offsetHeight:0;p.style.height=h?h+'px':''}
+function pgDots(){document.querySelectorAll('#pgdots .chip').forEach(b=>b.classList.toggle('on',+b.dataset.i===S.pg))}
+function pgTo(i,smooth){S.pg=i;const p=$('pager');if(p)p.scrollTo({left:i*p.clientWidth,behavior:smooth===false?'auto':'smooth'});pgDots();fitPager();updBack()}
+let pgTouch=false;
+function pgApply(){const p=$('pager');if(!p)return;if(!pgTouch&&Math.abs(p.scrollLeft-S.pg*p.clientWidth)>4)p.scrollLeft=S.pg*p.clientWidth;pgDots()}
+function renderHome(){
+  const el=$('pg-home');if(!el)return;
+  if(!S.ready){el.innerHTML='<div class="empty">Đang tải…</div>';return}
+  const cams=[...new Set([...S.locs.values()].flatMap(l=>String(l.cam||'').split(',').map(x=>x.trim()).filter(Boolean)))];
+  const yo=cams.length?'<button class="chip" data-act="yoosee">📹 Mở Yoosee</button>':'';
+  if(kid()){el.innerHTML=`<div class="btns" style="align-items:center"><button class="chip" data-act="tapo">📹 Mở Tapo</button>${yo}</div>`;return}
+  const sc=shopCount();
+  el.innerHTML='<div class="homebox"><div class="hb-t">🏠 Nhà</div>'+CTRL.map(g=>`<div class="hb-r"><span class="hb-l">${g.t}</span>${g.h()}</div>`).join('')+`<div class="hb-r"><button class="chip" data-act="cam" data-k="all">⊞ Xem cả ${CAMS.length} cam</button>${yo}<button class="chip${sc?' on':''}" data-act="shop">🛒 Đi chợ${sc?' ('+sc+')':''}</button></div></div>`;
+}
 function gateBtns(){return '<div class="tiles3">'+Object.entries(GATE).map(([k,g])=>`<button class="tl3" style="--c:${g.c}" data-act="gate" data-k="${k}">${tl3(g)}</button>`).join('')+'</div>'}
 function runGate(k){
   const g=GATE[k];if(!g)return;
@@ -386,7 +414,7 @@ function listen(btn,id){
   const el=$(id);if(!el)return;
   if(rec){try{rec.stop()}catch(e){}return}
   if(!SR||isIOS()){
-    if(id==='q'&&(S.tab!=='tim'||$('ovl').classList.contains('on'))){closeSheet();go('tim')}
+    if(id==='q'){S.pg=1;if(S.tab!=='tim'||$('ovl').classList.contains('on')){closeSheet();go('tim')}else pgTo(1,false)}
     const f=$(id);if(id==='q')f.value='';f.focus();
     toast('Chạm nút 🎤 ở góc dưới bàn phím rồi nói');return}
   const r=new SR();rec=r;r.lang='vi-VN';r.interimResults=false;r.continuous=false;r.maxAlternatives=1;
@@ -395,7 +423,7 @@ function listen(btn,id){
     const t=String(e.results[0][0].transcript||'').trim();if(!t)return;
     if(id==='k-name'){try{const x=parseLine(t);$('k-name').value=x.name;$('k-qty').value=x.qty;$('k-unit').value=x.unit;if(x.exp)$('k-exp').value=fmtD(x.exp)}catch(er){el.value=t;toast(er.message)}}
     else if(id==='b-txt'){el.value=(el.value.trim()?el.value.replace(/\s*$/,'\n'):'')+t;el.dispatchEvent(new Event('input',{bubbles:true}))}
-    else{el.value=t;el.dispatchEvent(new Event('input',{bubbles:true}));if(id==='q'){S.q=t;if($('ovl').classList.contains('on'))closeSheet();if(S.tab!=='tim')go('tim')}}
+    else{el.value=t;el.dispatchEvent(new Event('input',{bubbles:true}));if(id==='q'){S.q=t;S.pg=1;if($('ovl').classList.contains('on'))closeSheet();if(S.tab!=='tim')go('tim');else pgTo(1)}}
     toast('Đã nghe: '+t);
   };
   r.onerror=e=>toast(e.error==='not-allowed'||e.error==='service-not-allowed'?'Chưa cho phép micro / nhận dạng giọng nói. Vào Cài đặt iPhone > Safari > Micrô, và bật Đọc chính tả.':e.error==='no-speech'?'Không nghe thấy gì, bấm 🎤 thử lại.':'Không nghe rõ, thử lại.');
@@ -605,6 +633,7 @@ function itemRow(id,i,withLoc){
 }
 const moreBtn=(k,n)=>n>5?`<div class="btns" style="margin-top:-6px"><button class="chip" data-act="more" data-k="${k}">${S['more_'+k]?'Thu gọn ▴':'Xem thêm ('+(n-5)+') ▾'}</button></div>`:'';
 function renderTim(){
+  renderHome();
   const q=norm(S.q.trim());let h='';
   if(!S.ready){$('tim-out').innerHTML='<div class="empty">Đang tải…</div>';return}
   const list=l=>'<div class="list">'+l.map(([id,i])=>itemRow(id,i,true)).join('')+'</div>';
@@ -636,14 +665,10 @@ function renderTim(){
     if(ls.length)h+=`<h3>Vị trí (${ls.length})</h3><div class="list">`+ls.map(c=>locRow(c,true)).join('')+'</div>';
     if(!h)h='<div class="empty">Không tìm thấy.</div>';
   }
-  const cams=[...new Set([...S.locs.values()].flatMap(l=>String(l.cam||'').split(',').map(x=>x.trim()).filter(Boolean)))];
-  const yo=cams.length?'<button class="chip" data-act="yoosee">📹 Mở Yoosee</button>':'';
-  const sc=kid()?0:shopCount();
-  const camBar=!q&&!S.ff?(kid()?`<div class="btns" style="align-items:center"><button class="chip" data-act="tapo">📹 Mở Tapo</button>${yo}</div>`:`<div class="homebox"><div class="hb-t">🏠 Nhà</div><div class="hb-r"><span class="hb-l">Cổng</span>${gateBtns()}</div><div class="hb-r"><span class="hb-l">Camera</span>${'<div class="tiles3">'+CAMS.map(c=>`<button class="tl3" style="--c:${c.c}" data-act="cam" data-k="${c.k}">${tl3(c)}</button>`).join('')+'</div>'}<button class="chip" data-act="cam" data-k="all">⊞ Cả 3</button><button class="chip" data-act="tapo">📹 Tapo</button>${yo}</div><div class="hb-r"><button class="chip${sc?' on':''}" data-act="shop">🛒 Đi chợ${sc?' ('+sc+')':''}</button></div></div>`):'';
   const myOd=S.me?[...S.items.values()].filter(i=>i.holder===S.me.name&&overdue(i)).length:0,odBar=myOd&&!q?`<button class="big" data-act="ff" data-v="qh">🤲 Bạn đang giữ ${myOd} món quá ${HOLD_DAYS} ngày – nhớ trả về chỗ cũ</button>`:'';
   const pqn=adm()&&!q?pqVis().length:0,pqBar=pqn?`<button class="big" data-act="pq-go">📨 ${pqn} tem người nhà nhờ in – bấm để mở</button>`:'';
   const due=kid()?0:dueList().length,dueBar=due&&!q?`<button class="big pri" data-act="exp-open">⏰ ${due} món hết hạn trong 1 ngày – bấm để gia hạn / bỏ</button>`:'';
-  $('tim-out').innerHTML=pqBar+dueBar+odBar+(S.locs.size?tiles:'')+camBar+h;
+  $('tim-out').innerHTML=pqBar+dueBar+odBar+(S.locs.size?tiles:'')+h;fitPager();
 }
 /* 📋 danh mục tổng thể + chi tiết theo từng ngăn / hộp */
 let catTxt='';
@@ -734,7 +759,7 @@ function render(){
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===S.tab));
   {const t=document.querySelector('[data-tab=in-tem]');let b=t.querySelector('.nb');if(!b){b=document.createElement('span');b.className='nb';b.style.cssText='position:absolute;top:4px;margin-left:22px;background:#d33;color:#fff;border-radius:999px;font-size:11px;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 4px';t.style.position='relative';t.appendChild(b)}const bn=S.sel.size||(adm()?pqVis().length:0);b.textContent=bn||'';b.style.display=bn?'':'none'}
   $('stat').textContent=S.ready?`${S.locs.size} vị trí · ${S.items.size} đồ vật`:'';
-  if(S.tab==='tim')renderTim();
+  if(S.tab==='tim'){pgApply();renderTim()}
   else if(S.tab==='vi-tri')renderLoc();
   else if(S.tab==='chat')renderChat();
   else if(S.tab==='in-tem')renderIn();
@@ -744,7 +769,7 @@ function canBack(){
   if(!S.me||!S.me.id)return false;
   if($('ovl').classList.contains('on'))return true;
   if(S.tab!=='tim')return true;
-  return !!(S.q||S.fc||S.fs||S.ff);
+  return !!(S.q||S.fc||S.fs||S.ff)||S.pg>0;
 }
 function updBack(){const b=$('bk');if(b)b.style.display=canBack()?'flex':'none'}
 function goBack(){
@@ -757,6 +782,7 @@ function goBack(){
   }
   if(S.tab==='chat'&&S.chatRoom){S.chatRoom='';render();window.scrollTo(0,0);return}
   if(S.tab!=='tim'){go('tim');return}
+  if(!(S.q||S.fc||S.fs||S.ff)&&S.pg>0){pgTo(0);return}
   S.q='';S.fc='';S.fs='';S.ff='';$('q').value='';$('fc').value='';$('fs').value='';renderTim();updBack();
 }
 try{history.replaceState({n:0},'');history.pushState({n:1},'');window.addEventListener('popstate',()=>{if(canBack()){goBack();try{history.pushState({n:1},'')}catch(e){}}})}catch(e){}
@@ -1014,7 +1040,7 @@ function openCode(raw,scanned){
 /* ---------- sự kiện ---------- */
 let armed=null;
 document.addEventListener('click',async e=>{
-  const tb=e.target.closest('[data-tab]');if(tb){go(tb.dataset.tab);return}
+  const tb=e.target.closest('[data-tab]');if(tb){if(tb.dataset.tab==='tim')S.pg=0;go(tb.dataset.tab);return}
   if(e.target===$('ovl')){closeSheet();return}
   const el=e.target.closest('[data-act]');if(!el)return;
   const a=el.dataset.act,d=el.dataset;
@@ -1104,7 +1130,8 @@ document.addEventListener('click',async e=>{
   else if(a==='quick')formQuick();
   else if(a==='yoosee')openYoosee();
   else if(a==='tapo')openTapo();
-  else if(a==='cam'){if(d.k!=='all'&&CAM_BASE&&el.closest('.tiles3'))window.open(camUrl(d.k),'_blank','noopener');else camView(d.k)}
+  else if(a==='pg')pgTo(+d.i);
+  else if(a==='cam'){if(d.k!=='all'&&el.closest('.tiles3'))window.open(camUrl(d.k),'_blank','noopener');else camView(d.k)}
   else if(a==='camchk'){el.disabled=true;if(await act('camcheck',{}))toast('Đã ghi: thẻ nhớ camera đã kiểm tra.');else el.disabled=false}
   else if(a==='mvscan'){closeSheet();S.mv={id:d.id,m:d.m};go('quet');$('scan-msg').textContent='Quét tem chỗ mới cho “'+((S.items.get(d.id)||{}).name||'')+'”.';live()}
   else if(a==='mv-ok'){
@@ -1366,6 +1393,8 @@ async function chSend(){
 function chEnter(room){S.chatRoom=room||'';render()}
 setInterval(()=>{if(document.hidden||!S.me||!S.me.id||S.tab!=='chat'||!S.chatRoom||busyN>0)return;chLoad(false)},4000);
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target&&e.target.id==='ch-in'){e.preventDefault();chSend()}});
+{const pg=$('pager');let t;pg.addEventListener('scroll',()=>{clearTimeout(t);t=setTimeout(()=>{const i=Math.round(pg.scrollLeft/(pg.clientWidth||1));if(i!==S.pg){S.pg=i;pgDots();fitPager();updBack();window.scrollTo(0,0)}},90)},{passive:true});
+pg.addEventListener('touchstart',()=>{pgTouch=true},{passive:true});['touchend','touchcancel'].forEach(n=>pg.addEventListener(n,()=>setTimeout(()=>{pgTouch=false},500),{passive:true}))}
 init();
 if(!GAS&&'serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
