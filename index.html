@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Nhà 25 – index.html v27 (26/11/2026): nút Dừng cổng màu vàng, chữ nâu đậm cho dễ đọc; v26: nút Cam Bếp về màu cam như mẫu, biểu tượng dao nĩa nét trắng; v25: 🔘 nút Cổng dạng khối nổi 3D (bấm lún), nút Camera dạng bóng mềm có biểu tượng 📹, 7 màu riêng, thêm nút lớn “Xem cả 3 cam”; v24: 🖼️ ảnh đầu trang: bỏ nền mờ, ảnh giữa rộng hơn hai bên ~80%, cắt tràn khung;  [v20]: 🖼️ ảnh đầu trang hiện trọn và căn giữa (nền mờ cùng ảnh); 📹 camera mở trang xem có nút điều hướng (cần nha25cam.py trên máy Bàn), “Xem cả 3” mở thẳng 3 cam; cần Code.gs v16 cho tốc độ; v19 (26/11/2026): 🖼️ 3 ảnh đầu trang không bị đè chữ (chữ nằm dưới ảnh, ảnh lấy phần đầu người); 📜 Nhật ký tách thành trang 3; v18 (26/11/2026): 🏠 trang chính kéo ngang: trang 1 = nút Cổng + Camera (thêm nút điều khiển mới trong CTRL), trang 2 = Tìm đồ; bỏ thông báo “chưa bật” và nút Tapo tạm; chạy nhanh hơn (nạp thư viện sau, mở nhanh); v17 (26/11/2026): 📹 3 camera mở link thẳng cam.nhagb.io.vn (Cloudflare Access, chế độ MSE); v16 (25/11/2026): 👧 trẻ em được 📨 nhờ chủ nhà in tem (món và vị trí; cần Code.gs v11); v15 (25/11/2026): 👧 trẻ em được thêm đồ mới / thêm nhanh / nhập danh sách (cần Code.gs v9); v14 (25/11/2026): 🔑 chủ nhà đặt lại mã cho thành viên (trong menu tên mình; cần Code.gs v8); v13 (25/11/2026): 💬 chat nhóm theo phòng + “Cả nhà” (chỉ chữ, chấm đỏ tin mới; cần Code.gs v7 + chạy caiChat() 1 lần); v12 (23/11/2026): ✋ Dừng cổng chạm 1 lần, Mở/Đóng chạm 2 lần; 🔙 chạy xong tự quay về Nhà 25 (x-callback); v11: 📹 bấm Mở/Đóng/Dừng cổng thì tự mở camera Sân trước (khi đã bật xem online); v10: 🎨 nút Cổng & Camera dạng ô lớn, icon + màu khác nhau; v9: 🏠 khung Nhà (3 nút cổng chạm 2 lần + camera + 🛒 đi chợ), danh sách đi chợ, hỏi "Mua lại?" khi Dùng hết, "Không mua lại nữa", nhắc đồ đang giữ quá hạn. Cần Code.gs v6. -->
+<!-- Nhà 25 – index.html v28 (27/11/2026): 🍽️ nút Thực đơn cạnh 🛒 Đi chợ: mỗi ngày 3 phần (Món mặn, Canh, Rau), mỗi phần 3 lựa chọn; cả nhà (kể cả các cháu) bấm 👍 bình chọn tuỳ ý, thấy số phiếu + tên người vote; Bà/người lớn ✅ Chốt món, 🔄 đổi 3 món khác, 🛒 thêm nguyên liệu thiếu vào danh sách đi chợ; CẦN Code.gs v17; v27 (26/11/2026): nút Dừng cổng màu vàng, chữ nâu đậm cho dễ đọc; v26: nút Cam Bếp về màu cam như mẫu, biểu tượng dao nĩa nét trắng; v25: 🔘 nút Cổng dạng khối nổi 3D (bấm lún), nút Camera dạng bóng mềm có biểu tượng 📹, 7 màu riêng, thêm nút lớn “Xem cả 3 cam”; v24: 🖼️ ảnh đầu trang: bỏ nền mờ, ảnh giữa rộng hơn hai bên ~80%, cắt tràn khung;  [v20]: 🖼️ ảnh đầu trang hiện trọn và căn giữa (nền mờ cùng ảnh); 📹 camera mở trang xem có nút điều hướng (cần nha25cam.py trên máy Bàn), “Xem cả 3” mở thẳng 3 cam; cần Code.gs v16 cho tốc độ; v19 (26/11/2026): 🖼️ 3 ảnh đầu trang không bị đè chữ (chữ nằm dưới ảnh, ảnh lấy phần đầu người); 📜 Nhật ký tách thành trang 3; v18 (26/11/2026): 🏠 trang chính kéo ngang: trang 1 = nút Cổng + Camera (thêm nút điều khiển mới trong CTRL), trang 2 = Tìm đồ; bỏ thông báo “chưa bật” và nút Tapo tạm; chạy nhanh hơn (nạp thư viện sau, mở nhanh); v17 (26/11/2026): 📹 3 camera mở link thẳng cam.nhagb.io.vn (Cloudflare Access, chế độ MSE); v16 (25/11/2026): 👧 trẻ em được 📨 nhờ chủ nhà in tem (món và vị trí; cần Code.gs v11); v15 (25/11/2026): 👧 trẻ em được thêm đồ mới / thêm nhanh / nhập danh sách (cần Code.gs v9); v14 (25/11/2026): 🔑 chủ nhà đặt lại mã cho thành viên (trong menu tên mình; cần Code.gs v8); v13 (25/11/2026): 💬 chat nhóm theo phòng + “Cả nhà” (chỉ chữ, chấm đỏ tin mới; cần Code.gs v7 + chạy caiChat() 1 lần); v12 (23/11/2026): ✋ Dừng cổng chạm 1 lần, Mở/Đóng chạm 2 lần; 🔙 chạy xong tự quay về Nhà 25 (x-callback); v11: 📹 bấm Mở/Đóng/Dừng cổng thì tự mở camera Sân trước (khi đã bật xem online); v10: 🎨 nút Cổng & Camera dạng ô lớn, icon + màu khác nhau; v9: 🏠 khung Nhà (3 nút cổng chạm 2 lần + camera + 🛒 đi chợ), danh sách đi chợ, hỏi "Mua lại?" khi Dùng hết, "Không mua lại nữa", nhắc đồ đang giữ quá hạn. Cần Code.gs v6. -->
 <html lang="vi">
 <head>
 <meta charset="utf-8">
@@ -151,6 +151,11 @@ nav button{position:relative}
 #pager .pg{flex:0 0 100%;min-width:0;scroll-snap-align:start;scroll-snap-stop:always;padding:0 14px;box-sizing:border-box}
 #pgdots{display:flex;gap:8px;justify-content:center;margin:0 0 10px}
 #pgdots .chip{font-size:14px;padding:6px 14px}
+.mn{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin:10px 0;box-shadow:var(--sh)}
+.mn.on{border:2px solid var(--acc);background:var(--soft)}
+.mn-h{font-weight:800;color:var(--acc);margin-bottom:4px}
+.mn-d{font-size:17px;margin:3px 0}
+.mn .btns{margin:8px 0 0}
 </style>
 </head>
 <body>
@@ -381,9 +386,9 @@ function renderHome(){
   if(!S.ready){el.innerHTML='<div class="empty">Đang tải…</div>';return}
   const cams=[...new Set([...S.locs.values()].flatMap(l=>String(l.cam||'').split(',').map(x=>x.trim()).filter(Boolean)))];
   const yo=cams.length?'<button class="chip" data-act="yoosee">📹 Mở Yoosee</button>':'';
-  if(kid()){el.innerHTML=`<div class="btns" style="align-items:center"><button class="chip" data-act="tapo">📹 Mở Tapo</button>${yo}</div>`;return}
+  if(kid()){el.innerHTML=`<div class="btns" style="align-items:center"><button class="chip" data-act="tapo">📹 Mở Tapo</button>${yo}${mnBtn()}</div>`;return}
   const sc=shopCount();
-  el.innerHTML='<div class="homebox"><div class="hb-t">🏠 Nhà</div>'+CTRL.map(g=>`<div class="hb-r"><span class="hb-l">${g.t}</span>${g.h()}</div>`).join('')+`<div class="hb-r">${yo}<button class="chip${sc?' on':''}" data-act="shop">🛒 Đi chợ${sc?' ('+sc+')':''}</button></div></div>`;
+  el.innerHTML='<div class="homebox"><div class="hb-t">🏠 Nhà</div>'+CTRL.map(g=>`<div class="hb-r"><span class="hb-l">${g.t}</span>${g.h()}</div>`).join('')+`<div class="hb-r">${yo}<button class="chip${sc?' on':''}" data-act="shop">🛒 Đi chợ${sc?' ('+sc+')':''}</button>${mnBtn()}</div></div>`;
 }
 function gateBtns(){return '<div class="tiles3">'+Object.entries(GATE).map(([k,g])=>`<button class="tl3 g3d" style="--c:${g.c};--d:${g.d}${g.t?';color:'+g.t:''}" data-act="gate" data-k="${k}">${tl3(g)}</button>`).join('')+'</div>'}
 function runGate(k){
@@ -405,6 +410,73 @@ function shopView(){
   if(!L.length&&!M.length)h+='<div class="empty">Không có gì cần mua. 🎉</div>';
   h+=`<div class="btns">${L.length+M.length?'<button data-act="shop-copy">📋 Sao chép gửi Zalo</button>':''}<button data-act="close">Đóng</button></div>`;
   sheet(h);
+}
+/* 🍽️ Thực đơn: mỗi ngày 3 phần (mặn / canh / rau), mỗi phần 3 lựa chọn. Cả nhà bấm 👍 (lưu trên máy chủ, cần Code.gs v17), người lớn ✅ Chốt / 🔄 Đổi. Muốn thêm món: thêm 1 dòng ['Tên món',['nguyên liệu',…]] vào MENU. */
+const MENU={
+man:[
+['Thịt kho trứng',['thịt ba chỉ','trứng','nước dừa','nước mắm']],
+['Cá kho tộ',['cá','nước mắm','đường','tiêu']],
+['Gà kho gừng',['thịt gà','gừng','nước mắm']],
+['Sườn xào chua ngọt',['sườn','cà chua','đường','giấm']],
+['Đậu hũ sốt cà',['đậu hũ','cà chua','hành lá']],
+['Trứng chiên thịt bằm',['trứng','thịt heo xay','hành lá']],
+['Thịt rang cháy cạnh',['thịt ba chỉ','nước mắm','đường','hành tím']],
+['Tôm rim',['tôm','nước mắm','đường']],
+['Thịt bò xào hành tây',['thịt bò','hành tây','tỏi']],
+['Gà chiên nước mắm',['thịt gà','nước mắm','tỏi']],
+['Chả trứng hấp',['trứng','thịt heo xay','miến','hành lá']],
+['Cá hấp gừng',['cá','gừng','hành lá']],
+['Sườn rim mặn ngọt',['sườn','nước mắm','đường','hành tím']],
+['Mực xào hành tây',['mực','hành tây','cà chua']],
+['Gà kho sả',['thịt gà','sả','nước mắm']],
+['Cá chiên sốt cà',['cá','cà chua','hành lá']]
+],
+canh:[
+['Canh chua cá',['cá','cà chua','dứa','giá','me']],
+['Canh bí đỏ thịt bằm',['bí đỏ','thịt heo xay','hành lá']],
+['Canh rau ngót thịt bằm',['rau ngót','thịt heo xay']],
+['Canh khổ qua nhồi thịt',['khổ qua','thịt heo xay','mộc nhĩ']],
+['Canh bí xanh nấu tôm',['bí xanh','tôm','hành lá']],
+['Canh cải thịt bằm',['cải xanh','thịt heo xay']],
+['Canh cà chua trứng',['cà chua','trứng','hành lá']],
+['Canh củ cải hầm xương',['củ cải','xương heo','hành lá']],
+['Canh mồng tơi nấu tôm',['mồng tơi','tôm','hành lá']],
+['Canh bầu nấu tôm',['bầu','tôm','hành lá']]
+],
+rau:[
+['Rau muống xào tỏi',['rau muống','tỏi']],
+['Cải ngọt luộc',['cải ngọt']],
+['Đậu que xào tỏi',['đậu que','tỏi']],
+['Su su xào',['su su','tỏi']],
+['Bông cải xào',['bông cải','cà rốt','tỏi']],
+['Rau lang luộc',['rau lang']],
+['Dưa leo cà chua trộn',['dưa leo','cà chua','hành tím','giấm']],
+['Cải thìa xào nấm',['cải thìa','nấm','tỏi']],
+['Bắp cải luộc',['bắp cải']],
+['Cà rốt củ cải xào',['cà rốt','củ cải','tỏi']]
+]};
+const MN_CATS=[['man','🥩','Món mặn',5],['canh','🍲','Canh',3],['rau','🥬','Rau',3]];
+const mnS=()=>{const m=S.menu||{};return{d:m.d||today(),sw:m.sw||{},v:m.v||{},c:m.c||{}}};
+const mnOpts=k=>{const m=mnS(),A=MENU[k],L=A.length,st=(MN_CATS.find(x=>x[0]===k)||[0,0,0,3])[3],dn=Math.floor(new Date(m.d+'T00:00:00')/864e5),b=(dn*3+(m.sw[k]||0)*7)%L;return [0,1,2].map(j=>({j,dish:A[(b+j*st)%L]}))};
+const mnHave=x=>{const k=norm(x);return [...S.items.values()].some(i=>!isLost(i)&&norm(i.name).includes(k)&&(String(i.qty||'').trim()===''||(parseFloat(String(i.qty).replace(',','.'))||0)>0))};
+const mnBtn=()=>{const n=Object.values(mnS().c).filter(x=>x>=0).length;return `<button class="chip${n?' on':''}" data-act="menu">🍽️ Thực đơn${n?' ✓':''}</button>`};
+const mnShopList=dishes=>{const seen=new Set(),inShop=new Set((S.shop||[]).map(e=>norm(e.name))),o=[];for(const d of dishes)for(const x of d[1]){const k=norm(x);if(seen.has(k))continue;seen.add(k);if(!mnHave(x)&&!inShop.has(k))o.push(x)}return o};
+function menuView(){
+  const m=mnS(),me=(S.me||{}).id,kd=kid(),sc=$('sheet').scrollTop,wd=['Chủ nhật','Thứ hai','Thứ ba','Thứ tư','Thứ năm','Thứ sáu','Thứ bảy'][new Date().getDay()];
+  const nm=id=>{const u=S.users.find(x=>x.id===id);return u?u.name.replace(/^(Mr\.|Ms\.|Miss)\s+/,''):id};
+  let h=`<div id="mn-w"></div><h2>🍽️ Thực đơn hôm nay</h2><div class="note">${wd}, ${fmtD(m.d)}. Mỗi phần có 3 lựa chọn. Ai cũng bấm <b>👍 Thích</b> món mình muốn (bao nhiêu món cũng được, không bấm cũng được).${kd?'':' Bà xem xong bấm <b>✅ Chốt</b>.'} Chữ <b class="warn">đỏ</b> = chưa thấy trong tủ (theo app).</div>`;
+  const chosen=[];
+  for(const [k,ic,t] of MN_CATS){
+    const opts=mnOpts(k),cnt=o=>(m.v[k+o.j]||[]).length,mx=Math.max(...opts.map(cnt));
+    h+=`<h3>${ic} ${t}</h3>`+opts.map(o=>{
+      const vs=m.v[k+o.j]||[],mine=vs.includes(me),on=m.c[k]===o.j,miss=o.dish[1].filter(x=>!mnHave(x));
+      if(on)chosen.push(o.dish);
+      return `<div class="mn${on?' on':''}"><div class="mn-d"><b>${esc(o.dish[0])}</b>${on?' · ✅ Chốt':''}${mx>0&&vs.length===mx?' 🏆':''}</div><div class="s">Cần: ${o.dish[1].map(x=>mnHave(x)?esc(x):'<b class="warn">'+esc(x)+'</b>').join(', ')}</div><div class="s">${vs.length?'👍 '+vs.length+': '+vs.map(x=>esc(nm(x))).join(', '):'Chưa ai bình chọn'}</div><div class="btns"><button class="chip${mine?' on':''}" data-act="menu-vote" data-k="${k}" data-j="${o.j}">${mine?'👍 Bạn đã thích':'👍 Thích'}</button>${kd?'':`<button class="chip" data-act="menu-pick" data-k="${k}" data-j="${o.j}">${on?'↩️ Bỏ chốt':'✅ Chốt món này'}</button>`}${!kd&&miss.length?`<button class="chip" data-act="menu-shop" data-k="${k}" data-j="${o.j}">🛒 Thêm ${miss.length} món thiếu</button>`:''}</div></div>`;
+    }).join('')+(kd?'':`<div class="btns"><button class="chip" data-act="menu-swap" data-k="${k}">🔄 Đổi 3 món khác (xoá phiếu phần này)</button></div>`);
+  }
+  if(chosen.length){const ms=mnShopList(chosen);h+=`<div class="mn on" style="margin-top:14px"><div class="mn-h">🍽️ Hôm nay ăn</div><div class="mn-d">${chosen.map(d=>esc(d[0])).join(' · ')}</div>${!kd&&ms.length?`<div class="btns"><button class="chip on" data-act="menu-shop-all">🛒 Thêm ${ms.length} món thiếu của bữa này</button></div>`:''}</div>`}
+  h+='<div class="btns"><button data-act="close">Đóng</button></div>';
+  sheet(h);$('sheet').scrollTop=sc;
 }
 function hetAsk(id){
   const i=S.items.get(id);if(!i)return;
@@ -566,6 +638,7 @@ function apply(d){
   S.pq=d.pq||[];S.shop=d.shop||[];S.nobuy=d.nobuy||[];S.me=d.me;S.users=d.users||[];S.logs=d.logs||[];S.camChk=d.camChk||'';if(d.me&&d.locs&&d.items){try{const q=Object.assign({},d);delete q.token;localStorage.setItem('n25snap',JSON.stringify(q))}catch(e){try{localStorage.removeItem('n25snap')}catch(_){}}}
   S.locs=new Map(d.locs.map(l=>[l.code,l]));S.items=new Map(d.items.map(i=>[i.id,i]));
   S.ready=true;S.at=Date.now();banner('');render();hideSplash();fetchThumbs();
+  S.menu=d.menu||S.menu||null;if($('mn-w'))menuView();
   if($('expl'))expSheet(true);else if(!S.expShown&&S.me&&!kid()){S.expShown=true;let t='';try{t=localStorage.getItem('n25exp_'+S.me.id)||''}catch(e){}if(t!==today()&&dueList().length){try{localStorage.setItem('n25exp_'+S.me.id,today())}catch(e){}setTimeout(()=>expSheet(false),500)}}
   if(d.house!==S.house){S.house=d.house;setBanner(d.house)}
   chSum();
@@ -1072,6 +1145,15 @@ document.addEventListener('click',async e=>{
     armed=null;clearTimeout(gateT);el.innerHTML=tl3(g);el.classList.remove('arm');runGate(d.k);
   }
   else if(a==='shop')shopView();
+  else if(a==='menu')menuView();
+  else if(a==='menu-vote'||a==='menu-pick'||a==='menu-swap'){el.disabled=true;if(!(await act(a==='menu-vote'?'menuVote':a==='menu-pick'?'menuPick':'menuSwap',{k:d.k,j:+d.j||0})))el.disabled=false}
+  else if(a==='menu-shop'||a==='menu-shop-all'){
+    const dishes=a==='menu-shop'?[mnOpts(d.k)[+d.j].dish]:MN_CATS.map(([k])=>{const c=mnS().c[k];return c>=0?mnOpts(k)[c].dish:null}).filter(Boolean),miss=mnShopList(dishes);
+    if(!miss.length){toast('Các món thiếu đã có trong danh sách đi chợ rồi.');return}
+    el.disabled=true;let n=0;
+    for(const x of miss){if(await act('shopAdd',{name:x.charAt(0).toUpperCase()+x.slice(1)}))n++;else break}
+    toast(n?'Đã thêm '+n+' món vào danh sách đi chợ.':'Chưa thêm được, thử lại.');
+  }
   else if(a==='shop-add'){const n=$('sh-n').value.trim();if(!n){toast('Nhập tên món cần mua.');return}el.disabled=true;if(await act('shopAdd',{name:n}))shopView();else el.disabled=false}
   else if(a==='shop-done'){el.disabled=true;if(await act('shopDel',{id:d.id})){toast('Đã gạch khỏi danh sách.');shopView()}else el.disabled=false}
   else if(a==='nobuy'){el.disabled=true;const inShop=!!$('sh-n');if(await act('nobuy',{id:d.id,on:d.on})){toast(d.on==='1'?'Đã chọn không mua lại – không báo sắp hết nữa.':'Đã bật lại báo sắp hết.');if(inShop)shopView();else closeSheet()}else el.disabled=false}
@@ -1347,7 +1429,7 @@ $('mcode').addEventListener('keydown',e=>{if(e.key==='Enter')openCode(e.target.v
 $('l-user').addEventListener('change',()=>{$('l-msg').textContent='';loginMode()});
 $('l-pin2').addEventListener('keydown',e=>{if(e.key==='Enter')$('l-btn').click()});
 $('l-pin').addEventListener('keydown',e=>{if(e.key==='Enter')document.querySelector('[data-act=login]').click()});
-setInterval(async()=>{if(document.hidden||!S.me||!S.me.id||busyN>0)return;try{const r=await callOnce('ver',{});if(r&&r.on){S.on=r.on;S.seen=r.seen||{};renderOn()}if(r)chCv(r.cv);if(r&&r.ver&&S.ver&&r.ver!==S.ver&&!$('ovl').classList.contains('on'))act('load')}catch(e){}},12000);
+setInterval(async()=>{if(document.hidden||!S.me||!S.me.id||busyN>0)return;try{const r=await callOnce('ver',{});if(r&&r.on){S.on=r.on;S.seen=r.seen||{};renderOn()}if(r)chCv(r.cv);if(r&&r.ver&&S.ver&&r.ver!==S.ver&&(!$('ovl').classList.contains('on')||$('mn-w')))act('load')}catch(e){}},12000);
 document.addEventListener('input',e=>{if(e.target&&e.target.id==='lp-q'&&LP){LP.q=e.target.value;lpList()}});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.me&&S.me.id&&Date.now()-S.at>60000&&!$('ovl').classList.contains('on'))act('load')});
 /* 💬 Chat nhóm theo phòng (v13): chỉ chữ, tự làm mới, chấm đỏ tin mới; cần Code.gs v7 */
