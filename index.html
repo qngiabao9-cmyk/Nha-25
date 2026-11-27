@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Nhà 25 – index.html v29 (27/11/2026): 🍽️ Thực đơn: ~73 món có sẵn; cả nhà thêm / sửa / xoá món (＋ Thêm món, 📖 Danh sách món), chụp ảnh từng món (📷, ảnh ~25 KB, chỉ tải khi mở); bình chọn 👍 chung cho cả nhà, 3 lựa chọn mỗi phần (mặn/canh/rau), Bà ✅ Chốt; CẦN Code.gs v18. Bỏ toàn bộ nút micro 🎤. v27 (26/11/2026): nút Dừng cổng màu vàng, chữ nâu đậm cho dễ đọc; v26: nút Cam Bếp về màu cam như mẫu, biểu tượng dao nĩa nét trắng; v25: 🔘 nút Cổng dạng khối nổi 3D (bấm lún), nút Camera dạng bóng mềm có biểu tượng 📹, 7 màu riêng, thêm nút lớn “Xem cả 3 cam”; v24: 🖼️ ảnh đầu trang: bỏ nền mờ, ảnh giữa rộng hơn hai bên ~80%, cắt tràn khung;  [v20]: 🖼️ ảnh đầu trang hiện trọn và căn giữa (nền mờ cùng ảnh); 📹 camera mở trang xem có nút điều hướng (cần nha25cam.py trên máy Bàn), “Xem cả 3” mở thẳng 3 cam; cần Code.gs v16 cho tốc độ; v19 (26/11/2026): 🖼️ 3 ảnh đầu trang không bị đè chữ (chữ nằm dưới ảnh, ảnh lấy phần đầu người); 📜 Nhật ký tách thành trang 3; v18 (26/11/2026): 🏠 trang chính kéo ngang: trang 1 = nút Cổng + Camera (thêm nút điều khiển mới trong CTRL), trang 2 = Tìm đồ; bỏ thông báo “chưa bật” và nút Tapo tạm; chạy nhanh hơn (nạp thư viện sau, mở nhanh); v17 (26/11/2026): 📹 3 camera mở link thẳng cam.nhagb.io.vn (Cloudflare Access, chế độ MSE); v16 (25/11/2026): 👧 trẻ em được 📨 nhờ chủ nhà in tem (món và vị trí; cần Code.gs v11); v15 (25/11/2026): 👧 trẻ em được thêm đồ mới / thêm nhanh / nhập danh sách (cần Code.gs v9); v14 (25/11/2026): 🔑 chủ nhà đặt lại mã cho thành viên (trong menu tên mình; cần Code.gs v8); v13 (25/11/2026): 💬 chat nhóm theo phòng + “Cả nhà” (chỉ chữ, chấm đỏ tin mới; cần Code.gs v7 + chạy caiChat() 1 lần); v12 (23/11/2026): ✋ Dừng cổng chạm 1 lần, Mở/Đóng chạm 2 lần; 🔙 chạy xong tự quay về Nhà 25 (x-callback); v11: 📹 bấm Mở/Đóng/Dừng cổng thì tự mở camera Sân trước (khi đã bật xem online); v10: 🎨 nút Cổng & Camera dạng ô lớn, icon + màu khác nhau; v9: 🏠 khung Nhà (3 nút cổng chạm 2 lần + camera + 🛒 đi chợ), danh sách đi chợ, hỏi "Mua lại?" khi Dùng hết, "Không mua lại nữa", nhắc đồ đang giữ quá hạn. Cần Code.gs v6. -->
+<!-- Nhà 25 – index.html v30 (27/11/2026): 🍽️ Thực đơn 3 trang: 🗳️ Bình chọn (cả danh sách, mỗi người tối đa 3 món mỗi phần, phiếu cho ngày mai, khoá 20:00), 👵 Bà chọn (3 món nhiều phiếu nhất mỗi phần, Bà / Phượng / Gia Bảo ✅ Chốt), 📋 Menu ngày mai (20:00 phần nào chưa chốt tự lấy món nhiều phiếu nhất); 🍜 nút chuyển bữa cơm ↔ món nước / bún (T7, CN mặc định món nước); 🌿 ngày chay âm lịch của Bà (mùng 1, 8, 14, 15, 18, 23, 24, 28, 29, 30; tháng thiếu thêm 27) gợi ý món chay riêng cho Bà; 🧒 có món khổ qua thì thêm 1 canh cho các bé; thêm món nước và món chay; CẦN Code.gs v19. v29: v27 (26/11/2026): nút Dừng cổng màu vàng, chữ nâu đậm cho dễ đọc; v26: nút Cam Bếp về màu cam như mẫu, biểu tượng dao nĩa nét trắng; v25: 🔘 nút Cổng dạng khối nổi 3D (bấm lún), nút Camera dạng bóng mềm có biểu tượng 📹, 7 màu riêng, thêm nút lớn “Xem cả 3 cam”; v24: 🖼️ ảnh đầu trang: bỏ nền mờ, ảnh giữa rộng hơn hai bên ~80%, cắt tràn khung;  [v20]: 🖼️ ảnh đầu trang hiện trọn và căn giữa (nền mờ cùng ảnh); 📹 camera mở trang xem có nút điều hướng (cần nha25cam.py trên máy Bàn), “Xem cả 3” mở thẳng 3 cam; cần Code.gs v16 cho tốc độ; v19 (26/11/2026): 🖼️ 3 ảnh đầu trang không bị đè chữ (chữ nằm dưới ảnh, ảnh lấy phần đầu người); 📜 Nhật ký tách thành trang 3; v18 (26/11/2026): 🏠 trang chính kéo ngang: trang 1 = nút Cổng + Camera (thêm nút điều khiển mới trong CTRL), trang 2 = Tìm đồ; bỏ thông báo “chưa bật” và nút Tapo tạm; chạy nhanh hơn (nạp thư viện sau, mở nhanh); v17 (26/11/2026): 📹 3 camera mở link thẳng cam.nhagb.io.vn (Cloudflare Access, chế độ MSE); v16 (25/11/2026): 👧 trẻ em được 📨 nhờ chủ nhà in tem (món và vị trí; cần Code.gs v11); v15 (25/11/2026): 👧 trẻ em được thêm đồ mới / thêm nhanh / nhập danh sách (cần Code.gs v9); v14 (25/11/2026): 🔑 chủ nhà đặt lại mã cho thành viên (trong menu tên mình; cần Code.gs v8); v13 (25/11/2026): 💬 chat nhóm theo phòng + “Cả nhà” (chỉ chữ, chấm đỏ tin mới; cần Code.gs v7 + chạy caiChat() 1 lần); v12 (23/11/2026): ✋ Dừng cổng chạm 1 lần, Mở/Đóng chạm 2 lần; 🔙 chạy xong tự quay về Nhà 25 (x-callback); v11: 📹 bấm Mở/Đóng/Dừng cổng thì tự mở camera Sân trước (khi đã bật xem online); v10: 🎨 nút Cổng & Camera dạng ô lớn, icon + màu khác nhau; v9: 🏠 khung Nhà (3 nút cổng chạm 2 lần + camera + 🛒 đi chợ), danh sách đi chợ, hỏi "Mua lại?" khi Dùng hết, "Không mua lại nữa", nhắc đồ đang giữ quá hạn. Cần Code.gs v6. -->
 <html lang="vi">
 <head>
 <meta charset="utf-8">
@@ -452,15 +452,23 @@ rau:[
 ['Bắp cải luộc',['bắp cải']],
 ['Cà rốt củ cải xào',['cà rốt','củ cải','tỏi']]
 ]};
-const MN_CATS=[['man','🥩','Món mặn'],['canh','🍲','Canh'],['rau','🥬','Rau']];
+const MN_CATS=[['man','🥩','Món mặn'],['canh','🍲','Canh'],['rau','🥬','Rau'],['nuoc','🍜','Món nước / bún'],['cman','🌿','Mặn chay'],['ccanh','🌿','Canh chay'],['crau','🌿','Rau chay'],['cnuoc','🌿','Món nước chay']];
+const MN_CK={man:'cman',canh:'ccanh',rau:'crau',nuoc:'cnuoc'},isCh=k=>['cman','ccanh','crau','cnuoc'].includes(k);
+const MN_CHOT=['thixuan','ngocphuong','giabao'];
+const mnChot=()=>!!S.me&&(MN_CHOT.includes(S.me.id)||adm());
+const mnCat=k=>k==='be'?['be','🧒','Canh thêm cho các bé']:MN_CATS.find(x=>x[0]===k)||[k,'🍽️',k];
 const MN_ADD={
 man:[['Đậu hũ chiên sả ớt',['đậu hũ','sả','ớt']],['Cá thu sốt cà',['cá thu','cà chua','hành lá']],['Tôm rang thịt',['tôm','thịt ba chỉ','nước mắm','hành tím']],['Gà luộc lá chanh',['thịt gà','lá chanh']],['Trứng chiên hành',['trứng','hành lá']],['Trứng đúc thịt',['trứng','thịt heo xay','hành lá']],['Sườn nướng sả',['sườn','sả','tỏi','nước mắm']],['Thịt ba chỉ chiên nước mắm',['thịt ba chỉ','nước mắm','tỏi']],['Cá diêu hồng chiên',['cá diêu hồng','gừng','nước mắm']],['Mực hấp gừng',['mực','gừng','hành lá']],['Bò xào rau muống',['thịt bò','rau muống','tỏi']],['Gà xào sả ớt',['thịt gà','sả','ớt']],['Đậu hũ nhồi thịt',['đậu hũ','thịt heo xay','cà chua']],['Chả giò',['thịt heo xay','miến','nấm mèo','bánh tráng']],['Cá lóc kho tộ',['cá lóc','nước mắm','đường','tiêu']],['Thịt xào sả ớt',['thịt heo','sả','ớt']]],
 canh:[['Canh chua tôm',['tôm','cà chua','dứa','giá']],['Canh khoai mỡ thịt bằm',['khoai mỡ','thịt heo xay']],['Canh mướp nấu tôm',['mướp','tôm']],['Canh rau dền',['rau dền','tôm khô']],['Canh bí đao hầm xương',['bí đao','xương heo']],['Canh đậu hũ hẹ',['đậu hũ','hẹ','thịt heo xay']],['Canh nấm thịt bằm',['nấm','thịt heo xay','hành lá']],['Canh cải bẹ xanh nấu cá',['cải bẹ xanh','cá']],['Canh sườn hầm rau củ',['sườn','cà rốt','khoai tây','hành tây']],['Canh gà nấu nấm',['thịt gà','nấm','hành lá']],['Canh bắp cải cuộn thịt',['bắp cải','thịt heo xay']]],
+nuoc:[['Phở bò',['bánh phở','thịt bò','xương bò','hành tây','hành lá']],['Phở gà',['bánh phở','thịt gà','hành lá']],['Hủ tiếu Nam Vang',['hủ tiếu','thịt heo','tôm','xương heo']],['Bún chả cá',['bún','chả cá','cà chua','dứa']],['Bún thịt nướng',['bún','thịt heo','rau sống','đậu phộng','nước mắm']],['Bún xào',['bún','thịt heo','cải','cà rốt']],['Bún riêu cua',['bún','cua đồng','cà chua','đậu hũ']],['Bún bò Huế',['bún','thịt bò','giò heo','sả','mắm ruốc']],['Mì Quảng',['mì Quảng','tôm','thịt heo','trứng cút','đậu phộng']],['Bánh canh cua',['bánh canh','cua','tôm']],['Hủ tiếu xào',['hủ tiếu','thịt bò','cải']],['Mì xào giòn',['mì','tôm','mực','cải']],['Bún mọc',['bún','mọc','nấm','sườn']],['Bánh canh giò heo',['bánh canh','giò heo','hành lá']],['Bún cá',['bún','cá','cà chua','thì là']],['Cháo gà',['gạo','thịt gà','gừng','hành lá']]],
+cman:[['Đậu hũ kho nấm',['đậu hũ','nấm','nước tương']],['Nấm kho tiêu',['nấm','tiêu','nước tương']],['Đậu hũ chiên sả (chay)',['đậu hũ','sả','ớt']],['Đậu hũ sốt cà (chay)',['đậu hũ','cà chua']],['Chả lụa chay chiên',['chả lụa chay']],['Gà chay xào sả ớt',['gà chay','sả','ớt']],['Đậu hũ non hấp nấm',['đậu hũ non','nấm','nước tương']],['Mít non kho',['mít non','nước tương','tiêu']],['Nấm đùi gà xào',['nấm đùi gà','hành tây']],['Đậu hũ nhồi nấm',['đậu hũ','nấm mèo','cà chua']],['Tàu hũ ky kho',['tàu hũ ky','nấm','nước tương']]],
+ccanh:[['Canh chua chay',['đậu hũ','cà chua','dứa','đậu bắp','giá']],['Canh nấm đậu hũ',['nấm','đậu hũ','cải']],['Canh bí đỏ chay',['bí đỏ','đậu phộng']],['Canh rau ngót nấu nấm',['rau ngót','nấm']],['Canh cải nấu đậu hũ',['cải xanh','đậu hũ']],['Canh khổ qua nhồi nấm',['khổ qua','nấm','đậu hũ']],['Canh rau củ chay',['cà rốt','khoai tây','bắp cải','su su']],['Canh mồng tơi nấu nấm',['mồng tơi','nấm']]],
+crau:[['Rau củ xào chay',['bông cải','cà rốt','su su','nấm']],['Cải thìa xào nấm hương',['cải thìa','nấm hương']],['Đậu que xào chay',['đậu que','nấm']],['Rau luộc chấm chao',['rau muống','đậu bắp','chao']],['Bắp cải xào cà chua',['bắp cải','cà chua']],['Su su luộc chấm tương',['su su','nước tương']]],
+cnuoc:[['Phở chay',['bánh phở','nấm','đậu hũ','cà rốt','củ cải']],['Bún chay',['bún','nấm','đậu hũ','cà chua']],['Hủ tiếu chay',['hủ tiếu','nấm','đậu hũ','su su']],['Bún riêu chay',['bún','đậu hũ','cà chua','nấm']],['Bún xào chay',['bún','nấm','cải','cà rốt']],['Mì xào chay',['mì','nấm','cải','cà rốt']],['Bánh canh chay',['bánh canh','nấm','đậu hũ']],['Mì Quảng chay',['mì Quảng','nấm','đậu hũ','đậu phộng']],['Cháo nấm chay',['gạo','nấm','cà rốt']]],
 rau:[['Rau muống luộc',['rau muống']],['Cải ngọt xào tỏi',['cải ngọt','tỏi']],['Mướp xào trứng',['mướp','trứng']],['Giá xào hẹ',['giá','hẹ']],['Rau lang xào tỏi',['rau lang','tỏi']],['Bí đỏ xào trứng',['bí đỏ','trứng']],['Cà tím xào',['cà tím','tỏi','hành lá']],['Đậu bắp luộc',['đậu bắp']],['Su hào cà rốt xào',['su hào','cà rốt']],['Cải thảo xào nấm',['cải thảo','nấm']]]};
-for(const k in MN_ADD){const sn=new Set(MENU[k].map(x=>norm(x[0])));MN_ADD[k].forEach(x=>{if(!sn.has(norm(x[0])))MENU[k].push(x)})}
+for(const k in MN_ADD){MENU[k]=MENU[k]||[];const sn=new Set(MENU[k].map(x=>norm(x[0])));MN_ADD[k].forEach(x=>{if(!sn.has(norm(x[0])))MENU[k].push(x)})}
 const mnId=n=>'b_'+norm(n).replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,40);
 const mnIng=t=>String(t||'').split(/[,;\n]/).map(x=>x.trim()).filter(Boolean);
-const mnS=()=>{const m=S.menu||{};return{d:m.d||today(),sw:m.sw||{},o:m.o||{},v:m.v||{},c:m.c||{}}};
 const MNIMG={};
 function mnDishes(k){
   const all=S.dishes||[],by=new Map(all.map(r=>[r.id,r])),ids=new Set(),out=[];
@@ -469,46 +477,11 @@ function mnDishes(k){
   return out;
 }
 const mnFind=id=>{for(const [k] of MN_CATS){const x=mnDishes(k).find(d=>d.id===id);if(x)return x}return null};
-function mnCand(k,sw){const A=mnDishes(k),L=A.length;if(!L)return [];const dn=Math.floor(new Date(mnS().d+'T00:00:00')/864e5),st=Math.max(1,Math.floor(L/3)),b=(dn*3+sw*7)%L;return [0,1,2].filter(j=>j<L).map(j=>A[(b+j*st)%L].id)}
-function mnOpts(k){const m=mnS(),A=mnDishes(k),ids=m.o[k]||mnCand(k,m.sw[k]||0);return ids.map(id=>A.find(d=>d.id===id)).filter(Boolean)}
 const mnHave=x=>{const k=norm(x);return [...S.items.values()].some(i=>!isLost(i)&&norm(i.name).includes(k)&&(String(i.qty||'').trim()===''||(parseFloat(String(i.qty).replace(',','.'))||0)>0))};
-const mnBtn=()=>{const n=Object.values(mnS().c).filter(x=>x).length;return `<button class="chip${n?' on':''}" data-act="menu">🍽️ Thực đơn${n?' ✓':''}</button>`};
 const mnShopList=dishes=>{const seen=new Set(),inShop=new Set((S.shop||[]).map(e=>norm(e.name))),o=[];for(const d of dishes)for(const x of d.ing){const k=norm(x);if(seen.has(k))continue;seen.add(k);if(!mnHave(x)&&!inShop.has(k))o.push(x)}return o};
 const mnImgKey=d=>d.id+':'+d.pv;
-function mnImgs(list){
-  const need=list.filter(d=>d.pv&&!(mnImgKey(d) in MNIMG)&&!MNIMG['_'+mnImgKey(d)]);if(!need.length)return;
-  need.forEach(d=>MNIMG['_'+mnImgKey(d)]=1);
-  call('dishImgs',{ids:need.map(d=>d.id)}).then(r=>{need.forEach(d=>{MNIMG[mnImgKey(d)]=(r&&r[d.id])||''});mnRefresh()}).catch(()=>{need.forEach(d=>delete MNIMG['_'+mnImgKey(d)])});
-}
-const mnPic=d=>{const u=d.pv&&MNIMG[mnImgKey(d)],ic=(MN_CATS.find(x=>x[0]===d.k)||[0,'🍽️'])[1];return u?`<img class="th" style="width:56px;height:56px" src="${u}" alt="">`:`<span class="th" style="width:56px;height:56px;background:var(--soft)">${ic}</span>`};
 function mnRefresh(){if($('mn-w'))menuView();else if($('dl-w'))dishList()}
-function mnInit(){
-  if(!S.menu||!S.me||!S.me.id||S.mnBusy||Date.now()-(S.mnT||0)<30000)return;
-  const m=mnS(),o={};
-  for(const [k] of MN_CATS)if(!m.o[k]){const ids=mnCand(k,m.sw[k]||0);if(ids.length)o[k]=ids}
-  if(!Object.keys(o).length)return;
-  S.mnBusy=true;S.mnT=Date.now();
-  call('menuInit',{o}).then(r=>{S.mnBusy=false;apply(r)}).catch(()=>{S.mnBusy=false});
-}
-function menuView(){
-  const m=mnS(),me=(S.me||{}).id,kd=kid(),sc=$('sheet').scrollTop,wd=['Chủ nhật','Thứ hai','Thứ ba','Thứ tư','Thứ năm','Thứ sáu','Thứ bảy'][new Date().getDay()];
-  const nm=id=>{const u=S.users.find(x=>x.id===id);return u?u.name.replace(/^(Mr\.|Ms\.|Miss)\s+/,''):id};
-  let h=`<div id="mn-w"></div><h2>🍽️ Thực đơn hôm nay</h2><div class="note">${wd}, ${fmtD(m.d)}. Mỗi phần có 3 lựa chọn. Ai cũng bấm <b>👍 Thích</b> món mình muốn (bao nhiêu món cũng được, không bấm cũng được).${kd?'':' Bà xem xong bấm <b>✅ Chốt</b>.'} Chữ <b class="warn">đỏ</b> = chưa thấy trong tủ (theo app).</div>`;
-  const chosen=[],shown=[];
-  for(const [k,ic,t] of MN_CATS){
-    const opts=mnOpts(k),cnt=o=>(m.v[o.id]||[]).length,mx=Math.max(0,...opts.map(cnt));
-    h+=`<h3>${ic} ${t}</h3>`+(opts.length?'':'<div class="empty">Chưa có món. Bấm ＋ Thêm món bên dưới.</div>')+opts.map(o=>{
-      shown.push(o);
-      const vs=m.v[o.id]||[],mine=vs.includes(me),on=m.c[k]===o.id,miss=o.ing.filter(x=>!mnHave(x));
-      if(on)chosen.push(o);
-      return `<div class="mn${on?' on':''}"><div style="display:flex;gap:10px;align-items:center">${mnPic(o)}<div style="flex:1;min-width:0"><div class="mn-d"><b>${esc(o.name)}</b>${on?' · ✅ Chốt':''}${mx>0&&vs.length===mx?' 🏆':''}</div><div class="s">Cần: ${o.ing.length?o.ing.map(x=>mnHave(x)?esc(x):'<b class="warn">'+esc(x)+'</b>').join(', '):'(chưa ghi)'}</div><div class="s">${vs.length?'👍 '+vs.length+': '+vs.map(x=>esc(nm(x))).join(', '):'Chưa ai bình chọn'}</div></div></div><div class="btns"><button class="chip${mine?' on':''}" data-act="menu-vote" data-k="${k}" data-id="${esc(o.id)}">${mine?'👍 Bạn đã thích':'👍 Thích'}</button>${kd?'':`<button class="chip" data-act="menu-pick" data-k="${k}" data-id="${esc(o.id)}">${on?'↩️ Bỏ chốt':'✅ Chốt món này'}</button><button class="chip" data-act="dish-pic" data-id="${esc(o.id)}">📷 Ảnh</button>`}${!kd&&miss.length?`<button class="chip" data-act="menu-shop" data-k="${k}" data-id="${esc(o.id)}">🛒 Thêm ${miss.length} món thiếu</button>`:''}</div></div>`;
-    }).join('')+(kd?'':`<div class="btns"><button class="chip" data-act="menu-swap" data-k="${k}">🔄 Đổi 3 món khác (xoá phiếu phần này)</button></div>`);
-  }
-  if(chosen.length){const ms=mnShopList(chosen);h+=`<div class="mn on" style="margin-top:14px"><div class="mn-h">🍽️ Hôm nay ăn</div><div class="mn-d">${chosen.map(d=>esc(d.name)).join(' · ')}</div>${!kd&&ms.length?`<div class="btns"><button class="chip on" data-act="menu-shop-all">🛒 Thêm ${ms.length} món thiếu của bữa này</button></div>`:''}</div>`}
-  h+=`<div class="btns">${kd?'':'<button class="chip on" data-act="dish-new">＋ Thêm món</button><button class="chip" data-act="dish-list">📖 Danh sách món ('+MN_CATS.reduce((a,[k])=>a+mnDishes(k).length,0)+')</button>'}<button data-act="close">Đóng</button></div>`;
-  sheet(h);$('sheet').scrollTop=sc;mnImgs(shown);
-}
-function dishList(){
+function dishList(){MNV.length=0;
   const sc=$('sheet').scrollTop,all=[];
   let h=`<div id="dl-w"></div><h2>📖 Danh sách món</h2><div class="note">Bấm ✏️ để sửa tên, nguyên liệu hoặc xoá; 📷 để chụp ảnh món.</div><div class="btns"><button class="chip on" data-act="dish-new">＋ Thêm món</button><button class="chip" data-act="menu">← Thực đơn</button></div>`;
   for(const [k,ic,t] of MN_CATS){const A=mnDishes(k);all.push(...A);h+=`<h3>${ic} ${t} (${A.length})</h3><div class="list">`+A.map(d=>`<div class="row" style="cursor:default">${mnPic(d)}<div class="t"><div class="n">${esc(d.name)}</div><div class="s">${esc(d.ing.join(', '))}</div></div><button class="chip" data-act="dish-edit" data-id="${esc(d.id)}">✏️</button><button class="chip" data-act="dish-pic" data-id="${esc(d.id)}">📷</button></div>`).join('')+'</div>'}
@@ -518,6 +491,133 @@ function dishList(){
 function dishForm(id,k0){
   const d=id?mnFind(id):null,k=d?d.k:(k0||'man');S.dfId=d?d.id:'';S.dfK=k;
   sheet(`<div id="df-w"></div><h2>${d?'✏️ Sửa món':'＋ Thêm món'}</h2>${d?'':`<label>Loại</label><select id="df-k">${MN_CATS.map(([x,ic,t])=>`<option value="${x}"${x===k?' selected':''}>${ic} ${t}</option>`).join('')}</select>`}<label>Tên món</label><input type="text" id="df-n" value="${esc(d?d.name:'')}" placeholder="Cá kho riềng"><label>Nguyên liệu chính (cách nhau bằng dấu phẩy; viết giống tên đồ trong tủ để app đối chiếu)</label><textarea id="df-i" placeholder="cá, riềng, nước mắm">${esc(d?d.ing.join(', '):'')}</textarea>${d?`<div class="ph">${mnPic(d)}<button data-act="dish-pic" data-id="${esc(d.id)}">📷 ${d.pv?'Đổi ảnh':'Thêm ảnh'}</button></div>`:'<div class="note">Lưu món xong thì mở món đó để thêm ảnh.</div>'}<div class="btns"><button class="pri" data-act="dish-save" data-id="${esc(d?d.id:'')}">Lưu</button><button data-act="dish-list">Huỷ</button>${d?`<button class="dan" data-act="dish-del" data-id="${esc(d.id)}">Xoá món</button>`:''}</div>`);
+}
+const MNV=[];
+function mnImgs(list){
+  const need=[...new Map(list.filter(d=>d.pv&&!(mnImgKey(d) in MNIMG)&&!MNIMG['_'+mnImgKey(d)]).map(d=>[d.id,d])).values()];if(!need.length)return;
+  need.forEach(d=>MNIMG['_'+mnImgKey(d)]=1);
+  for(let i=0;i<need.length;i+=30){const part=need.slice(i,i+30);
+    call('dishImgs',{ids:part.map(d=>d.id)}).then(r=>{part.forEach(d=>{MNIMG[mnImgKey(d)]=(r&&r[d.id])||''});mnRefresh()}).catch(()=>{part.forEach(d=>delete MNIMG['_'+mnImgKey(d)])})}
+}
+const mnPic=(d,sz)=>{sz=sz||56;MNV.push(d);const u=d.pv&&MNIMG[mnImgKey(d)];return u?`<img class="th" style="width:${sz}px;height:${sz}px" src="${u}" alt="">`:`<span class="th" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*.45)}px;background:var(--soft)">${mnCat(d.k)[1]}</span>`};
+/* ---- ngày: phiếu bình chọn cho NGÀY MAI, khoá lúc 20:00 (sau 20:00 bình chọn cho ngày kia) ---- */
+const dAdd=(s,n)=>{const t=new Date(s+'T00:00:00');t.setDate(t.getDate()+n);return t.toLocaleDateString('sv')};
+const mnTom=()=>dAdd(today(),1);
+const mnVT=()=>new Date().getHours()<20?mnTom():dAdd(today(),2);
+const mnLocked=d=>d<=today()||(d===mnTom()&&new Date().getHours()>=20);
+const mnWd=d=>['Chủ nhật','Thứ hai','Thứ ba','Thứ tư','Thứ năm','Thứ sáu','Thứ bảy'][new Date(d+'T00:00:00').getDay()];
+const mnDay=d=>(((S.menu||{}).days)||{})[d]||{};
+const mnMode=d=>{const m=mnDay(d).md;if(m)return m;const w=new Date(d+'T00:00:00').getDay();return w===0||w===6?'nuoc':'thuong'};
+const mnKs=d=>mnMode(d)==='nuoc'?['nuoc']:['man','canh','rau'];
+const mnV=(d,k)=>((mnDay(d).v||{})[k])||{};
+/* ---- âm lịch (thuật toán Hồ Ngọc Đức, múi giờ +7) → ngày chay của Bà ---- */
+function lJd(dd,mm,yy){const a=Math.floor((14-mm)/12),y=yy+4800-a,m=mm+12*a-3;let j=dd+Math.floor((153*m+2)/5)+365*y+Math.floor(y/4)-Math.floor(y/100)+Math.floor(y/400)-32045;if(j<2299161)j=dd+Math.floor((153*m+2)/5)+365*y+Math.floor(y/4)-32083;return j}
+function lNM(k){const T=k/1236.85,T2=T*T,T3=T2*T,dr=Math.PI/180,sn=Math.sin;let J=2415020.75933+29.53058868*k+0.0001178*T2-0.000000155*T3;J+=0.00033*sn((166.56+132.87*T-0.009173*T2)*dr);
+  const M=359.2242+29.10535608*k-0.0000333*T2-0.00000347*T3,Mp=306.0253+385.81691806*k+0.0107306*T2+0.00001236*T3,F=21.2964+390.67050646*k-0.0016528*T2-0.00000239*T3;
+  let C=(0.1734-0.000393*T)*sn(M*dr)+0.0021*sn(2*dr*M)-0.4068*sn(Mp*dr)+0.0161*sn(dr*2*Mp)-0.0004*sn(dr*3*Mp)+0.0104*sn(dr*2*F)-0.0051*sn(dr*(M+Mp))-0.0074*sn(dr*(M-Mp))+0.0004*sn(dr*(2*F+M))-0.0004*sn(dr*(2*F-M))-0.0006*sn(dr*(2*F+Mp))+0.0010*sn(dr*(2*F-Mp))+0.0005*sn(dr*(2*Mp+M));
+  const dt=T<-11?0.001+0.000839*T+0.0002261*T2-0.00000845*T3-0.000000081*T*T3:-0.000278+0.000265*T+0.000262*T2;return Math.floor(J+C-dt+0.5+7/24)}
+function lSun(jd){const T=(jd-2451545.5-7/24)/36525,T2=T*T,dr=Math.PI/180,M=357.52910+35999.05030*T-0.0001559*T2-0.00000048*T*T2,L0=280.46645+36000.76983*T+0.0003032*T2;
+  const DL=(1.914600-0.004817*T-0.000014*T2)*Math.sin(dr*M)+(0.019993-0.000101*T)*Math.sin(dr*2*M)+0.000290*Math.sin(dr*3*M);let L=(L0+DL)*dr;L-=Math.PI*2*Math.floor(L/(Math.PI*2));return Math.floor(L/Math.PI*6)}
+function lM11(y){const k=Math.floor((lJd(31,12,y)-2415021)/29.530588853);let nm=lNM(k);if(lSun(nm)>=9)nm=lNM(k-1);return nm}
+function lLeap(a11){const k=Math.floor((a11-2415021.076998695)/29.530588853+0.5);let last,i=1,arc=lSun(lNM(k+i));do{last=arc;i++;arc=lSun(lNM(k+i))}while(arc!==last&&i<14);return i-1}
+const LUN={};
+function lunar(s){
+  if(LUN[s])return LUN[s];
+  const [yy,mm,dd]=s.split('-').map(Number),dn=lJd(dd,mm,yy),k=Math.floor((dn-2415021.076998695)/29.530588853);
+  let kk=k+1,ms=lNM(kk);if(ms>dn){kk=k;ms=lNM(kk)}
+  let a11=lM11(yy),b11=a11,ly;if(a11>=ms){ly=yy;a11=lM11(yy-1)}else{ly=yy+1;b11=lM11(yy+1)}
+  const diff=Math.floor((ms-a11)/29);let lm=diff+11,leap=false;
+  if(b11-a11>365){const lo=lLeap(a11);if(diff>=lo){lm=diff+10;if(diff===lo)leap=true}}
+  if(lm>12)lm-=12;if(lm>=11&&diff<4)ly-=1;
+  return (LUN[s]={d:dn-ms+1,m:lm,y:ly,leap,len:lNM(kk+1)-ms});
+}
+const CHAY=[1,8,14,15,18,23,24,28,29,30];
+const mnChay=d=>{const L=lunar(d);return CHAY.includes(L.d)||(L.len===29&&L.d===27)?L:null};
+/* ---- chọn món ---- */
+function mnRot(A,d,salt){const L=A.length;if(!L)return [];const st=L>3?Math.max(1,Math.floor(L/3)):1,b=(Math.floor(new Date(d+'T00:00:00')/864e5)*3+(salt||0))%L,out=[],seen=new Set();
+  for(let j=0;out.length<L&&j<L*2;j++){const x=A[(b+j*st+Math.floor(j/3))%L];if(!seen.has(x.id)){seen.add(x.id);out.push(x)}}return out}
+const mnCnt=(d,k,id)=>(mnV(d,k)[id]||[]).length;
+function mnTop(d,k){
+  const A=mnDishes(k),vote=A.filter(x=>mnCnt(d,k,x.id)).sort((a,b)=>mnCnt(d,k,b.id)-mnCnt(d,k,a.id)||A.indexOf(a)-A.indexOf(b)).slice(0,3);
+  for(const x of mnRot(A,d,0)){if(vote.length>=3)break;if(!vote.includes(x))vote.push(x)}
+  return vote;
+}
+const mnKQ=list=>list.some(x=>norm(x.name+' '+x.ing.join(' ')).includes('kho qua'));
+function mnChayOpts(d,ck){
+  const A=mnRot(mnDishes(ck),d,5),c=mnDay(d).c||{};
+  if(ck==='cnuoc'&&c.nuoc){const x=mnFind(c.nuoc);if(x){const w=norm(x.name).split(' ')[0];A.sort((a,b)=>(norm(b.name).startsWith(w)?1:0)-(norm(a.name).startsWith(w)?1:0))}}
+  return A.slice(0,3);
+}
+function mnBeOpts(d){
+  const cc=(mnDay(d).c||{}).canh,A=mnRot(mnDishes('canh'),d,11).filter(x=>x.id!==cc&&!mnKQ([x]));
+  return A.sort((a,b)=>mnCnt(d,'canh',b.id)-mnCnt(d,'canh',a.id)).slice(0,3);
+}
+function mnFinal(d){
+  const c=mnDay(d).c||{},lk=mnLocked(d),pick=(k,first)=>{let x=c[k]&&mnFind(c[k]),auto=false;if(!x&&lk){x=first();auto=!!x}return {k,x:x||null,auto}};
+  const top1=(k,A)=>A.find(x=>mnCnt(d,k,x.id))||null;
+  const out=mnKs(d).map(k=>pick(k,()=>top1(k,mnTop(d,k))));
+  const ch=mnChay(d),chay=ch?mnKs(d).map(k=>pick(MN_CK[k],()=>null)):[];
+  const be=mnKQ(out.map(o=>o.x).filter(Boolean))?pick('be',()=>top1('canh',mnBeOpts(d))):null;
+  return {out,chay,ch,be};
+}
+const mnBtn=()=>{const F=mnFinal(mnTom()),n=F.out.filter(o=>o.x).length;return `<button class="chip${n?' on':''}" data-act="menu">🍽️ Thực đơn${n?' ✓':''}</button>`};
+const mnNm=id=>{const u=S.users.find(x=>x.id===id);return u?u.name.replace(/^(Mr\.|Ms\.|Miss)\s+/,''):id};
+const mnModeBar=d=>{const nu=mnMode(d)==='nuoc';return `<div class="note">Kiểu bữa: <b>${nu?'🍜 Món nước / bún':'🍚 Cơm: mặn, canh, rau'}</b>${mnChot()?` <button class="chip" data-act="menu-mode" data-d="${d}" data-m="${nu?'thuong':'nuoc'}">🔄 Chuyển sang ${nu?'bữa cơm':'món nước / bún'}</button>`:''}</div>`};
+const mnNeed=o=>'Cần: '+(o.ing.length?o.ing.map(x=>mnHave(x)?esc(x):'<b class="warn">'+esc(x)+'</b>').join(', '):'(chưa ghi)');
+function mnRow(d,slot,o,on){
+  const vs=isCh(slot)?null:(mnV(d,slot==='be'?'canh':slot)[o.id]||[]),miss=o.ing.filter(x=>!mnHave(x)),cp=mnChot();
+  return `<div class="mn${on?' on':''}"><div style="display:flex;gap:10px;align-items:center">${mnPic(o)}<div style="flex:1;min-width:0"><div class="mn-d"><b>${esc(o.name)}</b>${on?' · ✅ Chốt':''}</div><div class="s">${mnNeed(o)}</div>${vs?`<div class="s">${vs.length?'👍 '+vs.length+': '+vs.map(x=>esc(mnNm(x))).join(', '):'gợi ý · 0 phiếu'}</div>`:''}</div></div>${cp?`<div class="btns"><button class="chip${on?' on':''}" data-act="menu-pick" data-d="${d}" data-k="${slot}" data-id="${esc(o.id)}">${on?'↩️ Bỏ chốt':'✅ Chốt món này'}</button><button class="chip" data-act="dish-pic" data-id="${esc(o.id)}">📷</button>${miss.length?`<button class="chip" data-act="menu-shop" data-id="${esc(o.id)}">🛒 Thêm ${miss.length} món thiếu</button>`:''}</div>`:''}</div>`;
+}
+const mnWithChosen=(list,id)=>{if(id&&!list.some(x=>x.id===id)){const x=mnFind(id);if(x)return [x,...list]}return list};
+function mnVoteView(){
+  const d=mnVT(),me=S.me.id,ch=mnChay(d),ks=mnKs(d),V=mnDay(d).v||{},who=new Set();
+  ks.forEach(k=>Object.values(V[k]||{}).forEach(a=>a.forEach(x=>who.add(x))));
+  const not=S.users.filter(u=>!who.has(u.id));
+  let h=`<h3 style="margin-top:6px">🗳️ Bình chọn cho ${mnWd(d)}, ${fmtD(d)}</h3><div class="note">Mỗi phần chọn <b>tối đa 3 món</b> (bấm lại để bỏ). Khoá phiếu lúc <b>20:00 ${d===mnTom()?'tối nay':'ngày '+fmtD(dAdd(d,-1))}</b>.</div>`;
+  if(ch)h+=`<div class="note">🌿 Ngày chay của Bà (âm lịch ${ch.d}/${ch.m}): Bà ăn riêng món chay, cả nhà vẫn bình chọn bình thường.</div>`;
+  h+=mnModeBar(d)+`<div class="note">👥 Đã bình chọn ${who.size}/${S.users.length}${who.size?': '+[...who].map(x=>esc(mnNm(x))).join(', '):''}${not.length&&who.size?' · Chưa: '+not.map(u=>esc(mnNm(u.id))).join(', '):''}</div>`;
+  for(const k of ks){
+    const [,ic,t]=mnCat(k),A=mnDishes(k),v=V[k]||{},mine=A.filter(x=>(v[x.id]||[]).includes(me)).length;
+    h+=`<h3>${ic} ${t} · bạn chọn ${mine}/3</h3><div class="list">`+A.map(x=>{const vs=v[x.id]||[],on=vs.includes(me);
+      return `<div class="row" style="cursor:default">${mnPic(x,40)}<div class="t"><div class="n">${esc(x.name)}</div>${vs.length?`<div class="s">👍 ${vs.length}: ${vs.map(y=>esc(mnNm(y))).join(', ')}</div>`:''}</div><button class="chip${on?' on':''}" data-act="menu-vote" data-d="${d}" data-k="${k}" data-id="${esc(x.id)}">${on?'👍 Đã chọn':'👍 Chọn'}</button></div>`}).join('')+'</div>';
+  }
+  return h;
+}
+function mnPickView(d){
+  const c=mnDay(d).c||{},ch=mnChay(d),ds=[...new Set([mnTom(),mnVT()])],F=mnFinal(d);
+  let h=ds.length>1?`<div class="btns" style="margin:4px 0">${ds.map(x=>`<button class="chip${x===d?' on':''}" data-act="menu" data-t="pick" data-d="${x}">${mnWd(x)} ${fmtD(x).slice(0,5)}</button>`).join('')}</div>`:'';
+  h+=`<h3 style="margin-top:6px">👵 Chọn món cho ${mnWd(d)}, ${fmtD(d)}</h3><div class="note">Mỗi phần hiện <b>3 món nhiều phiếu nhất</b>. ${mnChot()?'Bấm <b>✅ Chốt</b> 1 món mỗi phần.':'Chỉ Bà, Ms. Ngọc Phượng và Mr. Gia Bảo chốt món; bạn bình chọn ở trang 🗳️.'} ${mnLocked(d)?'Đã khoá phiếu; phần nào chưa chốt app đã tự lấy món nhiều phiếu nhất (vẫn đổi được).':'20:00 '+(d===mnTom()?'tối nay':'ngày '+fmtD(dAdd(d,-1)))+' khoá phiếu; phần nào chưa chốt app tự lấy món nhiều phiếu nhất.'}</div>`+mnModeBar(d);
+  for(const k of mnKs(d)){const [,ic,t]=mnCat(k);h+=`<h3>${ic} ${t}</h3>`+mnWithChosen(mnTop(d,k),c[k]).map(o=>mnRow(d,k,o,c[k]===o.id)).join('')}
+  if(F.be)h+=`<h3>🧒 Canh thêm cho các bé</h3><div class="note">Thực đơn có món khổ qua – các bé thường không ăn, chọn thêm 1 canh nấu ít.</div>`+mnWithChosen(mnBeOpts(d),c.be).map(o=>mnRow(d,'be',o,c.be===o.id)).join('');
+  if(ch){h+=`<h3>🌿 Bà ăn chay (âm lịch ${ch.d}/${ch.m})</h3><div class="note">Cả nhà ăn bình thường; nấu riêng cho Bà. Không cần bình chọn.</div>`;
+    for(const k of mnKs(d)){const ck=MN_CK[k],[,ic,t]=mnCat(ck);h+=`<div class="note" style="margin-top:10px"><b>${ic} ${t}</b></div>`+mnWithChosen(mnChayOpts(d,ck),c[ck]).map(o=>mnRow(d,ck,o,c[ck]===o.id)).join('')}}
+  return h;
+}
+function mnFinBlock(list){
+  return '<div class="list">'+list.map(o=>{const [,ic,t]=mnCat(o.k);return o.x?`<div class="row" style="cursor:default">${mnPic(o.x,48)}<div class="t"><div class="s">${ic} ${t}${o.auto?' · tự chốt theo phiếu':''}</div><div class="n">${esc(o.x.name)}</div><div class="s">${mnNeed(o.x)}</div></div></div>`:`<div class="row" style="cursor:default"><span class="th" style="background:var(--soft)">${ic}</span><div class="t"><div class="s">${ic} ${t}</div><div class="n" style="color:var(--mut)">⏳ Chưa chốt</div></div></div>`}).join('')+'</div>';
+}
+function mnTomView(){
+  const d=mnTom(),F=mnFinal(d),lk=mnLocked(d),kd=kid();
+  let h=`<h3 style="margin-top:6px">📋 Menu ${mnWd(d)}, ${fmtD(d)}</h3><div class="note">${lk?'✅ Đã khoá phiếu. Phần nào chưa ai chốt, app đã tự lấy món nhiều phiếu nhất (không có phiếu thì để trống).':'Đang chọn – <b>20:00 tối nay</b> khoá phiếu, phần nào chưa chốt app tự lấy món nhiều phiếu nhất.'} ${mnMode(d)==='nuoc'?'🍜 Bữa món nước / bún.':''}</div>`+mnFinBlock(F.out);
+  if(F.be)h+=`<h3>🧒 Cho các bé (thực đơn có khổ qua)</h3>`+mnFinBlock([F.be]);
+  if(F.ch)h+=`<h3>🌿 Bà ăn chay (âm lịch ${F.ch.d}/${F.ch.m})</h3>`+mnFinBlock(F.chay);
+  const all=[...F.out,F.be,...F.chay].filter(o=>o&&o.x).map(o=>o.x),ms=mnShopList(all);
+  h+=`<div class="btns">${!kd&&ms.length?`<button class="chip on" data-act="menu-shop-all">🛒 Thêm ${ms.length} món thiếu vào đi chợ</button>`:''}${mnChot()?`<button class="chip" data-act="menu" data-t="pick" data-d="${d}">✏️ Đổi món</button>`:''}</div>`;
+  const T=mnFinal(today()),tl=[...T.out,T.be,...T.chay].filter(o=>o&&o.x);
+  if(tl.length)h+=`<h3>🍽️ Hôm nay (${fmtD(today()).slice(0,5)}) ăn</h3><div class="note">${tl.map(o=>esc(o.x.name)).join(' · ')}</div>`;
+  return h;
+}
+function menuView(tab,d){
+  if(tab)S.mnTab=tab;if(d)S.mnPD=d;
+  tab=S.mnTab||(mnChot()?'pick':'vote');
+  const ds=[mnTom(),mnVT()];if(!ds.includes(S.mnPD))S.mnPD=mnVT();
+  const w=$('mn-w'),sc=w&&w.dataset.t===tab+(tab==='pick'?S.mnPD:'')?$('sheet').scrollTop:0;
+  MNV.length=0;
+  const tabs=[['vote','🗳️ Bình chọn'],['pick','👵 Bà chọn'],['tom','📋 Menu ngày mai']];
+  let h=`<div id="mn-w" data-t="${tab+(tab==='pick'?S.mnPD:'')}"></div><h2>🍽️ Thực đơn</h2><div class="btns" style="margin:6px 0">${tabs.map(([t,l])=>`<button class="chip${t===tab?' on':''}" data-act="menu" data-t="${t}">${l}</button>`).join('')}</div>`;
+  h+=tab==='vote'?mnVoteView():tab==='pick'?mnPickView(S.mnPD):mnTomView();
+  h+=`<div class="btns">${kid()?'':'<button class="chip" data-act="dish-new">＋ Thêm món</button><button class="chip" data-act="dish-list">📖 Danh sách món ('+MN_CATS.reduce((a,[k])=>a+mnDishes(k).length,0)+')</button>'}<button data-act="close">Đóng</button></div>`;
+  sheet(h);$('sheet').scrollTop=sc;mnImgs(MNV.slice());
 }
 function hetAsk(id){
   const i=S.items.get(id);if(!i)return;
@@ -640,7 +740,7 @@ function codeErr(c,chu){if(!CODE_RE.test(c))return 'Mã gồm 4–20 ký tự: c
 const kbGet=id=>{try{return localStorage.getItem('n25kb_'+id)||'numeric'}catch(e){return 'numeric'}};
 const kbSet=(id,m)=>{try{localStorage.setItem('n25kb_'+id,m)}catch(e){}};
 function kbApply(m){document.querySelectorAll('.pw').forEach(x=>x.setAttribute('inputmode',m));document.querySelectorAll('[data-act=kb]').forEach(b=>b.textContent=m==='numeric'?'abc':'123')}
-const ERR={XFER:'Liên kết đăng nhập đã hết hạn hoặc đã dùng. Hãy lấy liên kết mới trong app đã cài.',NOAI:'Nút gợi ý chưa được cài khoá API Claude (xem HUONG-DAN).',AILIMIT:'Hôm nay đã dùng hết số lượt gợi ý, mai thử lại.',KID:'Tài khoản trẻ em chỉ được thêm đồ mới, lấy / trả / dùng hết đồ và nhờ in tem; không sửa hay xoá.',NOUNDO:'Không hoàn tác được: đã quá 10 phút, hoặc sau đó đã có thay đổi khác.',NEWPIN:'Bạn chưa có mã, hãy đặt mã lần đầu.',HASPIN:'Tài khoản này đã có mã. Nếu chưa tự đặt, báo ngay Mr. Gia Bảo.',AUTH:'Phiên đăng nhập đã hết, hãy đăng nhập lại.',PIN:'Sai mã đăng nhập.',LOCK:'Nhập sai quá 5 lần, máy chủ khoá tài khoản này 10 phút. Thử lại sau.',DENY:'Bạn không có quyền với mục này.',BUSY:'Máy chủ đang bận, thử lại.',NOTEMPTY:'Còn đồ vật hoặc vị trí bên trong, hãy chuyển hoặc xoá trước.',GONE:'Mục này không còn tồn tại, bấm Tải lại.'};
+const ERR={MAX3:'Mỗi phần chọn tối đa 3 món.',VLOCK:'Đã quá 20:00, phiếu chuyển sang ngày kế tiếp. Bấm ↻ tải lại.',NOCHOT:'Chỉ Bà, Ms. Ngọc Phượng và Mr. Gia Bảo được chốt món.',XFER:'Liên kết đăng nhập đã hết hạn hoặc đã dùng. Hãy lấy liên kết mới trong app đã cài.',NOAI:'Nút gợi ý chưa được cài khoá API Claude (xem HUONG-DAN).',AILIMIT:'Hôm nay đã dùng hết số lượt gợi ý, mai thử lại.',KID:'Tài khoản trẻ em chỉ được thêm đồ mới, lấy / trả / dùng hết đồ và nhờ in tem; không sửa hay xoá.',NOUNDO:'Không hoàn tác được: đã quá 10 phút, hoặc sau đó đã có thay đổi khác.',NEWPIN:'Bạn chưa có mã, hãy đặt mã lần đầu.',HASPIN:'Tài khoản này đã có mã. Nếu chưa tự đặt, báo ngay Mr. Gia Bảo.',AUTH:'Phiên đăng nhập đã hết, hãy đăng nhập lại.',PIN:'Sai mã đăng nhập.',LOCK:'Nhập sai quá 5 lần, máy chủ khoá tài khoản này 10 phút. Thử lại sau.',DENY:'Bạn không có quyền với mục này.',BUSY:'Máy chủ đang bận, thử lại.',NOTEMPTY:'Còn đồ vật hoặc vị trí bên trong, hãy chuyển hoặc xoá trước.',GONE:'Mục này không còn tồn tại, bấm Tải lại.'};
 function fail(e){const m=String((e&&e.message)||e);console.error(e);if(m==='AUTH')logout();toast(ERR[m]||('Không thực hiện được: '+m))}
 function renderOn(){
   const e=$('onl');if(!e)return;if(!S.me||!S.me.id){e.innerHTML='';return}
@@ -658,10 +758,10 @@ function apply(d){
   S.pq=d.pq||[];S.shop=d.shop||[];S.nobuy=d.nobuy||[];S.me=d.me;S.users=d.users||[];S.logs=d.logs||[];S.camChk=d.camChk||'';if(d.me&&d.locs&&d.items){try{const q=Object.assign({},d);delete q.token;localStorage.setItem('n25snap',JSON.stringify(q))}catch(e){try{localStorage.removeItem('n25snap')}catch(_){}}}
   S.locs=new Map(d.locs.map(l=>[l.code,l]));S.items=new Map(d.items.map(i=>[i.id,i]));
   S.ready=true;S.at=Date.now();banner('');render();hideSplash();fetchThumbs();
-  S.menu=d.menu||S.menu||null;S.dishes=d.dishes||S.dishes||[];
+  if(!(S.mnPend>1))S.menu=d.menu||S.menu||null;S.dishes=d.dishes||S.dishes||[];
   if($('expl'))expSheet(true);else if(!S.expShown&&S.me&&!kid()){S.expShown=true;let t='';try{t=localStorage.getItem('n25exp_'+S.me.id)||''}catch(e){}if(t!==today()&&dueList().length){try{localStorage.setItem('n25exp_'+S.me.id,today())}catch(e){}setTimeout(()=>expSheet(false),500)}}
   if(d.house!==S.house){S.house=d.house;setBanner(d.house)}
-  chSum();mnRefresh();mnInit();
+  chSum();mnRefresh();
 }
 async function act(action,p){try{const r=await call(action,p);S.res=r&&r.res;apply(r);return true}catch(e){
   const m=String((e&&e.message)||e);
@@ -1165,16 +1265,20 @@ document.addEventListener('click',async e=>{
     armed=null;clearTimeout(gateT);el.innerHTML=tl3(g);el.classList.remove('arm');runGate(d.k);
   }
   else if(a==='shop')shopView();
-  else if(a==='menu')menuView();
-  else if(a==='menu-vote'||a==='menu-pick'){el.disabled=true;if(!(await act(a==='menu-vote'?'menuVote':'menuPick',{k:d.k,id:d.id})))el.disabled=false}
-  else if(a==='menu-swap'){
-    const m=mnS(),cur=m.o[d.k]||[],sw=m.sw[d.k]||0;let n=sw+1,ids=mnCand(d.k,n);
-    while(n<sw+9&&ids.length&&ids.every(x=>cur.includes(x))&&ids.length>=Math.min(3,mnDishes(d.k).length)&&mnDishes(d.k).length>3){n++;ids=mnCand(d.k,n)}
-    if(!ids.length){toast('Chưa có món nào để đổi.');return}
-    el.disabled=true;if(!(await act('menuSwap',{k:d.k,ids,sw:n})))el.disabled=false;
+  else if(a==='menu')menuView(d.t||'',d.d||'');
+  else if(a==='menu-vote'){
+    const dd=d.d,k=d.k,id=d.id,me=S.me.id;
+    if(dd!==mnVT()){toast('Đã quá 20:00, phiếu chuyển sang ngày kế tiếp.');menuView();return}
+    S.menu=S.menu||{};S.menu.days=S.menu.days||{};const day=S.menu.days[dd]=S.menu.days[dd]||{};day.v=day.v||{};const v=day.v[k]=day.v[k]||{},cur=v[id]||[],on=cur.includes(me);
+    if(!on&&Object.values(v).filter(x=>x.includes(me)).length>=3){toast('Mỗi phần chọn tối đa 3 món. Bấm bỏ bớt 1 món trước.');return}
+    v[id]=on?cur.filter(x=>x!==me):cur.concat(me);menuView();
+    S.mnPend=(S.mnPend||0)+1;const ok=await act('menuVote',{d:dd,k,id});S.mnPend--;if(!ok)act('load');
   }
+  else if(a==='menu-pick'){if(!mnChot())return;el.disabled=true;if(!(await act('menuPick',{d:d.d,k:d.k,id:d.id})))el.disabled=false}
+  else if(a==='menu-mode'){if(!mnChot())return;el.disabled=true;if(!(await act('menuMode',{d:d.d,md:d.m})))el.disabled=false}
   else if(a==='menu-shop'||a==='menu-shop-all'){
-    const dishes=a==='menu-shop'?[mnOpts(d.k).find(x=>x.id===d.id)].filter(Boolean):MN_CATS.map(([k])=>{const c=mnS().c[k];return c?mnOpts(k).find(x=>x.id===c):null}).filter(Boolean),miss=mnShopList(dishes);
+    let dishes;if(a==='menu-shop')dishes=[mnFind(d.id)].filter(Boolean);else{const F=mnFinal(mnTom());dishes=[...F.out,F.be,...F.chay].filter(o=>o&&o.x).map(o=>o.x)}
+    const miss=mnShopList(dishes);
     if(!miss.length){toast('Các món thiếu đã có trong danh sách đi chợ rồi.');return}
     el.disabled=true;let n=0;
     for(const x of miss){if(await act('shopAdd',{name:x.charAt(0).toUpperCase()+x.slice(1)}))n++;else break}
