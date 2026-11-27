@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Nhà 25 – index.html v31 (27/11/2026): nút 🍽️ Thực đơn ở trang đầu thành nút khối 3D lớn (màu xanh ngọc); v30 (27/11/2026): 🍽️ Thực đơn 3 trang: 🗳️ Bình chọn (cả danh sách, mỗi người tối đa 3 món mỗi phần, phiếu cho ngày mai, khoá 20:00), 👵 Bà chọn (3 món nhiều phiếu nhất mỗi phần, Bà / Phượng / Gia Bảo ✅ Chốt), 📋 Menu ngày mai (20:00 phần nào chưa chốt tự lấy món nhiều phiếu nhất); 🍜 nút chuyển bữa cơm ↔ món nước / bún (T7, CN mặc định món nước); 🌿 ngày chay âm lịch của Bà (mùng 1, 8, 14, 15, 18, 23, 24, 28, 29, 30; tháng thiếu thêm 27) gợi ý món chay riêng cho Bà; 🧒 có món khổ qua thì thêm 1 canh cho các bé; thêm món nước và món chay; CẦN Code.gs v19. v29: v27 (26/11/2026): nút Dừng cổng màu vàng, chữ nâu đậm cho dễ đọc; v26: nút Cam Bếp về màu cam như mẫu, biểu tượng dao nĩa nét trắng; v25: 🔘 nút Cổng dạng khối nổi 3D (bấm lún), nút Camera dạng bóng mềm có biểu tượng 📹, 7 màu riêng, thêm nút lớn “Xem cả 3 cam”; v24: 🖼️ ảnh đầu trang: bỏ nền mờ, ảnh giữa rộng hơn hai bên ~80%, cắt tràn khung;  [v20]: 🖼️ ảnh đầu trang hiện trọn và căn giữa (nền mờ cùng ảnh); 📹 camera mở trang xem có nút điều hướng (cần nha25cam.py trên máy Bàn), “Xem cả 3” mở thẳng 3 cam; cần Code.gs v16 cho tốc độ; v19 (26/11/2026): 🖼️ 3 ảnh đầu trang không bị đè chữ (chữ nằm dưới ảnh, ảnh lấy phần đầu người); 📜 Nhật ký tách thành trang 3; v18 (26/11/2026): 🏠 trang chính kéo ngang: trang 1 = nút Cổng + Camera (thêm nút điều khiển mới trong CTRL), trang 2 = Tìm đồ; bỏ thông báo “chưa bật” và nút Tapo tạm; chạy nhanh hơn (nạp thư viện sau, mở nhanh); v17 (26/11/2026): 📹 3 camera mở link thẳng cam.nhagb.io.vn (Cloudflare Access, chế độ MSE); v16 (25/11/2026): 👧 trẻ em được 📨 nhờ chủ nhà in tem (món và vị trí; cần Code.gs v11); v15 (25/11/2026): 👧 trẻ em được thêm đồ mới / thêm nhanh / nhập danh sách (cần Code.gs v9); v14 (25/11/2026): 🔑 chủ nhà đặt lại mã cho thành viên (trong menu tên mình; cần Code.gs v8); v13 (25/11/2026): 💬 chat nhóm theo phòng + “Cả nhà” (chỉ chữ, chấm đỏ tin mới; cần Code.gs v7 + chạy caiChat() 1 lần); v12 (23/11/2026): ✋ Dừng cổng chạm 1 lần, Mở/Đóng chạm 2 lần; 🔙 chạy xong tự quay về Nhà 25 (x-callback); v11: 📹 bấm Mở/Đóng/Dừng cổng thì tự mở camera Sân trước (khi đã bật xem online); v10: 🎨 nút Cổng & Camera dạng ô lớn, icon + màu khác nhau; v9: 🏠 khung Nhà (3 nút cổng chạm 2 lần + camera + 🛒 đi chợ), danh sách đi chợ, hỏi "Mua lại?" khi Dùng hết, "Không mua lại nữa", nhắc đồ đang giữ quá hạn. Cần Code.gs v6. -->
+<!-- Nhà 25 – index.html v32 (27/11/2026): ô Nhóm có thêm dòng ＋ Nhóm mới… (người lớn; lưu trên máy chủ, cả nhà cùng thấy); v31 (27/11/2026): nút 🍽️ Thực đơn ở trang đầu thành nút khối 3D lớn (màu xanh ngọc); v30 (27/11/2026): 🍽️ Thực đơn 3 trang: 🗳️ Bình chọn (cả danh sách, mỗi người tối đa 3 món mỗi phần, phiếu cho ngày mai, khoá 20:00), 👵 Bà chọn (3 món nhiều phiếu nhất mỗi phần, Bà / Phượng / Gia Bảo ✅ Chốt), 📋 Menu ngày mai (20:00 phần nào chưa chốt tự lấy món nhiều phiếu nhất); 🍜 nút chuyển bữa cơm ↔ món nước / bún (T7, CN mặc định món nước); 🌿 ngày chay âm lịch của Bà (mùng 1, 8, 14, 15, 18, 23, 24, 28, 29, 30; tháng thiếu thêm 27) gợi ý món chay riêng cho Bà; 🧒 có món khổ qua thì thêm 1 canh cho các bé; thêm món nước và món chay; CẦN Code.gs v19. v29: v27 (26/11/2026): nút Dừng cổng màu vàng, chữ nâu đậm cho dễ đọc; v26: nút Cam Bếp về màu cam như mẫu, biểu tượng dao nĩa nét trắng; v25: 🔘 nút Cổng dạng khối nổi 3D (bấm lún), nút Camera dạng bóng mềm có biểu tượng 📹, 7 màu riêng, thêm nút lớn “Xem cả 3 cam”; v24: 🖼️ ảnh đầu trang: bỏ nền mờ, ảnh giữa rộng hơn hai bên ~80%, cắt tràn khung;  [v20]: 🖼️ ảnh đầu trang hiện trọn và căn giữa (nền mờ cùng ảnh); 📹 camera mở trang xem có nút điều hướng (cần nha25cam.py trên máy Bàn), “Xem cả 3” mở thẳng 3 cam; cần Code.gs v16 cho tốc độ; v19 (26/11/2026): 🖼️ 3 ảnh đầu trang không bị đè chữ (chữ nằm dưới ảnh, ảnh lấy phần đầu người); 📜 Nhật ký tách thành trang 3; v18 (26/11/2026): 🏠 trang chính kéo ngang: trang 1 = nút Cổng + Camera (thêm nút điều khiển mới trong CTRL), trang 2 = Tìm đồ; bỏ thông báo “chưa bật” và nút Tapo tạm; chạy nhanh hơn (nạp thư viện sau, mở nhanh); v17 (26/11/2026): 📹 3 camera mở link thẳng cam.nhagb.io.vn (Cloudflare Access, chế độ MSE); v16 (25/11/2026): 👧 trẻ em được 📨 nhờ chủ nhà in tem (món và vị trí; cần Code.gs v11); v15 (25/11/2026): 👧 trẻ em được thêm đồ mới / thêm nhanh / nhập danh sách (cần Code.gs v9); v14 (25/11/2026): 🔑 chủ nhà đặt lại mã cho thành viên (trong menu tên mình; cần Code.gs v8); v13 (25/11/2026): 💬 chat nhóm theo phòng + “Cả nhà” (chỉ chữ, chấm đỏ tin mới; cần Code.gs v7 + chạy caiChat() 1 lần); v12 (23/11/2026): ✋ Dừng cổng chạm 1 lần, Mở/Đóng chạm 2 lần; 🔙 chạy xong tự quay về Nhà 25 (x-callback); v11: 📹 bấm Mở/Đóng/Dừng cổng thì tự mở camera Sân trước (khi đã bật xem online); v10: 🎨 nút Cổng & Camera dạng ô lớn, icon + màu khác nhau; v9: 🏠 khung Nhà (3 nút cổng chạm 2 lần + camera + 🛒 đi chợ), danh sách đi chợ, hỏi "Mua lại?" khi Dùng hết, "Không mua lại nữa", nhắc đồ đang giữ quá hạn. Cần Code.gs v6. -->
 <html lang="vi">
 <head>
 <meta charset="utf-8">
@@ -264,6 +264,18 @@ function av(u,sz){
   const w=String(u.name||'?').trim().split(/\s+/);
   return `<span class="av" style="${st};background:hsl(${h},42%,38%)">${esc((w[w.length-1]||'?')[0].toUpperCase())}</span>`;
 }
+const CATS0=CATS.slice(),CATI0=CATI.slice();
+function catsSync(x){if(!Array.isArray(x))return;const b=CATS0.slice(0,-1),bi=CATI0.slice(0,-1),k=CATS0[CATS0.length-1],ki=CATI0[CATI0.length-1];
+  CATS.length=0;CATI.length=0;b.forEach((c,i)=>{CATS.push(c);CATI.push(bi[i])});x.forEach(o=>{if(o&&o.n&&!CATS.includes(o.n)){CATS.push(o.n);CATI.push(o.e||'🏷️')}});CATS.push(k);CATI.push(ki);
+  const f=$('fc');if(f){const v=f.value;f.innerHTML='<option value="">Tất cả nhóm</option>'+CATS.map(c=>`<option>${esc(c)}</option>`).join('');f.value=v}}
+const catOpts=(sel,none)=>`<option value="">${none}</option>`+CATS.map(c=>`<option ${c===sel?'selected':''}>${esc(c)}</option>`).join('')+(kid()?'':'<option value="__new">＋ Nhóm mới…</option>');
+async function catNew(selEl){
+  const prev=selEl.dataset.prev||'';
+  const r=prompt('Tên nhóm mới (có thể gõ biểu tượng ở đầu, ví dụ: 🧸 Đồ chơi)','');
+  if(!r||!r.trim()){selEl.value=prev;return}
+  const m=r.trim().match(/^(\p{Extended_Pictographic}\uFE0F?)\s*(.+)$/u),e=m?m[1]:'',n=(m?m[2]:r.trim()).trim();
+  if(!n){selEl.value=prev;return}
+  if(await act('catAdd',{n,e})){const c=(S.res&&S.res.cat)||n;selEl.innerHTML=catOpts(c,selEl.id==='b-cat'?'— không chọn —':'— chọn nhóm —');selEl.value=c;selEl.dataset.prev=c;toast('Đã thêm nhóm: '+c)}else selEl.value=prev}
 const catIdx=c=>{const k=CATS.indexOf(c);return k<0?CATS.length-1:k};
 function itile(id,i){
   const t=i.imgId&&TH.get('i:'+id+':'+i.imgId);
@@ -758,7 +770,7 @@ function apply(d){
   S.pq=d.pq||[];S.shop=d.shop||[];S.nobuy=d.nobuy||[];S.me=d.me;S.users=d.users||[];S.logs=d.logs||[];S.camChk=d.camChk||'';if(d.me&&d.locs&&d.items){try{const q=Object.assign({},d);delete q.token;localStorage.setItem('n25snap',JSON.stringify(q))}catch(e){try{localStorage.removeItem('n25snap')}catch(_){}}}
   S.locs=new Map(d.locs.map(l=>[l.code,l]));S.items=new Map(d.items.map(i=>[i.id,i]));
   S.ready=true;S.at=Date.now();banner('');render();hideSplash();fetchThumbs();
-  if(!(S.mnPend>1))S.menu=d.menu||S.menu||null;S.dishes=d.dishes||S.dishes||[];
+  if(!(S.mnPend>1))S.menu=d.menu||S.menu||null;S.dishes=d.dishes||S.dishes||[];catsSync(d.cats2);
   if($('expl'))expSheet(true);else if(!S.expShown&&S.me&&!kid()){S.expShown=true;let t='';try{t=localStorage.getItem('n25exp_'+S.me.id)||''}catch(e){}if(t!==today()&&dueList().length){try{localStorage.setItem('n25exp_'+S.me.id,today())}catch(e){}setTimeout(()=>expSheet(false),500)}}
   if(d.house!==S.house){S.house=d.house;setBanner(d.house)}
   chSum();mnRefresh();
@@ -1110,7 +1122,7 @@ function formItem(id){
     h+='<details><summary>Sửa thông tin</summary>';
   }else h+=kid()?'':phBox('item','','',true)+(window.N25_AI?'<button class="big" data-act="ai">🤖 Gợi ý chỗ cất (chụp ảnh hoặc nhập tên trước)</button><div id="ai-out" class="note"></div>':'');
   h+=`<label>Tên đồ vật</label><input type="text" id="f-name" value="${esc(i.name)}" placeholder="Máy khoan, hộ chiếu, dây HDMI…">`;
-  h+=`<label>Nhóm</label><select id="f-cat"><option value="">— chọn nhóm —</option>${CATS.map(c=>`<option ${c===i.cat?'selected':''}>${esc(c)}</option>`).join('')}</select>`;
+  h+=`<label>Nhóm</label><select id="f-cat">${catOpts(i.cat,'— chọn nhóm —')}</select>`;
   h+=`<div class="two"><div><label>Số lượng</label><input type="text" id="f-qty" inputmode="decimal" value="${esc(i.qty||'')}"></div><div><label>Đơn vị</label><input type="text" id="f-unit" value="${esc(i.unit||'')}" placeholder="cái, hộp, m…"></div><div><label>Báo khi còn ≤</label><input type="text" id="f-min" inputmode="decimal" value="${esc(i.min??'')}" placeholder="vật tư"></div></div>`;
   h+=`<label>Nằm ở</label>${locField('f-loc',i.loc,null,'Chọn vị trí',()=>({name:($('f-name')||{}).value||i.name,cat:($('f-cat')||{}).value||i.cat,id:i.id}))}`;
   h+=`<div class="two"><div><label>Hạn sử dụng (nếu có)</label><input type="text" class="dt" id="f-exp" inputmode="numeric" maxlength="10" placeholder="dd/mm/yyyy" value="${fmtD(i.exp||'')}"></div><div><label>Ngày cho vào</label><input type="text" class="dt" id="f-put" inputmode="numeric" maxlength="10" placeholder="dd/mm/yyyy" value="${fmtD(i.putAt||'')}"></div></div>`;
@@ -1394,7 +1406,7 @@ document.addEventListener('click',async e=>{
     const fz=inFridge(S.cur);
     sheet(`<h2>📋 Nhập danh sách</h2><div class="note">Vào: <b>${esc(pathName(S.cur))}</b>. Mỗi dòng (hoặc cách nhau bằng dấu ;) là 1 món: <b>tên, số lượng, đơn vị, hạn dùng</b> – chỉ tên là bắt buộc. Có thể gõ cả câu: “thịt bò 2 túi hạn 20/12”.</div>
     <textarea id="b-txt" style="min-height:180px" oninput="pendBulk=null;var b=document.getElementById('b-pre');if(b)b.innerHTML=''" placeholder="${fz?'Thịt bò, 2, túi, 20/12&#10;Tôm 1 hộp hạn 15/1&#10;Xúc xích 10 gói':'Kìm điện, 2, cái&#10;Tua vít bake&#10;Băng keo điện 5 cuộn'}"></textarea>
-    <label>Nhóm cho tất cả</label><select id="b-cat"><option value="">— không chọn —</option>${CATS.map(c=>`<option ${fz&&c===FRESH?'selected':''}>${esc(c)}</option>`).join('')}</select>${fz?'<div class="note">Tủ lạnh: tự ghi ngày cho vào là hôm nay; không nói hạn thì mặc định '+DEF_EXP+' ngày.</div>':''}
+    <label>Nhóm cho tất cả</label><select id="b-cat">${catOpts(fz?FRESH:'','— không chọn —')}</select>${fz?'<div class="note">Tủ lạnh: tự ghi ngày cho vào là hôm nay; không nói hạn thì mặc định '+DEF_EXP+' ngày.</div>':''}
     <div class="btns"><button class="pri" data-act="bulk-save">Xem trước</button><button data-act="close">Huỷ</button></div><div class="note" id="b-pre"></div>`);
   }
   else if(a==='bulk-save'){
@@ -1536,6 +1548,7 @@ document.addEventListener('click',async e=>{
   else if(a==='pdf'){el.disabled=true;try{await makePdf(null,d.p==='share'?'share':!!d.p)}finally{renderIn()}}
 });
 document.addEventListener('change',async e=>{
+  if(e.target.id==='f-cat'||e.target.id==='b-cat'){if(e.target.value==='__new'){await catNew(e.target);return}e.target.dataset.prev=e.target.value}
   const ck=e.target.dataset&&e.target.dataset.ck;
   if(e.target.dataset&&e.target.dataset.extd){await extend(e.target.dataset.extd,e.target.value);return}
   if(e.target.dataset&&e.target.dataset.cnt){S.cnt[e.target.dataset.cnt]=+e.target.value;renderIn();return}
